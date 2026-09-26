@@ -4,6 +4,9 @@ REM Migrated to standalone fastmcp 3.x — runs in a self-bootstrapping venv.
 REM 1. Start Vectorworks. 2. Run vwx-mcp bridge script inside VW. 3. Run this bat.
 
 set DESKTOP_HOST=127.0.0.1
+set VWX_VW_VERSION=2027
+set VWX_TRANSPORT=file
+set VWX_CACHE_TTL=0
 set VWX_MCP_PORT=9878
 set MCP_TRANSPORT=streamable-http
 set FASTMCP_HOST=127.0.0.1

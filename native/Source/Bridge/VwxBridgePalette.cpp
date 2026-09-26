@@ -2,7 +2,6 @@
 
 #include "VwxBridgePalette.h"
 
-#include "Interfaces/VectorWorks/Scripting/IPythonScriptEngine.h"
 
 #include <cstdio>
 #include <ctime>
@@ -14,31 +13,10 @@
 
 using namespace VwxBridge;
 
-// Palette state.
-//
-// v11 — CONTEXT-SPLIT, CRASH-PROOF BY CONSTRUCTION.
-//
-// Definitive VW2026 context map (6 live tests):
-//   - CEF JS sync callback ... read Python OK; doc mutation CRASHES.
-//   - OnIdle notification .... read Python OK; opening a dialog CRASHES.
-//   - genuine dispatch ....... full capability (the pump menu command's
-//     DoInterface, reached by a real click / accelerator / posted WM_COMMAND).
-//
-// Rule enforced here: MUTATIONS RUN ONLY IN DoInterface. Background contexts
-// drain read-only jobs (pump_readonly) and never touch the document. So a
-// mutation that cannot reach DoInterface just stays queued (visible timeout) —
-// it is never executed unsafely and CANNOT crash VW.
-//
-// Triggers fired from the heartbeat timer when jobs are queued:
-//   A. NotifyLayerChange(magic) -> our StatusProc runs pump_readonly() from
-//      OnIdle = true background reads (proven live: ping/list/get, unfocused).
-//   B. PostMessage(WM_COMMAND, pumpCmdId) -> genuine dispatch -> pump_all().
-//      pumpCmdId is discovered by walking EVERY VW top-level window's menu.
-//      This is the one background path that can also mutate; if VW's custom
-//      menubar exposes no HMENU/id it is simply unavailable (logged).
-//   C. Foreground keystroke (Ctrl+Shift+B) when VW is already the foreground
-//      app — reaches the accelerator -> DoInterface. Not background, but
-//      Win11 permits it since no foreground-steal is needed.
+// All jobs run in the Python menu-command runner, one invocation per job.
+// The palette only schedules the runner. No Python executes in notifications,
+// web callbacks or timers. Deferred PIO resets need a return to the host loop.
+// This limits context-related risks but cannot prevent invalid native API calls.
 // Adaptive drain cadence. Job arrival is bursty — idle for minutes, then a
 // dozen calls back to back — so a single flat period is either wasteful when
 // nothing is queued or slow when something is. Run hot while the queue has
@@ -53,17 +31,14 @@ static const DWORD   kCooldownMs     = 1500;
 // expensive: DismissErrorDialogs walks every top-level window on the DESKTOP,
 // not just Vectorworks'. At a 20ms tick that would run fifty times a second.
 // Both are throttled to their own wall-clock intervals, independent of tick.
-static const DWORD   kDismissEveryMs = 200;
 static const DWORD   kAliveEveryMs   = 250;
 static UINT_PTR      gPumpTimer     = 0;
 static UINT          gTickPeriod    = kTickIdleMs;
 static DWORD         gLastBusyTick  = 0;
-static DWORD         gLastDismiss   = 0;
 static DWORD         gLastAlive     = 0;
 static bool          gPaused        = false;
 static int           gLastQueue     = 0;
 static bool          gPumping       = false;   // reentrancy guard for the drain
-static bool          gNotifyInCall  = false;   // inside NotifyLayerChange => sync-delivery detector
 static DWORD         gLastTrigTick  = 0;
 static UINT          gPumpCmdId     = 0;        // WM_COMMAND id of our pump menu item (0 = none)
 static HWND          gVwCmdWnd      = nullptr;  // the VW window that owns that menu
@@ -71,20 +46,11 @@ static HWND          gVwMainWnd     = nullptr;
 static int           gDispatchCount = 0;        // times DoInterface actually ran (trigger proof)
 static bool          gKeyStateDirty = false;    // background-hotkey key state needs restoring
 static BYTE          gSavedKeyState[256] = {0};
-static const StatusData kVwxMagic   = 0x56575850;   // 'VWXP' — filters our own notifications
 
 // --------------------------------------------------------------------------------------------------------
 // Helpers: VW-MCP plugin folder (job queue home) + job counting via Win32.
 
-// The Vectorworks major version was hardcoded here as "2026". Nothing in this
-// palette is version-specific, and the failure mode on a new Vectorworks is
-// silent: the folder does not exist, the queue is never found, and every tool
-// call times out with no indication why. Enumerate the installed versions and
-// take the newest that actually contains the plug-in instead.
-//
-// Cached: this is called on every timer tick, and a directory enumeration per
-// tick would be exactly the kind of per-tick cost the adaptive cadence is
-// trying to remove. VWX_VW_VERSION forces one version, matching the Python side.
+// Resolve only the host version this binary was compiled against.
 static TXString VwxPluginDir()
 {
 	static bool     resolved = false;
@@ -96,30 +62,11 @@ static TXString VwxPluginDir()
 	if ( appdata == nullptr )
 		return "";
 
-	std::vector<std::string> versions;
-	if ( const char* forced = getenv("VWX_VW_VERSION") ) {
-		versions.push_back( forced );
-	} else {
-		TXString glob;
-		glob << appdata << "\\Nemetschek\\Vectorworks\\*";
-		WIN32_FIND_DATAW fd;
-		HANDLE h = FindFirstFileW( glob.GetWCharPtr(), &fd );
-		if ( h != INVALID_HANDLE_VALUE ) {
-			do {
-				if ( !(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
-					continue;
-				char name[8] = {0};
-				int i = 0;
-				for ( ; i < 7 && fd.cFileName[i]; ++i )
-					name[i] = (char) fd.cFileName[i];
-				if ( i == 4 && isdigit((unsigned char)name[0]) && isdigit((unsigned char)name[1])
-				            && isdigit((unsigned char)name[2]) && isdigit((unsigned char)name[3]) )
-					versions.push_back( name );
-			} while ( FindNextFileW( h, &fd ) );
-			FindClose( h );
-		}
-		std::sort( versions.begin(), versions.end(), std::greater<std::string>() );
+	const std::string hostYear = std::to_string(SDK_VERSION / 100 + 1995);
+	if (const char* forced = getenv("VWX_VW_VERSION")) {
+		if (hostYear != forced) return "";
 	}
+	const std::vector<std::string> versions { hostYear };
 
 	for ( const std::string& version : versions ) {
 		for ( const char* name : { "VW-MCP", "VWX-MCP" } ) {
@@ -203,86 +150,6 @@ static void LogLine(const char* msg)
 }
 
 // --------------------------------------------------------------------------------------------------------
-// Two pump scripts. Both import vwx_pump (hot-reloaded) and call one entry
-// point: pump_readonly() drains only read-only jobs (safe anywhere);
-// pump_all() drains everything (genuine dispatch only).
-// NOTE: this script carries its OWN copy of the plug-in path logic — it does
-// not go through VwxPluginDir() above, so fixing the C++ helper alone would
-// leave this copy pinned to one Vectorworks version. Keep the two in step.
-static const char* kPumpReadonlyScript =
-	"import os, sys, importlib\n"
-	"r = os.path.join(os.environ.get('APPDATA',''), 'Nemetschek', 'Vectorworks')\n"
-	"f = os.environ.get('VWX_VW_VERSION')\n"
-	"if f:\n"
-	"    vs = [f]\n"
-	"else:\n"
-	"    try:\n"
-	"        vs = sorted((d for d in os.listdir(r) if len(d) == 4 and d.isdigit()), reverse=True)\n"
-	"    except Exception:\n"
-	"        vs = []\n"
-	"p = ''\n"
-	"for v in vs:\n"
-	"    for n in ('VW-MCP', 'VWX-MCP'):\n"
-	"        c = os.path.join(r, v, 'Plug-ins', n)\n"
-	"        if os.path.isdir(c):\n"
-	"            p = c\n"
-	"            break\n"
-	"    if p:\n"
-	"        break\n"
-	"if p and p not in sys.path:\n"
-	"    sys.path.insert(0, p)\n"
-	"try:\n"
-	"    import vwx_pump\n"
-	// Reload only on change. This fires from OnIdle — many times a second —
-	// and used to re-read, recompile and re-exec the whole pump module every
-	// time, discarding its warm state (peek cache, sweep timer, manifest) on
-	// each pass.
-	"    mt = os.path.getmtime(os.path.join(p, 'vwx_pump.py'))\n"
-	"    if getattr(vwx_pump, '_vwx_loaded_mtime', None) != mt:\n"
-	"        importlib.reload(vwx_pump)\n"
-	"        vwx_pump._vwx_loaded_mtime = mt\n"
-	"    vwx_pump.pump_readonly()\n"
-	"except Exception:\n"
-	"    import traceback, time\n"
-	"    try:\n"
-	"        with open(os.path.join(p, 'bridge.log'), 'a', encoding='utf-8') as f:\n"
-	"            f.write('[%s] native pump_readonly ERROR: %s\\n' % (time.strftime('%H:%M:%S'), traceback.format_exc()))\n"
-	"    except Exception:\n"
-	"        pass\n";
-
-static void RunScript(const char* script)
-{
-	if ( gPumping )
-		return;
-	gPumping = true;
-	using namespace VectorWorks::Scripting;
-	IPythonScriptEnginePtr engine( IID_PythonScriptEngine );
-	if ( engine )
-		engine->ExecuteScript( script, NULL );
-	gPumping = false;
-}
-
-// Read-only drain — safe in the OnIdle notification context. There is NO
-// native full-drain: mutations run exclusively in the 'VWX Bridge Start'
-// Python menu command (VW's own script-plugin runner wraps them correctly;
-// the raw engine call from native code does not — crashed live, twice).
-static void VwxRunPumpReadonly() { RunScript( kPumpReadonlyScript ); }
-
-// --------------------------------------------------------------------------------------------------------
-// Trigger A: deferred notification -> read-only drain from OnIdle.
-// VW distributes notifications from OnIdle (MCNotification.h) = top-level main
-// loop. pump_readonly() there is safe (no mutation, no dialog). If VW ever
-// delivered this synchronously (inside our WM_TIMER frame) gNotifyInCall would
-// suppress it — but even then pump_readonly can't crash (read-only only).
-static void VwxNotifyProc(StatusID /*id*/, StatusData data)
-{
-	if ( data != kVwxMagic )
-		return;                                  // a real layer change — not ours
-	if ( gNotifyInCall )
-		return;                                  // synchronous delivery: skip (belt-and-braces)
-	VwxRunPumpReadonly();                        // background reads
-}
-
 // Trigger B discovery: find the WM_COMMAND id of our pump menu item by walking
 // EVERY VW top-level window's menu bar (VW may hang the menu on a frame window
 // that isn't the one with the longest title).
@@ -433,16 +300,7 @@ static void TriggerPump()
 		return;                                  // a real modal is up — hold
 	gLastTrigTick = now;
 
-	// A) Read-only drains in the background via the deferred notification.
-	gNotifyInCall = true;
-	gSDK->NotifyLayerChange( kVwxMagic );
-	gNotifyInCall = false;
-
-	// B) Writes reach the 'VWX Bridge Start' Ctrl+Shift+B accelerator ->
-	//    pump_all. Foreground: a real keystroke (most reliable). Background:
-	//    edit VW's own thread key-state + PostMessage the key into VW's queue
-	//    so TranslateAccelerator fires it without VW being the foreground app.
-	//    No crash risk either way — pump_all runs only in DoInterface.
+	// Every job reaches the Python menu-command runner via its accelerator.
 	if ( VwIsForeground() )
 		SendForegroundHotkey();
 	else
@@ -468,7 +326,6 @@ void VwxBridge_StartPumpTimer()
 		gTickPeriod   = kTickIdleMs;      // starts idle, goes hot on first job
 		gLastBusyTick = 0;
 		gPumpTimer = SetTimer( nullptr, 0, gTickPeriod, PumpTimerProc );
-		gSDK->RegisterNotificationProcedure( VwxNotifyProc, kNotifyLayerChange );
 		TryFindPumpMenuCommandId();
 		LogLine( "bridge on (palette open)" );
 	}
@@ -479,7 +336,6 @@ void VwxBridge_StopPumpTimer()
 	if ( gPumpTimer != 0 ) {
 		KillTimer( nullptr, gPumpTimer );
 		gPumpTimer = 0;
-		gSDK->UnregisterNotificationProcedure( VwxNotifyProc, kNotifyLayerChange );
 		LogLine( "bridge off (palette closed)" );
 	}
 	RemoveAlive( VwxPluginDir() );      // external status tooling sees off at once
@@ -504,88 +360,6 @@ static bool ModalDialogOpen()
 	return ctx.found;
 }
 
-// Auto-dismiss VW's own Script-Fehler / Python error dialogs so an errored
-// command can never block unattended background operation. Ported from the
-// (now retired) watchdog janitor. STRICTLY content-matched: only dialogs whose
-// text contains an error signature are touched — a dialog the user is actually
-// working in is never clicked. Runs on the VW main thread from the timer; a
-// modal error dialog pumps WM_TIMER in its own loop, so this fires even while
-// the dialog is up.
-static bool WindowTextContainsError(HWND dlg)
-{
-	struct C { bool hit; } c = { false };
-	EnumChildWindows( dlg, [](HWND ch, LPARAM lp) -> BOOL {
-		wchar_t buf[1024];
-		int n = GetWindowTextW( ch, buf, 1024 );
-		if ( n > 0 ) {
-			// German + English error signatures VW uses.
-			// NOTE: "Marionette" alone was here once and ATE the Marionette
-			// script-editor dialog (its text contains the word) — never match
-			// on product names, only on unambiguous ERROR phrases.
-			if ( wcsstr( buf, L"Script-Fehler" ) || wcsstr( buf, L"Traceback" ) ||
-			     wcsstr( buf, L"Script Error" ) ||
-			     wcsstr( buf, L"Handle variable is NIL" ) ||
-			     wcsstr( buf, L"Invalid number of parameters" ) ||
-			     // VW compile/runtime error dialog ("Beim Kompilieren bzw.
-			     // Ausführen des Scripts ist ein Fehler aufgetreten …
-			     // Error Output anzeigen"). Seen when a vs.* call errors at
-			     // the ENGINE level (bad geometry args) rather than in Python.
-			     wcsstr( buf, L"Beim Kompilieren" ) ||
-			     wcsstr( buf, L"Error Output" ) ||
-			     wcsstr( buf, L"error occurred while compiling" ) ) {
-				((C*) lp)->hit = true;
-				return FALSE;
-			}
-		}
-		return TRUE;
-	}, (LPARAM) &c );
-	return c.hit;
-}
-
-static void ClickDialogButton(HWND dlg)
-{
-	struct C { HWND btn; } c = { nullptr };
-	EnumChildWindows( dlg, [](HWND ch, LPARAM lp) -> BOOL {
-		wchar_t cls[64];  GetClassNameW( ch, cls, 64 );
-		if ( _wcsicmp( cls, L"Button" ) != 0 )
-			return TRUE;
-		wchar_t txt[64];  GetWindowTextW( ch, txt, 64 );
-		if ( wcsstr( txt, L"OK" ) || wcsstr( txt, L"Schlie" ) || wcsstr( txt, L"Close" ) ) {
-			((C*) lp)->btn = ch;
-			return FALSE;
-		}
-		return TRUE;
-	}, (LPARAM) &c );
-	if ( c.btn ) {
-		SendMessageW( c.btn, BM_CLICK, 0, 0 );
-	} else {
-		// no matching button — dismiss via the dialog's default/close path
-		SendMessageW( dlg, WM_COMMAND, IDOK, 0 );
-	}
-}
-
-static void DismissErrorDialogs()
-{
-	struct Ctx { DWORD pid; } ctx = { GetCurrentProcessId() };
-	EnumWindows( [](HWND h, LPARAM lp) -> BOOL {
-		Ctx* c = (Ctx*) lp;
-		DWORD p = 0;
-		GetWindowThreadProcessId( h, &p );
-		if ( p != c->pid || !IsWindowVisible( h ) )
-			return TRUE;
-		wchar_t cls[64];  GetClassNameW( h, cls, 64 );
-		if ( wcscmp( cls, L"#32770" ) != 0 )
-			return TRUE;
-		wchar_t title[128];  GetWindowTextW( h, title, 128 );
-		if ( wcsstr( title, L"Fehler" ) || wcsstr( title, L"Error" ) ||
-		     WindowTextContainsError( h ) ) {
-			ClickDialogButton( h );
-			LogLine( "auto-dismissed a VW error dialog" );
-		}
-		return TRUE;
-	}, (LPARAM) &ctx );
-}
-
 // Timer = heartbeat + TRIGGER only. It never executes a script itself
 // (WM_TIMER is NOT command context — mutations park it, verified live).
 // TriggerPump() posts a deferred notification / WM_COMMAND; the actual drain
@@ -596,12 +370,6 @@ static void CALLBACK PumpTimerProc(HWND, UINT, UINT_PTR, DWORD)
 	DWORD now = GetTickCount();
 	RestoreKeyState();            // undo last tick's background-hotkey key state
 	                              // (posted keys have since been translated)
-	if ( !gPaused && now - gLastDismiss >= kDismissEveryMs ) {
-		gLastDismiss = now;
-		DismissErrorDialogs();    // keep unattended background ops unblocked
-		                          // (paused = hands-off: user may be editing
-		                          //  node scripts / working in dialogs)
-	}
 	TXString pluginDir = VwxPluginDir();
 	if ( now - gLastAlive >= kAliveEveryMs ) {
 		gLastAlive = now;

@@ -1,0 +1,10 @@
+{
+  "vectorworks_year": 2027,
+  "sdk_version": 3200,
+  "sdk_build": 882699,
+  "function_count": 3098,
+  "source_url": "https://release.vectorworks.net/latest/Vectorworks/2027-NNA-eng-win-SDK.zip",
+  "sdk_archive_sha256": "995fa3efe1c1ec343a0d7bc54bdf7a6a5616132855535b7e2a5b2404a9309e87",
+  "stub_sha256": "c31b01f0b36a794e9d0bc64042c9b64855ba22b48fca1d6a520f88fe255116f0",
+  "index_sha256": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548"
+}

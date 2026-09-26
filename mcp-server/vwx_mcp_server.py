@@ -3,8 +3,7 @@
 Vectorworks MCP Server — file/socket proxy to the VWX plugin (249 tools).
 
 Connects to the VWX MCP bridge running inside Vectorworks. The Vectorworks
-major version is discovered at runtime (see vw_versions), not hardcoded;
-set VWX_VW_VERSION to pin one.
+target is Vectorworks 2027; host and SDK versions must match.
 """
 
 import os
@@ -97,30 +96,19 @@ VWX_TRANSPORT = os.environ.get(
     'VWX_TRANSPORT', 'file' if sys.platform == 'win32' else 'tcp').lower()
 
 def vw_versions():
-    """Vectorworks major versions installed for this user, newest first.
-
-    The version was hardcoded to '2026' in six files. Nothing about the bridge
-    is 2026-specific on the Python side, and the failure mode when a new
-    Vectorworks ships is silent — the probe simply returns None and every tool
-    reports 'plugin dir not found'. Discover the versions instead.
-    """
-    forced = os.environ.get('VWX_VW_VERSION')
-    if forced:
-        return [forced]
-    root = os.path.join(os.environ.get('APPDATA', ''), 'Nemetschek',
-                        'Vectorworks')
-    try:
-        found = [d for d in os.listdir(root)
-                 if len(d) == 4 and d.isdigit()
-                 and os.path.isdir(os.path.join(root, d))]
-    except Exception:
-        return []
-    return sorted(found, reverse=True)
+    """This fork targets 2027, regardless of other installed versions."""
+    version = os.environ.get('VWX_VW_VERSION', '2027')
+    if version != '2027':
+        raise RuntimeError('This bridge requires Vectorworks 2027')
+    return [version]
 
 
 def _plugin_dir():
+    vw_versions()  # reject a mismatched explicit host even with a custom path
     base = os.environ.get('VWX_PLUGIN_DIR')
-    if base and os.path.isdir(base):
+    if base:
+        if not os.path.isdir(base):
+            raise RuntimeError('VWX_PLUGIN_DIR does not exist: ' + base)
         return base
     appdata = os.environ.get('APPDATA', '')
     for version in vw_versions():
@@ -493,7 +481,7 @@ mcp = FastMCP(
         "Speed: `vwx_batch` runs many commands in ONE round-trip — each "
         "separate call costs a fixed bridge crossing, so batch aggressively.\n"
         "Accuracy: call `vs_signature(name)` BEFORE writing an execute_script "
-        "body. The index carries exact signatures for all 3071 vs.* functions, "
+        "body. The index carries exact signatures for all 3098 vs.* functions, "
         "so a script runs right the first time instead of tripping a VW engine "
         "error on arity.\n"
         "Bulk work goes through criteria strings — criteria_count / "
@@ -1578,8 +1566,8 @@ def list_commands(ctx: Context, filter: Optional[str] = None) -> str:
 @vtool
 def vs_signature(ctx: Context, name: Optional[str] = None,
                  search: Optional[str] = None, category: Optional[str] = None) -> str:
-    """Exact VW2026 signature of a `vs.*` function from the knowledge index
-    (3071 functions). Pass `name` for one function (args, arity, return type,
+    """Exact VW2027 signature of a `vs.*` function from the knowledge index
+    (3098 functions). Pass `name` for one function (args, arity, return type,
     category, doc), or `search`/`category` to browse. Use this BEFORE writing an
     `execute_script` body so you never guess an arg count and trip a VW engine
     error. Example: vs_signature(name='HExtrude') -> objectH, bottom, top."""

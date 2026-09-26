@@ -2,7 +2,8 @@
 commands.py — vs.* implementations for VW MCP Bridge.
 
 Command names + param schemas match vw_mcp_server.py (116 tools).
-Runs on VW main thread (safe for all vs.* calls).
+Run only through the Vectorworks Python menu-command runner.
+Main-thread execution alone does not establish a safe document context.
 
 Key API facts:
   Points:   tuples  vs.Rect((x1,y1),(x2,y2))
@@ -4405,7 +4406,7 @@ def list_commands(p):
     return {'count': len(out), 'commands': out}
 
 def vs_signature(p):
-    """Look up the exact VW2026 signature of a vs.* function from the knowledge
+    """Look up the exact VW2027 signature of a vs.* function from the knowledge
     index (built from the SDK stub). params: {name} or {search, category}.
     Returns args/arity/required/return-type/category/doc — so scripts call
     vs.* correctly the first time instead of triggering engine errors."""
@@ -4481,7 +4482,13 @@ def vs_index_stats(p):
     counts. Confirms the index is deployed and current."""
     from collections import Counter
     cats = Counter(v.get('cat', '') or '(none)' for v in _VS_INDEX.values())
-    return {'functions': len(_VS_INDEX),
+    metadata_path = os.path.join(os.path.dirname(__file__), 'vs_index_meta.json')
+    try:
+        with open(metadata_path, encoding='utf-8') as f:
+            sdk_metadata = json.load(f)
+    except (OSError, ValueError):
+        sdk_metadata = {'error': 'SDK provenance metadata missing or unreadable'}
+    return {'functions': len(_VS_INDEX), 'sdk': sdk_metadata,
             'categories': dict(sorted(cats.items(), key=lambda kv: -kv[1]))}
 
 def _batch(p):

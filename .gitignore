@@ -7,3 +7,12 @@ vwx-plugin/bridge.log
 
 # local render scratch (contains absolute source paths)
 render/
+
+# Native outputs and local deployment state
+native/Output/
+.vs/
+*.vst
+*.vlb
+*.zip
+.venv/
+vwx-plugin/ipc/

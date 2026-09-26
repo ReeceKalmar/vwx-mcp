@@ -1,3 +1,5 @@
+> For this 2027 fork, read [docs/VECTORWORKS_2027.md](docs/VECTORWORKS_2027.md) first. All jobs use the Python menu-command runner, one job per invocation. The current API index has 3,098 functions from SDK 3200. The 2026 findings below are historical; do not assume live 2027 verification.
+
 # AGENTS.md — integrating with vwx-mcp
 
 Guide for agents (and humans writing them) driving Vectorworks 2026 through this

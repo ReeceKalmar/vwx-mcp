@@ -1,54 +1,20 @@
 #!/usr/bin/env python3
-"""
-VWX file-IPC pump — bridge v11: CONTEXT-SPLIT DRAIN (crash-proof by design).
+"""Vectorworks 2027 file IPC: one job per Python menu-command invocation.
 
-The definitive VW2026 context map (6 live tests):
-  - CEF web-palette sync callback : read Python OK, doc mutation CRASHES.
-  - OnIdle notification handler    : read Python OK, opening a dialog CRASHES.
-  - genuine command dispatch       : full capability (the menu command's
-    DoInterface, reached by a real click / accelerator).
-
-Therefore this module exposes TWO entry points and NEVER auto-runs:
-
-  pump_readonly()  -- drains ONLY read-only commands (get_/list_/count_/find_/
-                      ping/math). Safe to call from the OnIdle notification
-                      context, so reads happen in the true background while
-                      Vectorworks is unfocused. Mutation jobs are LEFT QUEUED.
-
-  pump_all()       -- drains EVERY queued job. Called ONLY from the menu
-                      command's DoInterface (genuine dispatch), the one context
-                      where document mutation is safe.
-
-If a mutation job can never reach DoInterface (e.g. no working background
-trigger) it simply stays queued and the MCP call times out visibly — it is
-NEVER executed in an unsafe context, so it can never crash Vectorworks.
-
-IPC layout (plugin dir):
-  ipc/jobs/<ts>-<cid>.json      written by the MCP server (atomic .tmp+replace)
-  ipc/jobs/<...>.working        claimed by the pump (atomic rename)
-  ipc/results/<cid>.json        written by the pump, consumed by the server
-  ipc/pump.stamp                epoch of the last pump run
+All reads and writes use VW's script-plugin runner. Notification callbacks
+never execute Python. Returning after each job allows deferred PIO resets to
+complete before a later inspection job. This is not a crash-safety guarantee:
+invalid handles, API calls and third-party plug-ins can still fail natively.
+Claimed jobs are never retried automatically, including after a host crash.
 """
 import os, sys, json, time, traceback
 
 def _vw_roots():
-    """Vectorworks plug-in roots for every installed major version, newest first.
-
-    The version used to be the literal '2026'. Nothing in this file is
-    version-specific, and the failure mode on a new Vectorworks was silent —
-    the path simply did not exist and every job timed out with no explanation.
-    """
-    root = os.path.join(os.environ.get('APPDATA', ''), 'Nemetschek',
-                        'Vectorworks')
-    forced = os.environ.get('VWX_VW_VERSION')
-    versions = [forced] if forced else []
-    if not versions:
-        try:
-            versions = sorted((d for d in os.listdir(root)
-                               if len(d) == 4 and d.isdigit()), reverse=True)
-        except Exception:
-            versions = []
-    return [os.path.join(root, v, 'Plug-ins') for v in versions]
+    """Only the target major version; never choose another installed host."""
+    if os.environ.get('VWX_VW_VERSION', '2027') != '2027':
+        raise RuntimeError('This bridge requires Vectorworks 2027')
+    return [os.path.join(os.environ.get('APPDATA', ''), 'Nemetschek',
+                         'Vectorworks', '2027', 'Plug-ins')]
 
 
 try:
@@ -237,6 +203,7 @@ def _claim_and_run(fn):
         _dispatch(cmd, params)
         return True
     t0 = time.time()
+    _log('START cid=%s cmd=%s' % (cid, cmd))
     result = _dispatch(cmd, params)
     try:
         _write_json(rpath, result)
@@ -289,38 +256,24 @@ def _housekeep():
 
 
 def pump_readonly():
-    """Drain read-only jobs only. Safe in the OnIdle / notification context."""
-    _housekeep()
-    done = 0
-    for fn in _list_jobs():
-        if _is_readonly(_peek_cmd(fn) or ''):
-            if _claim_and_run(fn):
-                done += 1
-    if done:
-        _log("readonly drain: %d job(s)" % done)
+    """Compatibility no-op: notification contexts must not run VW jobs."""
+    return 0
+
+
+_pumping = False
 
 
 def pump_all():
-    """Drain EVERY job. Call ONLY from genuine command dispatch (DoInterface)."""
-    _housekeep()
-    _log("pump_all: genuine dispatch — draining everything")
-    done = 0
-    # Re-list only after a pass that actually ran something: a job arriving
-    # mid-drain still gets picked up, but a pass that claimed nothing ends the
-    # loop instead of spinning on directory enumerations. The pass cap is a
-    # backstop against a job that can neither be claimed nor removed, which
-    # would otherwise wedge this loop inside VW's command dispatch — the one
-    # context where a hang is most visible to the user.
-    for _pass in range(64):
-        jobs = _list_jobs()
-        if not jobs:
-            break
-        ran = 0
-        for fn in jobs:
+    """Run at most ONE job from VW's Python menu-command runner, then return."""
+    global _pumping
+    if _pumping:
+        return 0
+    _pumping = True
+    try:
+        _housekeep()
+        for fn in _list_jobs():
             if _claim_and_run(fn):
-                ran += 1
-        done += ran
-        if ran == 0:
-            break
-    if done:
-        _log("pump_all done: %d job(s)" % done)
+                return 1
+        return 0
+    finally:
+        _pumping = False

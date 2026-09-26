@@ -8,6 +8,10 @@
 
 #include "StdAfx.h"
 
+#ifdef VWX_EXPECTED_SDK_VERSION
+static_assert(SDK_VERSION == VWX_EXPECTED_SDK_VERSION, "Wrong Vectorworks SDK for this build");
+#endif
+
 #include "Bridge/VwxBridgePalette.h"
 
 const char * DefaultPluginVWRIdentifier() { return "VwxBridge"; }

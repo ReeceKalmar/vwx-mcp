@@ -1,3 +1,5 @@
+> Historical upstream architecture for VW2026. The 2027 fork uses one Python menu-command invocation per job; see [2027 migration](VECTORWORKS_2027.md). Claims below are historical and do not certify 2027 behavior.
+
 # vwx-mcp architecture (bridge v13 — native palette, context-split, true background, auto-dismiss)
 
 ```
