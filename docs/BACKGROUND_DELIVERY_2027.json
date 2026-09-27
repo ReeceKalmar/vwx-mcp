@@ -1,0 +1,2506 @@
+{
+  "schema_version": 1,
+  "scope": "Delivery validation only; zero API semantic coverage credit",
+  "runs": [
+    {
+      "run_id": "delivery-v3-20260926-a",
+      "result": {
+        "schema_version": 1,
+        "scope": "read-only typed MCP background delivery",
+        "status": "failed",
+        "requested_reads": 100,
+        "attempted_reads": 0,
+        "completed_reads": 0,
+        "background_verified": false,
+        "host": null,
+        "records": [],
+        "errors": [
+          "Deployment differs from reviewed sources; no MCP request sent",
+          "Deployment source drift detected"
+        ],
+        "native_functions_passed": [],
+        "native_semantics_fully_verified": false,
+        "expected_source_sha256": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "execution_path": "typed_mcp_stdio",
+        "limitations": [
+          "This tests delivery and identity, not GetVersionEx or other API semantics.",
+          "Bridge telemetry is not an independent measurement of the desktop foreground process.",
+          "No request is retried and no interrupted journal is resumed."
+        ],
+        "source_sha256_before": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "3f08460066a56aa300fbb7e6f29dbd9b29bd6fc05e1a39a0aec72542909332f6",
+          "BridgeStart_MenuCommand.py": "a26e23f227141a2726f28dfbb617793a8177dfe8a7c3582661a421405abf3a1e",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "a176083a3cb36e915690949d532565c5475e141b721cd08d111c2b28a568d827",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "source_sha256_after": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "3f08460066a56aa300fbb7e6f29dbd9b29bd6fc05e1a39a0aec72542909332f6",
+          "BridgeStart_MenuCommand.py": "a26e23f227141a2726f28dfbb617793a8177dfe8a7c3582661a421405abf3a1e",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "a176083a3cb36e915690949d532565c5475e141b721cd08d111c2b28a568d827",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "scheduler_after": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 0,
+          "completion_stamp": 134349570656848253,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "global_input": false,
+          "keyboard_state_modified": false,
+          "last_trigger_state": "idle",
+          "last_win32_error": 0,
+          "menu_caption": "VWX Bridge Start",
+          "menu_caption_matches": 0,
+          "menu_command_id": 0,
+          "menu_items_inspected": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 0,
+          "process_id": 40984,
+          "queued_jobs": 0,
+          "runner_completions_observed": 0,
+          "runner_stamp": 134349570656813147,
+          "scheduler": "posted-menu-command-ack-v3",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790484290
+        }
+      }
+    },
+    {
+      "run_id": "delivery-v3-20260926-b",
+      "result": {
+        "schema_version": 1,
+        "scope": "read-only typed MCP background delivery",
+        "status": "blocked",
+        "requested_reads": 100,
+        "attempted_reads": 1,
+        "completed_reads": 0,
+        "background_verified": false,
+        "host": null,
+        "records": [
+          {
+            "index": 1,
+            "response": {
+              "error": "timed out after 40s â€” job was never picked up. Check the bridge palette and the enabled 'VWX Bridge Start' Python command in the current workspace. Inspect native.scheduler.json for the trigger failure before starting a fresh request.",
+              "cid": "c9ea44c7b89b",
+              "code": "VW_JOB_UNCLAIMED",
+              "dispatched": false
+            }
+          }
+        ],
+        "errors": [
+          "A successful native GetVersionEx response is required"
+        ],
+        "native_functions_passed": [],
+        "native_semantics_fully_verified": false,
+        "expected_source_sha256": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "execution_path": "typed_mcp_stdio",
+        "limitations": [
+          "This tests delivery and identity, not GetVersionEx or other API semantics.",
+          "Bridge telemetry is not an independent measurement of the desktop foreground process.",
+          "No request is retried and no interrupted journal is resumed."
+        ],
+        "source_sha256_before": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "scheduler_before": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 0,
+          "completion_stamp": 134349570656848253,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "global_input": false,
+          "keyboard_state_modified": false,
+          "last_trigger_state": "idle",
+          "last_win32_error": 0,
+          "menu_caption": "VWX Bridge Start",
+          "menu_caption_matches": 0,
+          "menu_command_id": 0,
+          "menu_items_inspected": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 0,
+          "process_id": 40984,
+          "queued_jobs": 0,
+          "runner_completions_observed": 0,
+          "runner_stamp": 134349570656813147,
+          "scheduler": "posted-menu-command-ack-v3",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790484335
+        },
+        "source_sha256_after": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "8272a73753c5544e53233dd5bb29bf88fb2e5e4c5b903fef2213a88f8145c432",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "scheduler_after": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 0,
+          "completion_stamp": 134349570656848253,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "global_input": false,
+          "keyboard_state_modified": false,
+          "last_trigger_state": "frame_menu_unavailable",
+          "last_win32_error": 0,
+          "menu_caption": "VWX Bridge Start",
+          "menu_caption_matches": 0,
+          "menu_command_id": 0,
+          "menu_items_inspected": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 0,
+          "process_id": 40984,
+          "queued_jobs": 0,
+          "runner_completions_observed": 0,
+          "runner_stamp": 134349570656813147,
+          "scheduler": "posted-menu-command-ack-v3",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790484377
+        },
+        "telemetry_delta": {
+          "posts": 0,
+          "foreground_posts": 0,
+          "background_posts": 0,
+          "runner_completions_observed": 0,
+          "trigger_failures": 0,
+          "acknowledgment_timeouts": 0
+        }
+      }
+    },
+    {
+      "run_id": "delivery-v4-20260926-a",
+      "result": {
+        "schema_version": 1,
+        "scope": "read-only typed MCP background delivery",
+        "status": "passed",
+        "requested_reads": 100,
+        "attempted_reads": 100,
+        "completed_reads": 100,
+        "background_verified": true,
+        "host": {
+          "vectorworks_year": 2027,
+          "version_tuple": [
+            32,
+            0,
+            0,
+            2
+          ],
+          "build": 882075
+        },
+        "records": [
+          {
+            "index": 1,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 2,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 3,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 4,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 5,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 6,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 7,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 8,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 9,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 10,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 11,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 12,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 13,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 14,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 15,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 16,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 17,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 18,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 19,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 20,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 21,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 22,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 23,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 24,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 25,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 26,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 27,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 28,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 29,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 30,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 31,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 32,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 33,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 34,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 35,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 36,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 37,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 38,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 39,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 40,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 41,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 42,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 43,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 44,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 45,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 46,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 47,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 48,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 49,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 50,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 51,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 52,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 53,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 54,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 55,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 56,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 57,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 58,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 59,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 60,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 61,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 62,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 63,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 64,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 65,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 66,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 67,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 68,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 69,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 70,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 71,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 72,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 73,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 74,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 75,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 76,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 77,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 78,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 79,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 80,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 81,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 82,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 83,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 84,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 85,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 86,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 87,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 88,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 89,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 90,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 91,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 92,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 93,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 94,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 95,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 96,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 97,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 98,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 99,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          },
+          {
+            "index": 100,
+            "response": {
+              "status": "ok",
+              "function": "GetVersionEx",
+              "result": [
+                32,
+                0,
+                0,
+                2,
+                882075
+              ],
+              "outputs": {
+                "major": 32,
+                "minor": 0,
+                "maintenance": 0,
+                "platform": 2,
+                "buildNum": 882075
+              }
+            }
+          }
+        ],
+        "errors": [],
+        "native_functions_passed": [],
+        "native_semantics_fully_verified": false,
+        "expected_source_sha256": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "0c1e0493223ddf8f4ebc5ce24422b49f16d197dc3279bc40fbfe733190fac165",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "execution_path": "typed_mcp_stdio",
+        "limitations": [
+          "This tests delivery and identity, not GetVersionEx or other API semantics.",
+          "Bridge telemetry is not an independent measurement of the desktop foreground process.",
+          "No request is retried and no interrupted journal is resumed."
+        ],
+        "source_sha256_before": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "0c1e0493223ddf8f4ebc5ce24422b49f16d197dc3279bc40fbfe733190fac165",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "scheduler_before": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 0,
+          "broker_message_pending": false,
+          "broker_rejections": 0,
+          "broker_window_available": true,
+          "completion_stamp": 134349570656848253,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "frame_available": true,
+          "frame_has_win32_menu": false,
+          "frame_source": "GS_GetMainHWND",
+          "global_input": false,
+          "keyboard_state_modified": false,
+          "last_trigger_state": "idle",
+          "last_win32_error": 0,
+          "menu_caption": "VWX Bridge Start",
+          "menu_invocation_active": false,
+          "menu_invocations": 0,
+          "menu_return_available": false,
+          "menu_returns": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 0,
+          "process_id": 44272,
+          "queued_jobs": 0,
+          "runner_completions_observed": 0,
+          "runner_stamp": 134349570656813147,
+          "scheduler": "sdk-named-menu-broker-ack-v4",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790485083
+        },
+        "source_sha256_after": {
+          "commands.py": "70550f67333ed77d2c8f977505e5fe23f5d6302c7a3f3bb1c9017fb7abf05498",
+          "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+          "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+          "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+          "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+          "sdk_catalog.json": "4dde5ba0420ff74c09f93ff6fa788e216c6db951c1912464b1797b76698ce1f2",
+          "sdk_generated.py": "60a565ee60106f80cb11f4a6a56592ba68d9d2f8b8411af0f8579cd8738a90a7",
+          "sdk_runtime.py": "8e0a0e677cd53dccb97a809bc8cbe86a0765c17badbba546f108f9771897bb84",
+          "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+          "VwxBridge.vlb": "0c1e0493223ddf8f4ebc5ce24422b49f16d197dc3279bc40fbfe733190fac165",
+          "VwxBridge.vwr": "be371522a2faa1838cac1aa8acf89bdd650f981c8c137ce96029b1206ba94c21"
+        },
+        "scheduler_after": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 100,
+          "broker_message_pending": false,
+          "broker_rejections": 0,
+          "broker_window_available": true,
+          "completion_stamp": 134349586920879752,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "frame_available": true,
+          "frame_has_win32_menu": false,
+          "frame_source": "GS_GetMainHWND",
+          "global_input": false,
+          "keyboard_state_modified": false,
+          "last_menu_return": 0,
+          "last_trigger_state": "runner_completion_observed",
+          "last_win32_error": 0,
+          "menu_caption": "VWX Bridge Start",
+          "menu_invocation_active": false,
+          "menu_invocations": 100,
+          "menu_return_available": true,
+          "menu_returns": 100,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 100,
+          "process_id": 44272,
+          "queued_jobs": 0,
+          "runner_completions_observed": 100,
+          "runner_stamp": 134349586920859718,
+          "scheduler": "sdk-named-menu-broker-ack-v4",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790485092
+        },
+        "telemetry_delta": {
+          "posts": 100,
+          "foreground_posts": 0,
+          "background_posts": 100,
+          "runner_completions_observed": 100,
+          "trigger_failures": 0,
+          "acknowledgment_timeouts": 0,
+          "menu_invocations": 100,
+          "menu_returns": 100,
+          "broker_rejections": 0
+        }
+      }
+    }
+  ]
+}

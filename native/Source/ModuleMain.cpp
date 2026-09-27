@@ -1,9 +1,11 @@
 //
-//	ModuleMain.cpp — VWX Bridge Native (web-palette pump)
+//	ModuleMain.cpp — VWX Bridge Native (menu scheduler and status palette)
 //
 //	Registers:
-//	  - CExtVwxBridgePalette  : modeless web palette hosting the JS pump
+//	  - CExtVwxBridgePalette  : modeless web palette displaying bridge status
 //	  - CExtMenuShowVwxBridge : menu command that shows the palette
+//	  - CExtMenuVwxPump       : manual status probe; Python uses VWX Bridge Start
+//	  - CExtBridgeVSFunctions : guarded native helpers exposed to the Python menu runner
 //
 
 #include "StdAfx.h"
@@ -13,6 +15,7 @@ static_assert(SDK_VERSION == VWX_EXPECTED_SDK_VERSION, "Wrong Vectorworks SDK fo
 #endif
 
 #include "Bridge/VwxBridgePalette.h"
+#include "Bridge/BridgeVSFunctions.h"
 
 const char * DefaultPluginVWRIdentifier() { return "VwxBridge"; }
 
@@ -35,6 +38,7 @@ extern "C" Sint32 GS_EXTERNAL_ENTRY plugin_module_main(Sint32 action, void* modu
 	REGISTER_Extension<VwxBridge::CExtVwxBridgePalette>( GROUPID_ExtensionWebPalettes, action, moduleInfo, iid, inOutInterface, cbp, reply );
 	REGISTER_Extension<VwxBridge::CExtMenuShowVwxBridge>( GROUPID_ExtensionMenu, action, moduleInfo, iid, inOutInterface, cbp, reply );
 	REGISTER_Extension<VwxBridge::CExtMenuVwxPump>( GROUPID_ExtensionMenu, action, moduleInfo, iid, inOutInterface, cbp, reply );
+	REGISTER_Extension<VwxBridge::CExtBridgeVSFunctions>( GROUPID_ExtensionVSFunctions, action, moduleInfo, iid, inOutInterface, cbp, reply );
 
 	return reply;
 }

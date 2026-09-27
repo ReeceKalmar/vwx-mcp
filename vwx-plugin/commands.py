@@ -1,7 +1,7 @@
 """
 commands.py — vs.* implementations for VW MCP Bridge.
 
-Command names + param schemas match vw_mcp_server.py (116 tools).
+Built-in commands for the Vectorworks 2027 SDK (3200).
 Run only through the Vectorworks Python menu-command runner.
 Main-thread execution alone does not establish a safe document context.
 
@@ -14,7 +14,7 @@ Key API facts:
   Layer type:   vs.GetObjectVariableInt(h, 154)  1=design 2=sheet
   Attach record: vs.SetRecord(h, recName)
   IFC: vs.IFC_GetIFCEntity(h)->(bool,str), vs.IFC_ExportNoUI(path)
-  InternalIndex: vs.GetObjectVariableInt(h, 1165)
+  Object addressing: vs.GetObjectUuid / vs.GetObjectByUuid
   FInLayer: vs.FInLayer(layerH)
   ForEachObject: build list in callback — never create/delete/re-layer inside
 """
@@ -52,9 +52,9 @@ def _c255(v):
     return round(v / 257)
 
 def _oid(h):
-    """Return object UUID string. VW2026 uses UUIDs — InternalIndex APIs were removed."""
+    """Return a UUID only for a valid non-type-0 object handle."""
     if not h: return None
-    try: return vs.GetObjectUuid(h) or None
+    try: return (vs.GetObjectUuid(h) or None) if vs.GetTypeN(h) != 0 else None
     except Exception: return None
 
 def _h(oid):
@@ -62,7 +62,7 @@ def _h(oid):
     if oid is None: return None
     try:
         h = vs.GetObjectByUuid(str(oid))
-        if h: return h
+        if h and vs.GetTypeN(h) != 0: return h
     except Exception: pass
     return None
 
@@ -139,28 +139,22 @@ def _collect(criteria, limit=500):
     return handles
 
 def _active_class():
-    # VW renamed across versions: try current → old
-    for name in ('ActiveClass', 'GetActClassN', 'GetClass', 'GetClassN'):
-        fn = getattr(vs, name, None)
-        if fn:
-            try: return fn()
-            except: pass
-    return ''
+    return _safe(vs.ActiveClass, '')
 
 def _with_layer_class(params):
-    """Activate layer+class if given; return prior (layer_name, class_name) to restore."""
+    """Apply class context; reject implicit layer switches pending host testing."""
     prev_layer = _safe(lambda: vs.GetLName(vs.ActLayer()))
     prev_class = _active_class()
-    if params.get('layer'):
-        vs.Layer(params['layer'])
+    if params.get('layer') and params['layer'] != prev_layer:
+        raise ValueError('Automatic layer activation is quarantined pending a 2027 live test. '
+                         'Activate the target layer in Vectorworks or use set_object_layer afterward.')
     if params.get('class'):
         vs.NameClass(params['class'])
     return prev_layer, prev_class
 
 def _restore(prev):
     try:
-        if prev[0]: vs.Layer(prev[0])
-        if prev[1]: vs.NameClass(prev[1])
+        if prev[1] and _active_class() != prev[1]: vs.NameClass(prev[1])
     except: pass
 
 
@@ -168,6 +162,94 @@ def _restore(prev):
 
 def ping(p):
     return {'status': 'ok', 'message': 'VW MCP Bridge running'}
+
+def bridge_maintenance(p):
+    """Lease-guarded native maintenance; durable intents prevent mutation replay."""
+    import hashlib, hmac, ntpath
+    dispatched = False
+    def fail(message, code='VWX_MAINTENANCE_INVALID'):
+        return {'status': 'error', 'error': message, 'code': code, 'dispatched': dispatched}
+    def exclusive(path, value):
+        with open(path, 'x', encoding='utf-8') as stream:
+            json.dump(value, stream, ensure_ascii=False, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+    try:
+        if type(p) is not dict or set(p) - {'action', 'token', 'expected_path'}:
+            return fail('Invalid maintenance envelope')
+        action, token = p.get('action'), p.get('token')
+        if action not in {'status', 'save', 'quit'} or type(token) is not str or not re.fullmatch(r'[0-9a-f]{64}', token):
+            return fail('Maintenance action and lease token are required')
+        base = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(base, 'bridge.maintenance.json'), encoding='utf-8') as stream:
+            lease = json.load(stream)
+        digest = hashlib.sha256(token.encode('ascii')).hexdigest()
+        if (type(lease) is not dict or type(lease.get('schema_version')) is not int or lease['schema_version'] != 1
+                or type(lease.get('token_sha256')) is not str
+                or not hmac.compare_digest(lease['token_sha256'], digest)):
+            return fail('Maintenance lease is not owned', 'VWX_MAINTENANCE_LEASE')
+        revision, snapshot = getattr(vs, 'VWXMaintRevision', None), getattr(vs, 'VWXMaintSnapshot', None)
+        if not callable(revision) or not callable(snapshot):
+            return fail('Install the native maintenance helper first', 'VWX_MAINTENANCE_UNSUPPORTED')
+        abi = revision()
+        if type(abi) is not int or abi != 1:
+            return fail('Native maintenance ABI or UI context is unavailable', 'VWX_MAINTENANCE_UNSUPPORTED')
+        raw = snapshot()
+        if type(raw) is not str:
+            return fail('Invalid native document inventory', 'VWX_MAINTENANCE_RESULT')
+        inventory = json.loads(raw)
+        if (type(inventory) is not dict or inventory.get('status') != 'ok'
+                or type(inventory.get('process_id')) is not int or inventory['process_id'] != os.getpid()
+                or type(inventory.get('count')) is not int
+                or type(inventory.get('open_documents')) is not list
+                or inventory['count'] != len(inventory['open_documents'])):
+            return fail('Native document inventory failed validation', 'VWX_MAINTENANCE_RESULT')
+        if any(type(doc) is not dict or type(doc.get('path')) is not str
+               or type(doc.get('file_ref')) is not int or type(doc.get('active')) is not bool
+               or type(doc.get('in_memory_only')) is not bool for doc in inventory['open_documents']):
+            return fail('Native document inventory contains malformed rows', 'VWX_MAINTENANCE_RESULT')
+        if action == 'status':
+            return dict(inventory, helper_revision=abi)
+        path = p.get('expected_path')
+        if (type(path) is not str or not path or '\x00' in path or not ntpath.isabs(path)
+                or ntpath.splitext(path)[1].lower() != '.vwx'):
+            return fail('An exact absolute saved .vwx path is required')
+        path = ntpath.normcase(ntpath.normpath(path))
+        documents = inventory['open_documents']
+        if (len(documents) != 1 or type(documents[0]) is not dict
+                or documents[0].get('active') is not True or documents[0].get('in_memory_only') is not False
+                or type(documents[0].get('file_ref')) is not int or type(documents[0].get('path')) is not str
+                or ntpath.normcase(ntpath.normpath(documents[0]['path'])) != path
+                or type(lease.get('host_process_id')) is not int or lease['host_process_id'] != os.getpid()):
+            return fail('Only the original host with the sole expected saved drawing may save or quit', 'VWX_MAINTENANCE_DOCUMENT')
+        helper = getattr(vs, 'VWXMaintSave' if action == 'save' else 'VWXMaintQuit', None)
+        if not callable(helper):
+            return fail('Native maintenance routine is missing', 'VWX_MAINTENANCE_UNSUPPORTED')
+        prefix = os.path.join(base, 'bridge.maintenance.' + digest)
+        receipt = {'process_id': os.getpid(), 'path': path, 'file_ref': documents[0]['file_ref']}
+        if action == 'quit':
+            with open(prefix + '.saved.json', encoding='utf-8') as stream:
+                saved = json.load(stream)
+            if (type(saved) is not dict or set(saved) != set(receipt)
+                    or type(saved.get('process_id')) is not int or type(saved.get('file_ref')) is not int
+                    or type(saved.get('path')) is not str or saved != receipt):
+                return fail('The exact document has no confirmed maintenance save', 'VWX_MAINTENANCE_SAVE_REQUIRED')
+        # A crash even before dispatch consumes this token's intent. Never retry.
+        exclusive(prefix + '.' + action + '.intent.json', receipt)
+        dispatched = True
+        status = helper(p['expected_path'])
+        if type(status) is not int or status != 1:
+            return dict(fail('Native maintenance did not confirm ' + action, 'VWX_MAINTENANCE_NATIVE'),
+                        native_status=status if type(status) is int else None)
+        if action == 'save':
+            exclusive(prefix + '.saved.json', receipt)
+        return {'status': 'ok', 'action': action, 'process_id': os.getpid(), 'path': p['expected_path'],
+                'dispatched': True, 'exit_confirmed': False, 'native_status': status}
+    except FileExistsError:
+        return fail('Maintenance intent already exists; inspect it rather than retry', 'VWX_MAINTENANCE_CONSUMED')
+    except Exception as error:
+        return fail(str(error), 'VWX_MAINTENANCE_UNCONFIRMED' if dispatched else 'VWX_MAINTENANCE_INVALID')
+
 
 def get_document_info(p):
     return {
@@ -183,9 +265,23 @@ def save_document(p):
 
 def save_document_as(p):
     path = p.get('path', '')
+    if not path:
+        return {'error': 'path required'}
     try:
-        vs.SaveActiveDocument(path, True)
-        return {'status': 'ok', 'path': path}
+        expected = p.get('expected_current_path')
+        if expected is not None:
+            import ntpath
+            current = vs.GetFPathName()
+            if (type(expected) is not str or not expected or not ntpath.isabs(expected)
+                    or type(current) is not str
+                    or ntpath.normcase(ntpath.normpath(current)) != ntpath.normcase(ntpath.normpath(expected))
+                    or ntpath.normcase(ntpath.normpath(path)) != ntpath.normcase(ntpath.normpath(expected))):
+                return {'error': 'The exact saved drawing is not active; nothing was saved',
+                        'code': 'VWX_SAVE_DOCUMENT_GUARD', 'dispatched': False}
+        code = vs.SaveActiveDocument(path)
+        if type(code) is not int or code != 0:
+            return {'error': 'SaveActiveDocument did not report success', 'code': code, 'path': path}
+        return {'status': 'ok', 'path': path, 'code': code}
     except Exception as e:
         return {'error': str(e)}
 
@@ -243,7 +339,7 @@ def set_document_preferences(p):
 # VectorScript cannot see past the active document. There is no
 # GetDocumentCount, no NextDocument, no SetActiveDocument — GetFName tells you
 # which file you are in and nothing about the others. Confirmed against the
-# 3071-function index, not assumed.
+# 2027 SDK index, not assumed.
 #
 # What does know is Windows: every open document is a window in this very
 # process, and this code runs inside it. So the list comes from the window
@@ -601,16 +697,12 @@ def set_active_layer(p):
     if not h:
         return {'error': f'Layer not found: {name} (set_active_layer no '
                          'longer auto-creates; use create_layer first)'}
-    for fn in ('SetActiveLayerN', 'SetActiveLayer'):
-        f = getattr(vs, fn, None)
-        if f:
-            _safe(lambda: f(h))
-            now = _safe(lambda: vs.GetLName(vs.ActLayer()))
-            if now == name:
-                return {'status': 'ok', 'name': name, 'via': fn}
+    if _safe(lambda: vs.GetLName(vs.ActLayer())) == name:
+        return {'status': 'ok', 'name': name, 'already_active': True}
     return {'error': 'no safe layer-activation API on this VW build '
-                     '(vs.Layer is quarantined — it parks the script '
-                     'frame). Place objects via set_object_layer instead.'}
+                     '(vs.Layer remains quarantined pending a 2027 live test; '
+                     'SetActiveLayer and SetActiveLayerN are absent from SDK 3200). '
+                     'Activate the layer in Vectorworks or place objects via set_object_layer.'}
 
 def get_active_layer(p):
     h = vs.ActLayer()
@@ -645,11 +737,8 @@ def set_layer_scale(p):
 def get_classes(p):
     """List document classes (name, index, visibility).
 
-    VW2026 status of ClassList is unclear: vs_index.json lists it as a real
-    function (STRING ClassList(index)), but a comment elsewhere in this file
-    claims VW2026 removed class-name enumeration entirely. Resolve that by
-    trying ClassList first and reporting which method actually produced the
-    result — never fabricate a name.
+    SDK 3200 declares ClassList(index). Try it first and report any fallback
+    to class names used by geometry, which omits unused classes.
     """
     count = _safe(lambda: vs.ClassNum(), 0) or 0
     classes = []
@@ -676,9 +765,7 @@ def get_classes(p):
     return {'classes': classes, 'count': len(classes), 'method': method}
 
 def _class_names_used():
-    """VW2026 dropped GetClassName/GetClName/ClassList — the only reliable way
-    to enumerate class names is to walk objects and collect vs.GetClass(h).
-    Returns sorted unique class names actually used by geometry."""
+    """Fallback: sorted unique class names used by geometry, not all classes."""
     seen = set()
     def cb(h):
         try:
@@ -694,7 +781,7 @@ def _class_names_used():
 
 def get_class_styles(p):
     """Per-class appearance for QGIS/GIS styling and Buero-Standard audits
-    (VW2026-safe). Pass {'names': [...]} to read specific classes; otherwise
+    using SDK 3200 calls. Pass {'names': [...]} to read specific classes; otherwise
     all classes in the document are enumerated via _enumerate_class_names
     (ClassList first, object-walk fallback — reported as name_source).
     Colors returned as 0-255 RGB."""
@@ -749,7 +836,7 @@ def set_class_appearance(p):
     key is present in params — existing callers passing just colors and
     line_weight keep working unchanged.
 
-    CALLER CAVEATS (unresolved without a running VW2026 instance — see the
+    CALLER CAVEATS (unresolved without a running VW2027 instance — see the
     accompanying report for detail):
       - fill_pattern's numbering (0/1/2/14/negative) is an inherited office
         convention, not confirmed by vs_index.json.
@@ -994,7 +1081,7 @@ def draw_circle(p):
     prev = _with_layer_class(p)
     try:
         cx, cy, r = p.get('cx', 0), p.get('cy', 0), p.get('radius', 50)
-        vs.Oval(cx - r, cy + r, cx + r, cy - r)   # left, top, right, bottom
+        vs.Oval((cx - r, cy + r), (cx + r, cy - r))
         h = vs.LNewObj()
         return _newobj_result(p, fallback=h)
     finally:
@@ -1002,7 +1089,8 @@ def draw_circle(p):
 
 def draw_arc(p):
     # VW2026: ArcByCenter returns null UUID for partial arcs too — use vs.Arc bbox form.
-    # vs.Arc(left, top, right, bottom, start_angle, sweep_angle). VERIFIED live 2026-06-25:
+    # SDK 3200 Python form: Arc(topLeft, bottomRight, start_angle, sweep_angle).
+    # Historical 2026 read-back verified that the final argument is the sweep:
     # the 6th arg is the SWEEP (included) angle, not the end angle — GetArc readback of
     # Arc(...,30,90) returns (30, 90). Pass sweep directly, NOT start+sweep.
     prev = _with_layer_class(p)
@@ -1011,7 +1099,7 @@ def draw_arc(p):
         r = p.get('radius', 50)
         start = p.get('start_angle', 0)
         sweep = p.get('sweep_angle', 90)
-        vs.Arc(cx - r, cy + r, cx + r, cy - r, start, sweep)
+        vs.Arc((cx - r, cy + r), (cx + r, cy - r), start, sweep)
         h = vs.LNewObj()
         return _newobj_result(p, fallback=h)
     finally:
@@ -1137,7 +1225,7 @@ def draw_cylinder(p):
         cx, cy, cz = p.get('cx',0), p.get('cy',0), p.get('cz',0)
         r = p.get('radius', 50); ht = p.get('height', 100)
         # VW2026: ArcByCenter returns null UUID — use Oval bbox instead (same fix as draw_circle)
-        vs.Oval(cx - r, cy + r, cx + r, cy - r)   # left, top, right, bottom
+        vs.Oval((cx - r, cy + r), (cx + r, cy - r))
         circle = vs.LNewObj()
         eh = vs.HExtrude(circle, cz, cz + ht)   # VW2026: CreateExtrude does not exist; cz baked in
         return {'status': 'ok', 'object_id': _oid(eh)}
@@ -1734,10 +1822,12 @@ def set_view_angles(p):
     return {'status': 'ok'}
 
 def get_object_metrics(p):
-    """Area + perimeter of a 2D object (doc units). params: {object_id}."""
+    """Area + perimeter in squared/linear document coordinate units. params: {object_id}."""
     h = _h(p.get('object_id'))
     if not h: return {'error': 'object not found'}
-    return {'status': 'ok', 'area': _safe(lambda: vs.HArea(h)),
+    # HArea returned None for a valid rectangle on VW2027; HAreaN returned 600.
+    # ObjArea uses area display units, which can differ from coordinate units.
+    return {'status': 'ok', 'area': _safe(lambda: vs.HAreaN(h)),
             'perimeter': _safe(lambda: vs.HPerim(h))}
 
 def get_document_units(p):
@@ -2290,10 +2380,19 @@ def boolean_operation(p):
     if fn is None:
         return {'error': f"Unknown operation: {op!r} (use add/subtract/intersect)"}
     try:
-        nh = fn(h1, h2)
-        if not nh:
+        result = fn(h1, h2)
+        # SDK 3200 returns (errorCode, newSolid), with zero meaning success.
+        # The tuple itself is truthy even on failure and is never an object handle.
+        if (not isinstance(result, (tuple, list)) or len(result) != 2
+                or type(result[0]) is not int):
+            return {'error': 'Boolean operation returned an unexpected SDK result shape'}
+        code, nh = result
+        if code != 0:
+            return {'error': f'Boolean operation failed with SDK code {code}', 'native_code': code}
+        object_id = _oid(nh) if nh else None
+        if not object_id:
             return {'error': 'Boolean operation returned no result object'}
-        return {'status': 'ok', 'object_id': _oid(nh)}
+        return {'status': 'ok', 'object_id': object_id}
     except Exception as e:
         return {'error': str(e)}
 
@@ -2388,6 +2487,8 @@ def create_symbol_from_objects(p):
     afterward into this definition."""
     name = p.get('name', 'NewSymbol')
     ids = p.get('object_ids', [])
+    origin_x = float(p.get('origin_x', 0))
+    origin_y = float(p.get('origin_y', 0))
     if not ids:
         return {'error': 'object_ids required'}
 
@@ -2410,7 +2511,7 @@ def create_symbol_from_objects(p):
         vs.BeginSym(name)
         began = True
         for h in resolved:
-            d = _safe(lambda h=h: vs.HDuplicate(h, 0, 0))
+            d = _safe(lambda h=h: vs.HDuplicate(h, -origin_x, -origin_y))
             if d:
                 made += 1
             else:
@@ -2508,11 +2609,25 @@ def set_marker(p):
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
     mmap = {'none': 0, 'arrow': 1, 'open_arrow': 2, 'dot': 5, 'slash': 6}
-    s = mmap.get(p.get('start_marker', ''), None)
-    e = mmap.get(p.get('end_marker', ''), None)
     try:
-        if s is not None: vs.SetObjBeginningMarker(h, s, 0.1, 1.0, True, True)
-        if e is not None: vs.SetObjEndMarker(h, e, 0.1, 1.0, True, True)
+        changes = []
+        for key, getter, setter in (
+                ('start_marker', vs.GetObjBeginningMarker, vs.SetObjBeginningMarker),
+                ('end_marker', vs.GetObjEndMarker, vs.SetObjEndMarker)):
+            marker = p.get(key)
+            if marker is None:
+                continue
+            if marker not in mmap:
+                return {'error': f'Unknown marker: {marker}'}
+            current = getter(h)
+            if not current or len(current) != 8 or not current[0]:
+                return {'error': f'Cannot read {key} properties'}
+            _, style, angle, size, width, basis, thickness, visible = current
+            changes.append((setter, mmap[marker], angle, size, width,
+                            basis, thickness, marker != 'none'))
+        for setter, style, angle, size, width, basis, thickness, visible in changes:
+            if not setter(h, style, angle, size, width, basis, thickness, visible):
+                return {'error': 'Marker setter returned False; earlier marker changes may have applied'}
         return {'status': 'ok'}
     except Exception as ex:
         return {'error': str(ex)}
@@ -2625,8 +2740,8 @@ def set_ifc_entity(p):
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
     try:
-        vs.IFC_SetIFCEntity(h, p.get('entity', 'IfcBuildingElement'), '', '')
-        return {'status': 'ok'}
+        ok = vs.IFC_SetIFCEntity(h, p.get('entity', 'IfcBuildingElement'))
+        return {'status': 'ok'} if ok else {'error': 'IFC_SetIFCEntity returned False'}
     except Exception as e:
         return {'error': str(e)}
 
@@ -2772,13 +2887,27 @@ def get_plants(p):
     return {'plants': plants, 'count': len(plants)}
 
 def create_plant(p):
+    # This wrapper inserts an existing symbol. It does not create or size a
+    # native Plant PIO; never silently ignore requested native-object changes.
+    if p.get('height') is not None or p.get('spread') is not None:
+        return {'error': 'create_plant inserts an existing symbol; height/spread '
+                         'are unsupported. Use a verified native Plant style workflow.'}
+    name = p.get('botanical_name') or p.get('common_name') or 'Plant'
+    definition = _name_obj(name)
+    if not definition or vs.GetTypeN(definition) != 16:
+        return {'error': f'Plant symbol not found: {name}'}
     prev = _with_layer_class(p)
     try:
-        name = p.get('botanical_name') or p.get('common_name') or 'Plant'
         try:
+            before = vs.LNewObj()
             vs.Symbol(name, (p.get('x', 0), p.get('y', 0)), 0)
             h = vs.LNewObj()
-            return {'status': 'ok', 'object_id': _oid(h)}
+            if not h or h == before or vs.GetTypeN(h) not in (15, 68):
+                return {'error': f'Plant symbol insertion did not create an instance: {name}'}
+            oid = _oid(h)
+            if not oid:
+                return {'error': f'Plant symbol insertion failed: {name}'}
+            return {'status': 'ok', 'object_id': oid, 'created': 'symbol instance'}
         except Exception:
             return {'error': f'Plant symbol not found: {name}'}
     finally:
@@ -2881,16 +3010,34 @@ def get_viewports(p):
     return {'viewports': vps, 'count': len(vps)}
 
 def create_viewport(p):
-    # Switch to target sheet layer first
-    vs.Layer(p.get('sheet_layer', ''))
+    """Create on an existing sheet using SDK 3200 CreateVP(parentHandle)."""
+    sheet = vs.GetLayerByName(p.get('sheet_layer', ''))
+    if not sheet or vs.GetTypeN(sheet) != 31 or vs.GetObjectVariableInt(sheet, 154) != 2:
+        return {'error': 'sheet_layer must name an existing sheet layer'}
+    scale = float(p.get('scale', 100))
+    if scale <= 0:
+        return {'error': 'scale must be positive'}
+    layers = []
+    for name in p.get('design_layers') or []:
+        lh = vs.GetLayerByName(name)
+        if not lh or vs.GetTypeN(lh) != 31 or vs.GetObjectVariableInt(lh, 154) != 1:
+            return {'error': f'Design layer not found: {name}'}
+        layers.append(lh)
+    h = None
     try:
-        # DoMenuTextByName opens VP dialog — use CreateVP API
-        h = _safe(lambda: vs.CreateVP(vs.ActLayer(),
-                                      (p.get('x', 0), p.get('y', 0)),
-                                      float(p.get('scale', 100))))
-        return {'status': 'ok', 'object_id': _oid(h)}
+        h = vs.CreateVP(sheet)
+        oid = _oid(h)
+        if not oid:
+            return {'error': 'CreateVP did not return a valid viewport'}
+        vs.SetObjectVariableReal(h, 1003, scale)
+        vs.HMove(h, float(p.get('x', 0)), float(p.get('y', 0)))
+        for lh in layers:
+            if not vs.SetVPLayerVisibility(h, lh, 0):
+                return {'error': 'Viewport created but design-layer visibility failed', 'object_id': oid}
+        return {'status': 'ok', 'object_id': oid,
+                'note': 'Inspect/update the viewport in a separate request after regeneration.'}
     except Exception as e:
-        return {'error': str(e)}
+        return {'error': str(e), 'object_id': _oid(h)}
 
 def update_viewport(p):
     h = _h(p.get('object_id'))
@@ -2979,19 +3126,20 @@ def export_pdf(p):
 def export_dxf(p):
     """Export document to DXF/DWG format.
 
-    NOT IMPLEMENTABLE on VW2026: the only export API found, vs.ExportDXFDWG,
+    Not implemented as unattended export in SDK 3200: vs.ExportDXFDWG
     takes no path/format arguments and opens the interactive export dialog
-    (blocks the bridge on user input) — forbidden by house rule 3. There is
+    (blocks the bridge on user input). There is
     no scriptable, non-modal DXF/DWG export in the vs.* surface on this
     build. Fails honestly rather than pretending to export.
     """
-    return {'error': ('DXF/DWG export is not scriptable on VW2026: the only '
+    return {'error': ('Unattended DXF/DWG export is not implemented for SDK 3200: the '
                        'available function (vs.ExportDXFDWG) opens a modal '
                        'dialog and takes no path argument. vs.ExportDXFDWG_Batch, '
-                       'which this command used to call, does not exist.')}
+                       'which this command used to call, does not exist.'),
+            'requested_path': p.get('path')}
 
 def export_image(p):
-    """Not implementable on VW2026 — fails loudly instead of pretending.
+    """Export an existing image object; no unattended drawing rasterization.
 
     This used to call vs.ExportImageFile(path, w, h, dpi, fmt). The real VW2026
     signature is ExportImageFile(hImage, filePath): two arguments, and the
@@ -3005,6 +3153,9 @@ def export_image(p):
     opens a modal dialog, which the unattended bridge cannot answer.
     """
     path = p.get('path', '')
+    if any(p.get(key) is not None for key in ('width', 'height', 'dpi', 'format')):
+        return {'error': 'Image resizing/format parameters are unsupported by ExportImageFile. '
+                         'Omit width, height, dpi and format to export the existing image object.'}
     hint = p.get('object_id')
     if hint:
         # Exporting an actual Image object IS supported — that is what the API
@@ -3018,7 +3169,7 @@ def export_image(p):
         except Exception as e:
             return {'error': str(e)}
     return {'error':
-            "export_image cannot rasterize the drawing on VW2026: "
+            "export_image cannot rasterize the drawing through the 2027 bridge: "
             "vs.ExportImageFile(hImage, filePath) exports an Image OBJECT, not "
             "the document, and no headless render-to-file API exists. "
             "To SEE the drawing use the `screenshot` tool (captures the "
@@ -3038,8 +3189,8 @@ def import_dwg(p):
     if not path: return {'error': 'path required'}
     prev = _with_layer_class(p)
     try:
-        vs.ImportDXFDWG(path, False)
-        return {'status': 'ok', 'path': path,
+        code = vs.ImportDXFDWGFile(path, False)
+        return {'status': 'completed', 'path': path, 'code': code,
                 'layer': _safe(lambda: vs.GetLName(vs.ActLayer()))}
     except Exception as e:
         return {'error': str(e)}
@@ -3049,14 +3200,15 @@ def import_dwg(p):
 def export_shp(p):
     """Export to Shapefile (GIS export).
 
-    NOT IMPLEMENTABLE on VW2026: vs.ExportSHP does not exist, and the only
+    Unattended export is not implemented in SDK 3200: vs.ExportSHP does not exist, and the only
     related function, vs.LegacyShapefileExp, opens the old shapefile-export
-    UI and blocks on user input — forbidden by house rule 3. Fails honestly
+    UI and blocks on user input. Fails honestly
     rather than pretending to export.
     """
-    return {'error': ('SHP export is not scriptable on VW2026: vs.ExportSHP '
+    return {'error': ('Unattended SHP export is not implemented for SDK 3200: vs.ExportSHP '
                        'does not exist, and the only related function '
-                       '(vs.LegacyShapefileExp) opens a modal dialog.')}
+                       '(vs.LegacyShapefileExp) opens a modal dialog.'),
+            'requested_path': p.get('path'), 'requested_layer': p.get('layer')}
 
 def import_image(p):
     """Import an image file as an image object. params: {path, x, y, layer}.
@@ -3111,6 +3263,9 @@ def refresh_view(p):
 def set_georeferencing(p):
     """Set document georeferencing CRS (e.g. EPSG:25832) using the current
     user origin (same vs.SetDocGeoRefByUsrOrg call as set_document_georef)."""
+    if p.get('origin_x') is not None or p.get('origin_y') is not None:
+        return {'error': 'origin_x/origin_y are unsupported: this command uses '
+                         'the current user origin. Omit them or configure the origin first.'}
     crs = p.get('crs') or p.get('epsg') or 'EPSG:25832'
     try:
         epsg = int(str(crs).upper().replace('EPSG:', '').strip())
@@ -3123,26 +3278,12 @@ def set_georeferencing(p):
         return {'error': str(e)}
 
 def get_georeferencing(p):
-    # No vs.GetDocumentGeoreferenceEPSG on VW2026. Probe the APIs that do
-    # exist across builds; report honestly what was found.
-    out = {}
-    for fname, key in (('GetGeoOrigin', 'geo_origin'),
-                       ('GetGeorefMode', 'georef_mode'),
-                       ('GetGISProjectionStr', 'projection')):
-        f = getattr(vs, fname, None)
-        if f:
-            v = _safe(f)
-            if v is not None:
-                out[key] = v
-    # layer-level georeferencing flag
+    """Read georeferencing using the SDK 3200 GIS functions."""
+    out = get_georeference_info(p)
+    out['projection_details'] = get_projection(p)
     h = vs.ActLayer()
     if h:
         out['active_layer_georef'] = _safe(lambda: vs.GetObjectVariableBoolean(h, 172))
-    if not out:
-        return {'error': 'no georeferencing API found on this VW build '
-                         '(available vs.* names probed: GetGeoOrigin, '
-                         'GetGeorefMode, GetGISProjectionStr)'}
-    out['status'] = 'ok'
     return out
 
 
@@ -3159,9 +3300,10 @@ def apply_texture(p):
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
     try:
-        tx = vs.GetObject(p.get('texture_name', ''))
-        if not tx: return {'error': 'Texture not found'}
-        vs.SetTextureRef(h, tx, 0, 1)
+        name = p.get('texture_name', '')
+        tx = _name_obj(name)
+        if not tx or vs.GetTypeN(tx) != 97: return {'error': 'Texture not found'}
+        vs.SetTextureRefN(h, vs.Name2Index(name), 0, 0)
         return {'status': 'ok'}
     except Exception as e:
         return {'error': str(e)}
@@ -3655,17 +3797,29 @@ def create_angular_dimension(p):
         _restore(prev)
 
 def create_circular_dimension(p):
-    """Radial/diameter dim. mode 'radius' or 'diameter'."""
+    """Circular dimension using the SDK's bbox points and dimension-type flags.
+
+    Required: box1=[left, top], box2=[right, bottom], dim_type (VW selector).
+    cx/cy and x/y specify the start/end points; offset and shoulder are optional.
+    The SDK does not document the selector values, so mode strings are not
+    silently converted to guessed integers.
+    """
+    if any(p.get(key) is None for key in ('box1', 'box2', 'dim_type')):
+        return {'error': 'box1, box2 and dim_type are required by CircularDim'}
     prev = _with_layer_class(p)
     try:
         cx = float(p.get('cx', 0)); cy = float(p.get('cy', 0))
         tip = (float(p.get('x', 100)), float(p.get('y', 0)))
-        mode = p.get('mode', 'radius')
         arrow = int(p.get('arrow', 770))
         text_flag = int(p.get('text_flag', 0))
         try:
-            is_diam = 1 if mode == 'diameter' else 0
-            vs.CircularDim((cx, cy), tip, is_diam, arrow, text_flag)
+            box1 = tuple(float(value) for value in p['box1'])
+            box2 = tuple(float(value) for value in p['box2'])
+            if len(box1) != 2 or len(box2) != 2:
+                return {'error': 'box1 and box2 must each contain two coordinates'}
+            vs.CircularDim((cx, cy), tip, box1, box2, float(p.get('offset', 0)),
+                           int(p['dim_type']), arrow, text_flag,
+                           float(p.get('shoulder', 0)))
         except Exception as e:
             return {'error': str(e)}
         return _newobj_result(p)
@@ -3673,7 +3827,7 @@ def create_circular_dimension(p):
         _restore(prev)
 
 def create_chain_dimension(p):
-    """Chain of linear dimensions through a list of points along the same axis."""
+    """Create linear dimensions, then join their handles into a dimension chain."""
     prev = _with_layer_class(p)
     try:
         pts = p.get('points', [])
@@ -3682,23 +3836,30 @@ def create_chain_dimension(p):
         dim_type = int(p.get('dim_type', 771))
         arrow = int(p.get('arrow', 770))
         text_flag = int(p.get('text_flag', 0))
+        chain = None
+        created = 0
         try:
             tpts = [(float(x), float(y)) for x, y in pts]
-            vs.CreateChainDimension(tpts, offset, dim_type, arrow, text_flag)
-        except AttributeError:
-            # Fallback: build pairwise LinearDims
-            created = 0
-            for i in range(len(pts) - 1):
-                a = (float(pts[i][0]), float(pts[i][1]))
-                b = (float(pts[i+1][0]), float(pts[i+1][1]))
-                try:
-                    vs.LinearDim(a, b, offset, dim_type, arrow, text_flag, offset)
-                    created += 1
-                except Exception: pass
-            return {'status': 'ok', 'method': 'fallback', 'created': created}
+            for a, b in zip(tpts, tpts[1:]):
+                before = vs.LNewObj()
+                vs.LinearDim(a, b, offset, dim_type, arrow, text_flag, offset)
+                dim = vs.LNewObj()
+                if not dim or dim == before:
+                    return {'error': 'LinearDim did not create a dimension',
+                            'created': created, 'object_id': _oid(chain)}
+                created += 1
+                if chain is None:
+                    chain = dim
+                else:
+                    joined = vs.CreateChainDimension(chain, dim)
+                    if not joined:
+                        return {'error': 'Dimensions could not be joined into a chain',
+                                'created': created, 'object_id': _oid(chain),
+                                'unjoined_object_id': _oid(dim)}
+                    chain = joined
         except Exception as e:
-            return {'error': str(e)}
-        return {'status': 'ok'}
+            return {'error': str(e), 'created': created, 'object_id': _oid(chain)}
+        return {'status': 'ok', 'created': created, 'object_id': _oid(chain)}
     finally:
         _restore(prev)
 
@@ -3780,8 +3941,14 @@ def send_to_surface(p):
             'object_id': _oid(new_h) if new_h else None}
 
 def rise_to_surface(p):
-    """Raise an object to the site-model surface (opposite of send_to_surface).
-    Same LNewObj gotcha applies — see send_to_surface."""
+    """Raise an object to the site-model surface. Requires SDK send_type selector.
+
+    The 2027 stub does not document this selector's values; callers must supply
+    the appropriate value for their object type instead of relying on a guess.
+    DTM6_RiseToSurface modifies the passed object in place.
+    """
+    if p.get('send_type') is None:
+        return {'error': 'send_type is required by DTM6_RiseToSurface'}
     oid = p.get('object_id')
     h = _h(oid)
     if not h: return {'error': 'Object not found'}
@@ -3791,21 +3958,11 @@ def rise_to_surface(p):
     if not dtm_h:
         return {'error': 'No site model on active layer (pass site_model_id)'}
     try:
-        ok = vs.DTM6_RiseToSurface(dtm_h, h, tin_type)
+        ok = vs.DTM6_RiseToSurface(dtm_h, h, tin_type, int(p['send_type']))
     except Exception as e:
         return {'error': str(e)}
-    new_h = None
-    try:
-        ln = vs.LNewObj()
-        if ln:
-            try:
-                same = (vs.GetObjectUuid(ln) == oid)
-            except Exception:
-                same = False
-            new_h = vs.PrevObj(ln) if same else ln
-    except Exception: pass
     return {'status': 'ok' if ok else 'failed',
-            'object_id': _oid(new_h) if new_h else None}
+            'object_id': _oid(h)}
 
 def get_z_at_xy(p):
     """Z elevation at a planar (x, y) on the site model.
@@ -3847,8 +4004,11 @@ def clear_site_model_cache(p):
     except Exception as e: return {'error': str(e)}
 
 def make_site_modifier_class(p):
+    """Create the named site modifier class; the SDK accepts only its name."""
+    if p.get('modifier_type') is not None:
+        return {'error': 'MakeModifierClass has no modifier_type parameter'}
     try:
-        vs.MakeModifierClass(str(p.get('class_name', '')), int(p.get('modifier_type', 0)))
+        vs.MakeModifierClass(str(p.get('class_name', '')))
         return {'status': 'ok'}
     except Exception as e: return {'error': str(e)}
 
@@ -3907,7 +4067,8 @@ def create_static_hatch_from_object(p):
         if not name: return {'error': 'hatch_name required'}
         angle = float(p.get('angle', 0))
         try:
-            h = vs.CreateStaticHatchFromObject(src, name, angle)
+            origin = (float(p.get('origin_x', 0)), float(p.get('origin_y', 0)))
+            h = vs.CreateStaticHatchFromObject(src, name, origin, angle)
         except Exception as e:
             return {'error': str(e)}
         return _newobj_result(p, fallback=h)
@@ -4015,12 +4176,17 @@ def update_tagged_tags(p):
 # ── Graphic Calculation (landscape gold) ─────────────────────────────────────
 
 def offset_polygon(p):
+    """Offset with the complete SDK options; conversion_res is a VW selector."""
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
     dist = float(p.get('distance', 10))
     try:
-        nh = vs.OffsetPoly(h, dist)
-        return {'status': 'ok', 'object_id': _oid(nh) if nh else None}
+        nh = vs.OffsetPoly(h, dist, int(p.get('number_of_offsets', 1)),
+                           bool(p.get('consolidate_vertices', False)),
+                           bool(p.get('sharp_corners', True)),
+                           int(p.get('conversion_res', 0)),
+                           float(p.get('consolidation_tolerance', 0)))
+        return {'status': 'ok' if nh else 'failed', 'object_id': _oid(nh) if nh else None}
     except Exception as e: return {'error': str(e)}
 
 def _poly_boolean(p, fn_name, a_key='clip_id', b_key='subject_id'):
@@ -4029,7 +4195,7 @@ def _poly_boolean(p, fn_name, a_key='clip_id', b_key='subject_id'):
     fn = getattr(vs, fn_name, None)
     if not fn: return {'error': f'{fn_name} not available'}
     try:
-        nh = fn(a, b)
+        nh = fn(a, b, float(p.get('fuzz', 0)))
         return {'status': 'ok', 'object_id': _oid(nh) if nh else None}
     except Exception as e: return {'error': str(e)}
 
@@ -4044,8 +4210,10 @@ def combine_polygons(p):
         # CombinePolygons iteratively merges
         acc = handles[0]
         for h in handles[1:]:
-            nh = vs.CombinePolygons(acc, h)
-            if nh: acc = nh
+            nh = vs.CombinePolygons(acc, h, float(p.get('fuzz', 0)))
+            if not nh:
+                return {'error': 'CombinePolygons failed', 'object_id': _oid(acc)}
+            acc = nh
         return {'status': 'ok', 'object_id': _oid(acc) if acc else None}
     except Exception as e: return {'error': str(e)}
 
@@ -4067,7 +4235,7 @@ def polygon_centroid(p):
 def polygon_perimeter(p):
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
-    try: return {'perimeter': vs.CalcPolySegLen(h)}
+    try: return {'perimeter': vs.HPerim(h)}
     except Exception as e: return {'error': str(e)}
 
 def point_in_polygon(p):
@@ -4092,8 +4260,8 @@ def convert_to_nurbs(p):
     h = _h(p.get('object_id'))
     if not h: return {'error': 'Object not found'}
     try:
-        nh = vs.ConvertToNURBS(h)
-        return {'status': 'ok', 'object_id': _oid(nh) if nh else None}
+        nh = vs.ConvertToNURBS(h, bool(p.get('keep_original', False)))
+        return {'status': 'ok' if nh else 'failed', 'object_id': _oid(nh) if nh else None}
     except Exception as e: return {'error': str(e)}
 
 def distance(p):
@@ -4138,11 +4306,11 @@ def get_material_info(p):
     if not h: return {'error': 'Object not found'}
     try:
         mh = vs.GetObjMaterialHandle(h)
-        name = vs.GetObjMaterialName(h) if hasattr(vs, 'GetObjMaterialName') else (vs.GetName(mh) if mh else None)
+        name = p.get('material_name') or vs.GetObjMaterialName(h)
         return {
             'material_name': name,
-            'area':   _safe(lambda: vs.GetMaterialArea(h)),
-            'volume': _safe(lambda: vs.GetMaterialVolume(h)),
+            'area':   _safe(lambda: vs.GetMaterialArea(h, name)) if name else None,
+            'volume': _safe(lambda: vs.GetMaterialVolume(h, name)) if name else None,
             'is_simple': _safe(lambda: vs.IsMaterialSimple(mh)) if mh else None,
         }
     except Exception as e: return {'error': str(e)}
@@ -4293,29 +4461,30 @@ def add_vp_class_override(p):
     cls = p.get('class_name')
     if not cls: return {'error': 'class_name required'}
     try:
-        ovrd = vs.CreateVPClOvrd(vp, cls)
-        if not ovrd: return {'error': 'CreateVPClOvrd failed'}
+        # These SDK procedures do not return an override handle. Every setter
+        # addresses the override by viewport handle plus class name.
+        vs.CreateVPClOvrd(vp, cls)
         if p.get('fill_fore_rgb'):
             r, g, b = p['fill_fore_rgb']
-            vs.SetVPClOvrdFillFore(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPClOvrdFillFore(vp, cls, _c8(r), _c8(g), _c8(b))
         if p.get('fill_back_rgb'):
             r, g, b = p['fill_back_rgb']
-            vs.SetVPClOvrdFillBack(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPClOvrdFillBack(vp, cls, _c8(r), _c8(g), _c8(b))
         if p.get('pen_fore_rgb'):
             r, g, b = p['pen_fore_rgb']
-            vs.SetVPClOvrdPenFore(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPClOvrdPenFore(vp, cls, _c8(r), _c8(g), _c8(b))
         if p.get('pen_back_rgb'):
             r, g, b = p['pen_back_rgb']
-            vs.SetVPClOvrdPenBack(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPClOvrdPenBack(vp, cls, _c8(r), _c8(g), _c8(b))
         if p.get('fill_opacity') is not None:
-            vs.SetVPClOvrdFillOpty(ovrd, int(p['fill_opacity']))
+            vs.SetVPClOvrdFillOpty(vp, cls, int(p['fill_opacity']))
         if p.get('pen_opacity') is not None:
-            vs.SetVPClOvrdPenOpty(ovrd, int(p['pen_opacity']))
+            vs.SetVPClOvrdPenOpty(vp, cls, int(p['pen_opacity']))
         if p.get('fill_style') is not None:
-            vs.SetVPClOvrdFillStyle(ovrd, int(p['fill_style']))
+            vs.SetVPClOvrdFillStyle(vp, cls, int(p['fill_style']))
         try: vs.UpdateVP(vp)
         except Exception: pass
-        return {'status': 'ok', 'override_id': _oid(ovrd)}
+        return {'status': 'ok', 'viewport_id': _oid(vp), 'class_name': cls}
     except Exception as e:
         return {'error': str(e)}
 
@@ -4350,19 +4519,20 @@ def add_vp_layer_override(p):
     vp = _h(p.get('viewport_id')); lay = p.get('layer_name')
     if not vp or not lay: return {'error': 'viewport_id and layer_name required'}
     try:
-        ovrd = vs.CreateVPLrOvrd(vp, lay)
-        if not ovrd: return {'error': 'CreateVPLrOvrd failed'}
+        layer_h = vs.GetLayerByName(lay)
+        if not layer_h: return {'error': 'Layer not found: ' + lay}
+        vs.CreateVPLrOvrd(vp, layer_h)
         if p.get('fill_fore_rgb'):
             r, g, b = p['fill_fore_rgb']
-            vs.SetVPLrOvrdFillFore(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPLrOvrdFillFore(vp, layer_h, _c8(r), _c8(g), _c8(b))
         if p.get('pen_fore_rgb'):
             r, g, b = p['pen_fore_rgb']
-            vs.SetVPLrOvrdPenFore(ovrd, (_c8(r), _c8(g), _c8(b)))
+            vs.SetVPLrOvrdPenFore(vp, layer_h, _c8(r), _c8(g), _c8(b))
         if p.get('opacity') is not None:
-            vs.SetVPLrOvrdOpty(ovrd, int(p['opacity']))
+            vs.SetVPLrOvrdOpty(vp, layer_h, int(p['opacity']))
         try: vs.UpdateVP(vp)
         except Exception: pass
-        return {'status': 'ok', 'override_id': _oid(ovrd)}
+        return {'status': 'ok', 'viewport_id': _oid(vp), 'layer_name': lay}
     except Exception as e: return {'error': str(e)}
 
 def list_vp_layer_overrides(p):
@@ -4388,6 +4558,106 @@ def list_vp_layer_overrides(p):
 
 # ── Generic Dispatch / Introspection ─────────────────────────────────────────
 
+_SDK_MODULES = None
+_SDK_STAMP = None
+
+
+def _sdk_modules():
+    """Load only companion modules from this installation, refreshing per job."""
+    import importlib, sys
+    global _SDK_MODULES, _SDK_STAMP
+    directory = os.path.realpath(os.path.dirname(__file__))
+    names = ('sdk_runtime', 'sdk_generated', 'sdk_sequences')
+    paths = [os.path.join(directory, name + '.py') for name in names]
+    paths.append(os.path.join(directory, 'sdk_catalog.json'))
+    stamp = tuple(os.stat(path).st_mtime_ns for path in paths)
+    for name in names:
+        module = sys.modules.get(name)
+        if module is not None and os.path.normcase(os.path.realpath(getattr(module, '__file__', ''))) != os.path.normcase(os.path.join(directory, name + '.py')):
+            raise RuntimeError('SDK module loaded from another installation: ' + name)
+    if _SDK_MODULES is None or stamp != _SDK_STAMP:
+        if directory not in sys.path:
+            sys.path.insert(0, directory)
+        modules = []
+        for name in names:
+            existing = sys.modules.get(name)
+            module = importlib.reload(existing) if existing is not None else importlib.import_module(name)
+            if os.path.normcase(os.path.realpath(module.__file__)) != os.path.normcase(os.path.join(directory, name + '.py')):
+                raise RuntimeError('SDK module resolved outside this installation: ' + name)
+            modules.append(module)
+        import hashlib
+        with open(paths[-1], 'rb') as stream:
+            digest = hashlib.sha256(stream.read()).hexdigest()
+        if digest != modules[1].SDK_CATALOG_SHA256:
+            raise RuntimeError('Generated SDK wrappers and catalog do not match; redeploy them together')
+        _SDK_MODULES, _SDK_STAMP = tuple(modules), stamp
+    return _SDK_MODULES
+
+
+def __getattr__(name):
+    # vwx_pump uses getattr for dispatch. Dynamic lookup keeps 3,098 wrappers
+    # generated in one source instead of duplicating them in this file.
+    if name.startswith('sdk_'):
+        modules = _sdk_modules()
+        fn = modules[1].WRAPPERS.get(name[4:])
+        if fn is not None:
+            return fn
+    raise AttributeError(name)
+
+
+def sdk_call(p):
+    """Call one exact, generated SDK adapter with named JSON arguments."""
+    if not isinstance(p, dict) or set(p) - {'name', 'arguments', 'options'}:
+        return {'error': 'Expected name, arguments and optional options', 'code': 'SDK_ARGUMENTS', 'dispatched': False}
+    name = p.get('name')
+    if not isinstance(name, str):
+        return {'error': 'SDK name must be a string', 'code': 'SDK_ARGUMENTS', 'dispatched': False}
+    fn = _sdk_modules()[1].WRAPPERS.get(name)
+    if fn is None:
+        return {'error': 'Unknown SDK function: ' + name, 'code': 'SDK_UNKNOWN', 'dispatched': False}
+    return fn({'arguments': p.get('arguments', {}), 'options': p.get('options', {})})
+
+
+def sdk_list(p):
+    """Discover exact SDK transport contracts, including context restrictions."""
+    include_presence = p.get('include_presence', False)
+    if type(include_presence) is not bool:
+        return {'error': 'include_presence must be a boolean', 'code': 'SDK_ARGUMENTS'}
+    catalog = _sdk_modules()[0].load_catalog()
+    functions = catalog['functions']
+    def describe(name):
+        spec = dict(functions[name])
+        if include_presence:
+            # Attribute presence is deliberately separate from execution or
+            # semantic compatibility. Never call the inspected SDK function.
+            try:
+                spec['host_callable'] = callable(getattr(vs, name, None))
+            except Exception as error:
+                spec['host_callable'] = None
+                spec['host_inspection_error'] = str(error)
+        return spec
+    name = p.get('name')
+    if name:
+        if name not in functions:
+            return {'error': 'Unknown SDK function: ' + str(name), 'code': 'SDK_UNKNOWN'}
+        return {'sdk_version': catalog['sdk_version'], 'function': describe(name)}
+    offset, limit = p.get('offset', 0), p.get('limit', 50)
+    if type(offset) is not int or offset < 0 or type(limit) is not int or not 1 <= limit <= 200:
+        return {'error': 'offset must be >= 0 and limit must be 1..200', 'code': 'SDK_ARGUMENTS'}
+    search, category = (p.get('search') or '').lower(), (p.get('category') or '').lower()
+    names = [name for name, spec in sorted(functions.items())
+             if (not search or search in (name + ' ' + spec.get('description', '')).lower())
+             and (not category or category == spec.get('category', '').lower())]
+    return {'sdk_version': catalog['sdk_version'], 'total': len(names), 'offset': offset,
+            'functions': [describe(name) for name in names[offset:offset + limit]]}
+
+
+def sdk_sequence(p):
+    """Run a bounded SDK sequence with balanced native construction scopes."""
+    if not isinstance(p, dict) or set(p) - {'calls', 'options'}:
+        return {'error': 'Expected calls and optional options', 'code': 'SDK_ARGUMENTS', 'dispatched': False}
+    return _sdk_modules()[2].run({'calls': p.get('calls'), 'options': p.get('options', {})})
+
 def list_commands(p):
     """List all callable commands in this module. Optional filter substring.
     Agents use this for discovery when the explicit MCP tool set does not cover
@@ -4402,8 +4672,17 @@ def list_commands(p):
         if filt and filt not in name.lower(): continue
         doc_line = ((obj.__doc__ or '').strip().split('\n')[0])[:140]
         out.append({'name': name, 'doc': doc_line})
+    sdk_count = 0
+    if p.get('include_sdk') or filt.startswith('sdk_'):
+        functions = _sdk_modules()[0].load_catalog()['functions']
+        for name, spec in functions.items():
+            command = 'sdk_' + name
+            if not filt or filt in command.lower():
+                out.append({'name': command, 'doc': spec.get('description', '')[:140]})
+                sdk_count += 1
     out.sort(key=lambda x: x['name'])
-    return {'count': len(out), 'commands': out}
+    return {'count': len(out), 'commands': out, 'sdk_adapters_included': sdk_count,
+            'sdk_discovery': 'sdk_list returns all 3098 SDK contracts; include_sdk:true adds their command names here'}
 
 def vs_signature(p):
     """Look up the exact VW2027 signature of a vs.* function from the knowledge
@@ -4499,6 +4778,11 @@ def _batch(p):
         name = call.get('command')
         params = call.get('params') or {}
         fn = globals().get(name)
+        if fn is None and isinstance(name, str) and name.startswith('sdk_'):
+            try:
+                fn = __getattr__(name)
+            except AttributeError:
+                pass
         if not fn or not callable(fn) or name.startswith('_'):
             results.append({'error': f'unknown command: {name}'})
             continue

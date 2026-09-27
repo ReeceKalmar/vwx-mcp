@@ -1,11 +1,8 @@
 //
 //	VwxBridgePalette.h — VWX Bridge Native
 //
-//	A modeless web palette whose JS polls vwxBridge.pump() (~250ms). The pump
-//	callback runs SYNC on the Vectorworks main thread (safe for the SDK): it
-//	checks ipc/jobs/ in the VW-MCP plugin folder and, when jobs exist, runs
-//	vwx_pump.py via IPythonScriptEngine — the same file protocol as the
-//	keystroke-triggered bridge v4, minus the keystroke.
+//	The palette reports queue status and schedules the Python menu command.
+//	No Python executes from native, web, notification or timer callbacks.
 //
 
 #pragma once
@@ -59,9 +56,7 @@ namespace VwxBridge
 	};
 
 	// --------------------------------------------------------------------------------------------------------
-	// Internal pump command — invoked by the palette's timer via
-	// gSDK->DoMenuName(), which routes through VW's real command dispatcher:
-	// the only context where scripts may touch view state (vs.Layer, ...).
+	// Historical native menu entry: manual status probe only, never a runner.
 	class CExtMenuVwxPump_EventSink : public VWMenu_EventSink
 	{
 	public:

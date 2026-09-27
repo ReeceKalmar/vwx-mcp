@@ -1,86 +1,36 @@
-# Silencing the "Unknown Developer Plug-ins" dialog
+# Vectorworks 2027 plug-in developer credentials
 
-Vectorworks 2026 shows this at every launch:
+The local native build of this fork does not have Vectorworks-issued developer
+credentials. Vectorworks may identify or block `VwxBridge` as an unknown
+developer at startup. The user must review that application prompt; do not
+disable plug-in security checks.
 
-> **Unbekannte Entwickler-Plug-ins** — Die angezeigten Plug-ins sind unbekannter
-> Herkunft. Die Entwickler sind nicht Teil des Vectorworks
-> Partnerschaftsprogramms. Aus Sicherheitsgründen werden diese Plug-ins
-> blockiert und erstmal nicht geladen.
+The 2027 deployment places `VwxBridge.vlb` and `VwxBridge.vwr` in:
 
-with `VwxBridge` listed, and the activation lasting only until the next restart.
+```text
+%APPDATA%\Nemetschek\Vectorworks\2027\Plug-ins
+```
 
-## What is actually being checked
+A successful compiler build or acceptance of a developer prompt does not verify
+that the bridge loads, the menu runner executes, or native-object workflows work.
+Those require the separate checks in [VECTORWORKS_2027.md](VECTORWORKS_2027.md).
 
-VW 2026 introduced a plug-in origin check. It is **not** Windows Authenticode —
-signing the `.vlb` with a code-signing certificate does nothing here, and adding
-a self-signed root to the machine's trust store would be both ineffective and a
-genuinely bad idea. What Vectorworks looks for is a **credentials file**: an
-encrypted satellite file, validated offline against a public key, that names the
-developer and lists the plug-ins they vouch for.
+## Requesting credentials
 
-Two facts that scope the problem:
+`native/CredentialsVwxMcp.example.json` is a request template, not an issued
+credential. Replace its placeholders with this fork's actual developer
+information in a private request copy before any submission. Do not reuse
+credentials issued to another developer.
 
-- **Only compiled and locked plug-ins need credentials.** Unlocked script
-  plug-ins — plain, unobfuscated `.py` like everything in `vwx-plugin/` — are
-  explicitly exempt. That is why the dialog lists `VwxBridge` and never the
-  `VW-MCP` Python plug-in.
-- **The credentials file must sit beside the plug-in it covers**, so for this
-  project it belongs in `C:\Program Files\Vectorworks <version>\Plug-ins\`,
-  next to `VwxBridge.vlb`.
+Ask Vectorworks developer support for the current **2027** credential request
+process and the required output filename, placement and version coverage.
+Follow the instructions supplied with the issued credential. The historical
+upstream notes referred to a `Credentials*.vst` file beside the native plug-in;
+do not assume an older host's issued file covers this fork or this host version.
 
-For reference, of the 180+ `.vlb` files shipped in that folder, `VwxBridge.vlb`
-is the only unsigned one — every Vectorworks and partner plug-in carries a
-`Vectorworks, Inc.` Authenticode signature, and the four `Credentials*.vlb`
-files are the partner credential blobs (ComputerWorks, Extragroup, Maxon,
-Vectorworks itself).
+`bridge/deploy_2027.ps1` deploys the native binary/resources and Python bridge
+files. It does not automatically request, issue or install a credentials file.
+Keep developer credential files and personal submission details out of Git.
 
-## The fix
-
-Vectorworks issues credentials on request, free, as part of the partner
-programme. The request is one email.
-
-1. Review `native/CredentialsVwxMcp.json` — check the developer name, contact
-   address and website are what you want associated with the plug-in publicly,
-   since this is what shows up under **Tools → Plug-ins → Plug-in Manager →
-   Developers** for anyone who installs it.
-
-2. Email it to **devsupport@vectorworks.net**, asking for a credentials file for
-   the listed plug-in.
-
-3. They return an encrypted `CredentialsVwxMcp.vst`. Drop it next to
-   `VwxBridge.vlb` in the Plug-ins folder. `deploy_native_bridge.bat` copies
-   anything named `Credentials*.vst` from `native/` if it is present, so once
-   you have the file, put it there and normal deploys will carry it.
-
-4. Restart Vectorworks. The dialog is gone, and the Plug-in Manager's
-   *Developers* tab lists the plug-in under your name instead of "unknown".
-
-### Naming rules that matter
-
-- The file **must** be named `Credentials<anything>.vst` — Vectorworks only
-  recognises the credentials role from the `Credentials` prefix plus the `.vst`
-  extension. It will not be mistaken for a script tool.
-- The `files` array lists plug-in file names **without extension** — `VwxBridge`,
-  not `VwxBridge.vlb`.
-- A credentials file may name more plug-ins than are actually installed, so it
-  is worth listing anything you expect to ship later in the same request.
-
-### This has to be redone per Vectorworks version
-
-A credentials file issued for 2026 does not cover 2027. Fold the re-request into
-the same pass as the native rebuild against the new SDK — both are needed, and
-neither can be done before Vectorworks publishes that version's SDK.
-
-## Until the credentials file arrives
-
-Click **Aktivieren**, then **Weiter**. The plug-in loads and everything works
-normally for that session; you pay one click per Vectorworks launch. Nothing is
-degraded — the bridge, the pump and the palette all behave identically to a
-credentialed install.
-
-There is no developer or testing mode that suppresses the check locally. The
-only other way to remove the dialog is to stop shipping the native palette
-altogether, which costs the three things it is the sole provider of: background
-writes while Vectorworks is unfocused, automatic dismissal of Vectorworks error
-dialogs during unattended runs, and the `ipc/native.alive` heartbeat that the
-server's fail-fast now depends on. That is a bad trade for one click.
+The 2027 palette supplies scheduling, heartbeat and status UI. Automatic error
+dialog dismissal was removed; credentials do not change that behavior.

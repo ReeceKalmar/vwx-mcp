@@ -1,0 +1,577 @@
+{
+  "scope": "Read-only predicate diagnosis; no cell dereference or semantic API credit",
+  "records": [
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetVersionEx",
+          "arguments": {}
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetVersionEx",
+        "result": [
+          32,
+          0,
+          0,
+          2,
+          882075
+        ],
+        "outputs": {
+          "major": 32,
+          "minor": 0,
+          "maintenance": 0,
+          "platform": 2,
+          "buildNum": 882075
+        }
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetFPathName",
+          "arguments": {}
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetFPathName",
+        "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetTypeN",
+          "arguments": {
+            "h": "a4b4859b-cea7-4ad3-9462-93538fb5284b"
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetTypeN",
+        "result": 18
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetName",
+          "arguments": {
+            "h": "a4b4859b-cea7-4ad3-9462-93538fb5284b"
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetName",
+        "result": "SDK-data_worksheet_database-rootcause-batch-e8190676b8d37e40"
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetWSRowColumnCount",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b"
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetWSRowColumnCount",
+        "result": [
+          4,
+          3
+        ],
+        "outputs": {
+          "numRows": 4,
+          "numColumns": 3
+        }
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 0
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 2,
+            "leftColumn": 0,
+            "bottomRow": 2,
+            "rightColumn": 0
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 0,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 0,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 3
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 2,
+            "leftColumn": 3,
+            "bottomRow": 2,
+            "rightColumn": 3
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 3,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 3,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 4
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 2,
+            "leftColumn": 4,
+            "bottomRow": 2,
+            "rightColumn": 4
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 4,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 4,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 5
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 2,
+            "leftColumn": 5,
+            "bottomRow": 2,
+            "rightColumn": 5
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 5,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 2,
+            "column": 5,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 3
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 1,
+            "leftColumn": 3,
+            "bottomRow": 1,
+            "rightColumn": 3
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": true
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 3,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 3,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 4
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSRange",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "topRow": 1,
+            "leftColumn": 4,
+            "bottomRow": 1,
+            "rightColumn": 4
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSRange",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 4,
+            "subrow": 1
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "IsValidWSSubrowCell",
+          "arguments": {
+            "worksheet": "a4b4859b-cea7-4ad3-9462-93538fb5284b",
+            "row": 1,
+            "column": 4,
+            "subrow": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "IsValidWSSubrowCell",
+        "result": false
+      }
+    }
+  ],
+  "runtime_sha256": "33e7447a058cc3fa084e60158de6e9c5e71d02ad47caae571fb553ff4d3a749f",
+  "host": {
+    "status": "ok",
+    "function": "GetVersionEx",
+    "result": [
+      32,
+      0,
+      0,
+      2,
+      882075
+    ],
+    "outputs": {
+      "major": 32,
+      "minor": 0,
+      "maintenance": 0,
+      "platform": 2,
+      "buildNum": 882075
+    }
+  },
+  "status": "observed"
+}

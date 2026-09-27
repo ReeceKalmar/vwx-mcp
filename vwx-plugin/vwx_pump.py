@@ -20,20 +20,27 @@ def _vw_roots():
 try:
     _DIR = os.path.dirname(os.path.abspath(__file__))
 except NameError:                      # VW runs scripts as <string>
-    _DIR = None
-    for _base in _vw_roots():
-        for _name in ('VW-MCP', 'VWX-MCP'):
-            _cand = os.path.join(_base, _name)
-            if os.path.isdir(_cand):
-                _DIR = _cand
+    _DIR = os.environ.get('VWX_PLUGIN_DIR') or None
+    if _DIR:
+        _DIR = os.path.abspath(_DIR)
+        if not all(os.path.isfile(os.path.join(_DIR, name))
+                   for name in ('vwx_pump.py', 'commands.py')):
+            raise RuntimeError('VWX_PLUGIN_DIR is not a complete bridge installation: ' + _DIR)
+    else:
+        for _base in _vw_roots():
+            for _name in ('VWX-MCP', 'VW-MCP'):
+                _cand = os.path.join(_base, _name)
+                if all(os.path.isfile(os.path.join(_cand, name))
+                       for name in ('vwx_pump.py', 'commands.py')):
+                    _DIR = _cand
+                    break
+            if _DIR:
                 break
-        if _DIR:
-            break
     if _DIR is None:
-        _roots = _vw_roots()
-        _DIR = os.path.join(_roots[0] if _roots else '', 'VW-MCP')
-if _DIR not in sys.path:
-    sys.path.insert(0, _DIR)
+        raise RuntimeError('The 2027 bridge Python files are not installed')
+if _DIR in sys.path:
+    sys.path.remove(_DIR)
+sys.path.insert(0, _DIR)
 
 _IPC     = os.path.join(_DIR, 'ipc')
 _JOBS    = os.path.join(_IPC, 'jobs')
@@ -42,16 +49,6 @@ _STAMP   = os.path.join(_IPC, 'pump.stamp')
 _LOG     = os.path.join(_DIR, 'bridge.log')
 
 RESULT_TTL = 3600.0          # orphaned result files are removed after this
-
-# Read-only commands: safe in ANY context (no document mutation, no dialog).
-# A job is read-only if its command is in this set OR starts with one of the
-# read-only prefixes. Everything else is treated as a mutation and waits for
-# genuine dispatch.
-_RO_NAMES = frozenset({
-    'ping', 'distance', 'distance_3d', 'polygon_centroid',
-    'get_document_info', 'get_document_preferences', 'get_georeferencing',
-})
-_RO_PREFIXES = ('get_', 'list_', 'count_', 'find_')
 
 # Marionette executions may tear down THIS Python context on frame return:
 # their ack is written BEFORE dispatch.
@@ -64,46 +61,6 @@ def _log(msg):
             f.write("[%s] pump: %s\n" % (time.strftime('%H:%M:%S'), msg))
     except Exception:
         pass
-
-
-_MANIFEST = os.path.join(_IPC, 'readonly.json')
-_manifest_names = None
-_manifest_mtime = None
-
-
-def _readonly_manifest():
-    """Read-only command names as classified by the MCP server, if it said.
-
-    The prefix rule below is a convention with nothing enforcing it: a command
-    named get_or_create_layer would mutate the document from the OnIdle
-    notification context, which is verified to crash Vectorworks. The server
-    knows the real classification (it annotates every tool with readOnlyHint)
-    and writes it here at startup, so the two sides stop guessing separately.
-    Absent or unreadable manifest falls back to the prefixes — the pump must
-    keep working when only the plugin has been redeployed.
-    """
-    global _manifest_names, _manifest_mtime
-    try:
-        mt = os.path.getmtime(_MANIFEST)
-    except Exception:
-        return None
-    if mt != _manifest_mtime:
-        try:
-            with open(_MANIFEST, 'r', encoding='utf-8') as f:
-                _manifest_names = frozenset(json.load(f))
-            _manifest_mtime = mt
-            _log("readonly manifest: %d names" % len(_manifest_names))
-        except Exception as e:
-            _log("readonly manifest unreadable (%s) — using prefixes" % e)
-            return None
-    return _manifest_names
-
-
-def _is_readonly(cmd):
-    names = _readonly_manifest()
-    if names is not None:
-        return cmd in names
-    return cmd in _RO_NAMES or cmd.startswith(_RO_PREFIXES)
 
 
 def _write_json(path, obj):
@@ -121,6 +78,9 @@ def _get_commands():
     calls are near-free yet an edited/redeployed commands.py hot-reloads at
     once."""
     import importlib, commands
+    loaded_dir = os.path.normcase(os.path.dirname(os.path.abspath(commands.__file__)))
+    if loaded_dir != os.path.normcase(os.path.abspath(_DIR)):
+        raise RuntimeError('A different commands module is already loaded; restart Vectorworks')
     try:
         mt = os.path.getmtime(os.path.join(_DIR, 'commands.py'))
     except Exception:
@@ -148,36 +108,9 @@ def _list_jobs():
         return []
 
 
-_peek_cache = {}
-
-
-def _peek_cmd(fn):
-    """Read a job's command name WITHOUT claiming it.
-
-    Cached by filename. Job files are written once under a unique
-    <timestamp>-<cid> name and never rewritten, so the answer cannot go stale.
-    Without the cache the read-only drain re-read every queued mutation job
-    from disk on every OnIdle notification — many times a second while a write
-    waits for the accelerator hop.
-    """
-    hit = _peek_cache.get(fn)
-    if hit is not None:
-        return hit
-    try:
-        with open(os.path.join(_JOBS, fn), 'r', encoding='utf-8') as f:
-            cmd = json.load(f).get('type', '')
-    except Exception:
-        return None
-    if len(_peek_cache) > 512:          # bounded: a stuck queue must not grow it forever
-        _peek_cache.clear()
-    _peek_cache[fn] = cmd
-    return cmd
-
-
 def _claim_and_run(fn):
     src  = os.path.join(_JOBS, fn)
     work = src + '.working'
-    _peek_cache.pop(fn, None)
     try:
         os.replace(src, work)           # atomic claim
     except Exception:
@@ -196,6 +129,7 @@ def _claim_and_run(fn):
     cmd    = msg.get('type', '')
     params = msg.get('params', {}) or {}
     rpath  = os.path.join(_RESULTS, cid + '.json')
+    _log('START cid=%s cmd=%s' % (cid, cmd))
     if cmd in _FIRE_AND_FORGET and not params.get('_sync'):
         _write_json(rpath, {'status': 'triggered',
                             'note': 'Marionette execution — ack before dispatch.'})
@@ -203,7 +137,6 @@ def _claim_and_run(fn):
         _dispatch(cmd, params)
         return True
     t0 = time.time()
-    _log('START cid=%s cmd=%s' % (cid, cmd))
     result = _dispatch(cmd, params)
     try:
         _write_json(rpath, result)
@@ -263,6 +196,21 @@ def pump_readonly():
 _pumping = False
 
 
+def _mark_menu_complete():
+    """Acknowledge an outer menu invocation after its reentry guard is reset.
+
+    The native scheduler uses this separate stamp instead of pump.stamp (entry)
+    so a nested host message loop cannot schedule another job mid-execution.
+    Completion does not imply success; the job result remains authoritative.
+    """
+    try:
+        _write_json(os.path.join(_IPC, 'pump.complete.stamp'),
+                    {'schema_version': 1, 'completed_ns': time.time_ns()})
+    except Exception as error:
+        # Never replace a job's result or original exception with telemetry I/O.
+        _log('could not write menu completion stamp: %s' % error)
+
+
 def pump_all():
     """Run at most ONE job from VW's Python menu-command runner, then return."""
     global _pumping
@@ -277,3 +225,4 @@ def pump_all():
         return 0
     finally:
         _pumping = False
+        _mark_menu_complete()

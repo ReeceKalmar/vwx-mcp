@@ -1,29 +1,34 @@
 @echo off
-REM vwx-mcp Server — bridges Claude Code (HTTP :8082) to Vectorworks plugin (socket :9878)
-REM Migrated to standalone fastmcp 3.x — runs in a self-bootstrapping venv.
-REM 1. Start Vectorworks. 2. Run vwx-mcp bridge script inside VW. 3. Run this bat.
+REM Vectorworks 2027 MCP server: HTTP :8082 to the native palette/file queue.
+REM Start Vectorworks 2027 and open its native VWX Bridge palette first.
+setlocal
 
-set DESKTOP_HOST=127.0.0.1
 set VWX_VW_VERSION=2027
 set VWX_TRANSPORT=file
 set VWX_CACHE_TTL=0
-set VWX_MCP_PORT=9878
+REM Background mode rejects known interactive calls and arbitrary scripts.
+set VWX_BACKGROUND_MODE=1
 set MCP_TRANSPORT=streamable-http
 set FASTMCP_HOST=127.0.0.1
 set FASTMCP_PORT=8082
-REM Optional toolset filter (cuts tool-overload tokens): full | gis | modeling | baumkataster | minimal
+REM Optional toolset filter: full | sdk | gis | modeling | baumkataster | minimal
 set VWX_TOOLSET=full
+REM Set to 0 to omit the 3098 named SDK tools; sdk_call/list/sequence still work.
+set VWX_SDK_TOOLS=1
 
-set VWXHOME=%USERPROFILE%\.local\share\vwx-mcp
-set VENV=%VWXHOME%\.venv
+for %%I in ("%~dp0..") do set "VWX_REPO=%%~fI"
+set "VWX_SERVER=%VWX_REPO%\mcp-server"
+set "VWX_VENV=%VWX_REPO%\.venv"
 
 REM --- one-time venv bootstrap (auto, idempotent) ---
-if not exist "%VENV%\Scripts\python.exe" (
+if not exist "%VWX_VENV%\Scripts\python.exe" (
     echo [vwx-mcp] First run: creating venv + installing fastmcp ...
-    python -m venv "%VENV%"
-    "%VENV%\Scripts\python.exe" -m pip install --upgrade pip
-    "%VENV%\Scripts\python.exe" -m pip install -r "%VWXHOME%\requirements.txt"
+    python -m venv "%VWX_VENV%"
+    if errorlevel 1 exit /b 1
 )
+REM Reconcile the pin on each launch so an existing venv does not stay stale.
+"%VWX_VENV%\Scripts\python.exe" -m pip install -r "%VWX_SERVER%\requirements.txt"
+if errorlevel 1 exit /b 1
 
-"%VENV%\Scripts\python.exe" "%VWXHOME%\vwx_mcp_server.py"
+"%VWX_VENV%\Scripts\python.exe" "%VWX_SERVER%\vwx_mcp_server.py"
 pause

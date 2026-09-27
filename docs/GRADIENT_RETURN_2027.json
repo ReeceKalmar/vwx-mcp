@@ -1,0 +1,178 @@
+{
+  "scope": "Read-only shape diagnosis, no semantic API credit",
+  "records": [
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetVersionEx",
+          "arguments": {}
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetVersionEx",
+        "result": [
+          32,
+          0,
+          0,
+          2,
+          882075
+        ],
+        "outputs": {
+          "major": 32,
+          "minor": 0,
+          "maintenance": 0,
+          "platform": 2,
+          "buildNum": 882075
+        }
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetFPathName",
+          "arguments": {}
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetFPathName",
+        "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetTypeN",
+          "arguments": {
+            "h": "b9bca9ac-8009-4bda-8c34-65cf99668e28"
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetTypeN",
+        "result": 120
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetName",
+          "arguments": {
+            "h": "b9bca9ac-8009-4bda-8c34-65cf99668e28"
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetName",
+        "result": "SDK-Gradient-resource_gradient_opacity_cont-6f5d689889b3c26d"
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetGradientDataN",
+          "arguments": {
+            "gradient": "b9bca9ac-8009-4bda-8c34-65cf99668e28",
+            "segmentIndex": 2
+          }
+        }
+      },
+      "response": {
+        "error": "SDK returned a different number of outputs than declared in its catalog",
+        "code": "SDK_RESULT",
+        "function": "GetGradientDataN",
+        "dispatched": true,
+        "details": {
+          "native_return": {
+            "container": "tuple",
+            "expected_count": 7,
+            "actual_count": 6,
+            "numeric_outputs": [
+              0.25,
+              0.4,
+              0,
+              0,
+              255,
+              71
+            ]
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetGradientData",
+          "arguments": {
+            "gradient": "b9bca9ac-8009-4bda-8c34-65cf99668e28",
+            "segmentIndex": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetGradientData",
+        "result": [
+          0.25,
+          0.4,
+          0,
+          0,
+          255
+        ],
+        "outputs": {
+          "spotPosition": 0.25,
+          "midpointPosition": 0.4,
+          "red": 0,
+          "green": 0,
+          "blue": 255
+        }
+      }
+    },
+    {
+      "request": {
+        "command": "sdk_call",
+        "params": {
+          "name": "GetGradientOpacity",
+          "arguments": {
+            "gradient": "b9bca9ac-8009-4bda-8c34-65cf99668e28",
+            "segmentIndex": 2
+          }
+        }
+      },
+      "response": {
+        "status": "ok",
+        "function": "GetGradientOpacity",
+        "result": 71
+      }
+    }
+  ],
+  "runtime_sha256": "33e7447a058cc3fa084e60158de6e9c5e71d02ad47caae571fb553ff4d3a749f",
+  "host": {
+    "status": "ok",
+    "function": "GetVersionEx",
+    "result": [
+      32,
+      0,
+      0,
+      2,
+      882075
+    ],
+    "outputs": {
+      "major": 32,
+      "minor": 0,
+      "maintenance": 0,
+      "platform": 2,
+      "buildNum": 882075
+    }
+  },
+  "status": "observed"
+}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>VWX Bridge</title>
@@ -19,14 +19,13 @@
 </style>
 </head>
 <body>
-  <h1>VWX Bridge <span style="color:#666;font-weight:normal">native pump</span></h1>
-  <div class="row"><span>Status</span><span id="state" class="on">active</span></div>
-  <div class="row"><span>Warteschlange</span><span class="val" id="queue">0</span></div>
-  <div class="row"><span>Letzte Aktivität</span><span class="val" id="last">–</span></div>
+  <h1>VWX Bridge</h1>
+  <div class="row"><span>Status</span><span id="state" class="off">Connecting…</span></div>
+  <div class="row"><span>Queued commands</span><span class="val" id="queue">0</span></div>
+  <div class="row"><span>Last activity</span><span class="val" id="last">–</span></div>
   <button id="toggle">Pause</button>
-  <div class="hint">Claude Code steuert Vectorworks über diese Palette.
-    Palette schließen = Bridge aus. VW bleibt frei bedienbar,
-    außer während ein Befehl ausgeführt wird.</div>
+  <div class="hint">Keep this palette open while an AI assistant works in Vectorworks.
+    Pause stops new commands. Commands already running will finish.</div>
 <script src="main.js"></script>
 </body>
 </html>

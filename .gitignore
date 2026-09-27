@@ -14,5 +14,11 @@ native/Output/
 *.vst
 *.vlb
 *.zip
+*.vwx
 .venv/
 vwx-plugin/ipc/
+.audit/
+
+# Developer request/issued credentials remain private; publish only placeholders.
+native/Credentials*.json
+!native/CredentialsVwxMcp.example.json

@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 
 #include "VwxBridgePalette.h"
+#include "PumpScheduleState.h"
+#include "AtomicStatusFile.h"
 
 
 #include <cstdio>
@@ -15,7 +17,9 @@ using namespace VwxBridge;
 
 // All jobs run in the Python menu-command runner, one invocation per job.
 // The palette only schedules the runner. No Python executes in notifications,
-// web callbacks or timers. Deferred PIO resets need a return to the host loop.
+// web callbacks or timers. A private UI event invokes the documented SDK named
+// menu route; only the host establishes the Python menu-command context.
+// Deferred PIO resets need a return to the host loop.
 // This limits context-related risks but cannot prevent invalid native API calls.
 // Adaptive drain cadence. Job arrival is bursty — idle for minutes, then a
 // dozen calls back to back — so a single flat period is either wasteful when
@@ -27,10 +31,7 @@ static const UINT    kTickHotMs      = 20;
 static const UINT    kTickIdleMs     = 150;
 static const DWORD   kTrigDebounceMs = 40;
 static const DWORD   kCooldownMs     = 1500;
-// The per-tick housekeeping does not need tick resolution and some of it is
-// expensive: DismissErrorDialogs walks every top-level window on the DESKTOP,
-// not just Vectorworks'. At a 20ms tick that would run fifty times a second.
-// Both are throttled to their own wall-clock intervals, independent of tick.
+// Heartbeat writes are throttled independently of the queue polling cadence.
 static const DWORD   kAliveEveryMs   = 250;
 static UINT_PTR      gPumpTimer     = 0;
 static UINT          gTickPeriod    = kTickIdleMs;
@@ -38,50 +39,74 @@ static DWORD         gLastBusyTick  = 0;
 static DWORD         gLastAlive     = 0;
 static bool          gPaused        = false;
 static int           gLastQueue     = 0;
-static bool          gPumping       = false;   // reentrancy guard for the drain
 static DWORD         gLastTrigTick  = 0;
-static UINT          gPumpCmdId     = 0;        // WM_COMMAND id of our pump menu item (0 = none)
-static HWND          gVwCmdWnd      = nullptr;  // the VW window that owns that menu
 static HWND          gVwMainWnd     = nullptr;
-static int           gDispatchCount = 0;        // times DoInterface actually ran (trigger proof)
-static bool          gKeyStateDirty = false;    // background-hotkey key state needs restoring
-static BYTE          gSavedKeyState[256] = {0};
+static int           gDispatchCount = 0;        // manual native status-probe invocations
+static PumpScheduleState gSchedule;
+static const char*   gTriggerState = "idle";
+static DWORD         gTriggerError = 0;
+static unsigned long long gTriggerFailures = 0;
+static unsigned long long gRunnerStamp = 0;
+static unsigned long long gCompletionStamp = 0;
+static bool          gTimerCallbackActive = false;
+static HWND          gMenuBrokerWindow = nullptr;
+static DWORD         gHostUiThread = 0;
+static MenuBrokerState gMenuBroker;
+static unsigned long long gPostedRunnerStamp = 0;
+static unsigned long long gMenuInvocations = 0;
+static unsigned long long gMenuReturns = 0;
+static unsigned long long gBrokerRejections = 0;
+static short         gLastMenuReturn = 0;
+static bool          gHasMenuReturn = false;
+static constexpr UINT kInvokeNamedMenuMessage = WM_APP + 0x27B;
+
+static nlohmann::json SchedulerStatus();
+static void WriteSchedulerStatus(const TXString& pluginDir);
 
 // --------------------------------------------------------------------------------------------------------
 // Helpers: VW-MCP plugin folder (job queue home) + job counting via Win32.
 
-// Resolve only the host version this binary was compiled against.
+// Every layer resolves the same complete installation, canonical name first.
+static bool IsPluginDir(const TXString& dir)
+{
+    for ( const wchar_t* name : { L"\\vwx_pump.py", L"\\commands.py" } ) {
+        TXString path = dir;
+        path << name;
+        DWORD attrs = GetFileAttributesW( path.GetWCharPtr() );
+        if ( attrs == INVALID_FILE_ATTRIBUTES || (attrs & FILE_ATTRIBUTE_DIRECTORY) )
+            return false;
+    }
+    return true;
+}
+
 static TXString VwxPluginDir()
 {
-	static bool     resolved = false;
-	static TXString cached;
-	if ( resolved )
-		return cached;
+    static TXString cached;
+    if ( !cached.IsEmpty() )
+        return cached;
 
-	const char* appdata = getenv("APPDATA");
-	if ( appdata == nullptr )
-		return "";
-
-	const std::string hostYear = std::to_string(SDK_VERSION / 100 + 1995);
-	if (const char* forced = getenv("VWX_VW_VERSION")) {
-		if (hostYear != forced) return "";
-	}
-	const std::vector<std::string> versions { hostYear };
-
-	for ( const std::string& version : versions ) {
-		for ( const char* name : { "VW-MCP", "VWX-MCP" } ) {
-			TXString dir;
-			dir << appdata << "\\Nemetschek\\Vectorworks\\" << version.c_str()
-			    << "\\Plug-ins\\" << name;
-			DWORD attrs = GetFileAttributesW( dir.GetWCharPtr() );
-			if ( attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY) ) {
-				cached   = dir;
-				resolved = true;
-				return cached;
-			}
-		}
-	}
-	return "";
+    const std::wstring hostYear = std::to_wstring(SDK_VERSION / 100 + 1995);
+    if ( const wchar_t* forcedYear = _wgetenv(L"VWX_VW_VERSION") ) {
+        if ( hostYear != forcedYear ) return "";
+    }
+    if ( const wchar_t* forced = _wgetenv(L"VWX_PLUGIN_DIR"); forced && *forced ) {
+        TXString dir(forced);
+        if ( IsPluginDir(dir) ) cached = dir;
+        return cached; // An invalid explicit path must never fall back elsewhere.
+    }
+    const wchar_t* appdata = _wgetenv(L"APPDATA");
+    if ( appdata == nullptr )
+        return "";
+    for ( const wchar_t* name : { L"VWX-MCP", L"VW-MCP" } ) {
+        TXString dir;
+        dir << appdata << L"\\Nemetschek\\Vectorworks\\" << hostYear.c_str()
+            << L"\\Plug-ins\\" << name;
+        if ( IsPluginDir(dir) ) {
+            cached = dir;
+            return cached;
+        }
+    }
+    return "";
 }
 
 static int CountJobs(const TXString& pluginDir)
@@ -103,21 +128,18 @@ static int CountJobs(const TXString& pluginDir)
 	return n;
 }
 
-// Heartbeat for the watchdog: while ipc/native.alive is fresh, the watchdog
-// suppresses its fallback keystroke trigger — the palette drains jobs itself.
-// native.alive = "<epoch> <paused 0|1>". The watchdog triggers the pump only
-// when this file is fresh (palette open) AND paused==0.
+// Bridge status for the file-transport server.
+// native.alive = "<epoch> <paused 0|1>"; stale/missing means palette closed.
 static void WriteAlive(const TXString& pluginDir)
 {
 	if ( pluginDir.IsEmpty() )
 		return;
 	TXString path;
 	path << pluginDir << "\\ipc\\native.alive";
-	FILE* f = _wfopen( path.GetWCharPtr(), L"w" );
-	if ( f ) {
-		fprintf( f, "%lld %d", (long long) time(nullptr), gPaused ? 1 : 0 );
-		fclose( f );
-	}
+	const std::string data = std::to_string(static_cast<long long>(time(nullptr)))
+	    + (gPaused ? " 1" : " 0");
+	WriteAtomicStatusFile(path.GetWCharPtr(), data);
+	WriteSchedulerStatus(pluginDir);
 }
 
 // On palette close, remove the heartbeat immediately so external status
@@ -149,143 +171,236 @@ static void LogLine(const char* msg)
 	}
 }
 
+// The entry and completion stamps have separate meanings. Only a completed
+// outer invocation releases an outstanding trigger; neither proves job success.
+static unsigned long long ReadRunnerStamp(const TXString& pluginDir, const char* filename)
+{
+    TXString path;
+    path << pluginDir << "\\ipc\\" << filename;
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    if (pluginDir.IsEmpty() || !GetFileAttributesExW(path.GetWCharPtr(), GetFileExInfoStandard, &data))
+        return 0;
+    return (static_cast<unsigned long long>(data.ftLastWriteTime.dwHighDateTime) << 32)
+         | data.ftLastWriteTime.dwLowDateTime;
+}
+
+static nlohmann::json SchedulerStatus()
+{
+    nlohmann::json status;
+    status["schema_version"] = 1;
+    status["scheduler"] = "sdk-named-menu-broker-ack-v4";
+    status["sdk_version"] = SDK_VERSION;
+    status["updated_epoch"] = static_cast<long long>(time(nullptr));
+    status["process_id"] = GetCurrentProcessId();
+    status["timer_active"] = gPumpTimer != 0;
+    status["paused"] = gPaused;
+    status["queued_jobs"] = gLastQueue;
+    status["last_trigger_state"] = gTriggerState;
+    status["last_win32_error"] = gTriggerError;
+    status["trigger_failures"] = gTriggerFailures;
+    status["posts"] = gSchedule.posted;
+    status["foreground_posts"] = gSchedule.foregroundPosts;
+    status["background_posts"] = gSchedule.backgroundPosts;
+    status["runner_completions_observed"] = gSchedule.acknowledged;
+    status["pending"] = gSchedule.pending;
+    status["pending_age_ms"] = gSchedule.pending ? GetTickCount64() - gSchedule.postedAt : 0;
+    status["acknowledgment_timeouts"] = gSchedule.timeouts;
+    status["runner_stamp"] = gRunnerStamp;
+    status["completion_stamp"] = gCompletionStamp;
+    status["keyboard_state_modified"] = false;
+    status["modifiers_pending_restore"] = false; // Compatibility; no keyboard state is modified.
+    status["frame_source"] = "GS_GetMainHWND";
+    status["frame_available"] = gVwMainWnd != nullptr && IsWindow(gVwMainWnd);
+    status["frame_has_win32_menu"] = gVwMainWnd != nullptr && GetMenu(gVwMainWnd) != nullptr;
+    status["broker_window_available"] = gMenuBrokerWindow != nullptr && IsWindow(gMenuBrokerWindow);
+    status["broker_message_pending"] = gMenuBroker.queuedToken != 0;
+    status["menu_invocation_active"] = gMenuBroker.active;
+    status["menu_invocations"] = gMenuInvocations;
+    status["menu_returns"] = gMenuReturns;
+    status["broker_rejections"] = gBrokerRejections;
+    status["menu_return_available"] = gHasMenuReturn;
+    if (gHasMenuReturn) status["last_menu_return"] = gLastMenuReturn;
+    status["menu_caption"] = "VWX Bridge Start";
+    status["global_input"] = false;
+    status["focus_changed_by_bridge"] = false;
+    status["evidence_scope"] = "Posting and outer menu-invocation completion; not job success or native semantics";
+    return status;
+}
+
+static void WriteSchedulerStatus(const TXString& pluginDir)
+{
+    if (pluginDir.IsEmpty()) return;
+    TXString path;
+    path << pluginDir << "\\ipc\\native.scheduler.json";
+    WriteAtomicStatusFile(path.GetWCharPtr(), SchedulerStatus().dump());
+}
+
 // --------------------------------------------------------------------------------------------------------
-// Trigger B discovery: find the WM_COMMAND id of our pump menu item by walking
-// EVERY VW top-level window's menu bar (VW may hang the menu on a frame window
-// that isn't the one with the longest title).
-static UINT FindMenuItemIdRecursive(HMENU menu, const wchar_t* wanted)
-{
-	int n = GetMenuItemCount( menu );
-	for ( int i = 0; i < n; i++ ) {
-		wchar_t buf[256] = { 0 };
-		MENUITEMINFOW mii = { 0 };
-		mii.cbSize     = sizeof(mii);
-		mii.fMask      = MIIM_STRING | MIIM_ID | MIIM_SUBMENU;
-		mii.dwTypeData = buf;
-		mii.cch        = 255;
-		if ( !GetMenuItemInfoW( menu, i, TRUE, &mii ) )
-			continue;
-		if ( mii.hSubMenu ) {
-			UINT id = FindMenuItemIdRecursive( mii.hSubMenu, wanted );
-			if ( id != 0 )
-				return id;
-		}
-		else {
-			wchar_t* tab = wcschr( buf, L'\t' );     // strip "\tCtrl+Umschalt+B"
-			if ( tab ) *tab = 0;
-			if ( wcscmp( buf, wanted ) == 0 )
-				return mii.wID;
-		}
-	}
-	return 0;
-}
-
-static void TryFindPumpMenuCommandId()
-{
-	struct Ctx { DWORD pid; const wchar_t* wanted; HWND wnd; UINT id; int menus; HWND main; int bestLen; }
-		ctx = { GetCurrentProcessId(), nullptr, nullptr, 0, 0, nullptr, -1 };
-	TXString title = TXResStr( "ExtMenuVwxPump", "menu_title" );
-	ctx.wanted = title.GetWCharPtr();
-	EnumWindows( [](HWND h, LPARAM lp) -> BOOL {
-		Ctx* c = (Ctx*) lp;
-		DWORD p = 0;
-		GetWindowThreadProcessId( h, &p );
-		if ( p != c->pid )
-			return TRUE;
-		if ( IsWindowVisible( h ) ) {
-			wchar_t cls[64]; GetClassNameW( h, cls, 64 );
-			wchar_t ttl[256]; int len = GetWindowTextW( h, ttl, 256 );
-			if ( wcscmp( cls, L"#32770" ) != 0 && len > c->bestLen ) { c->main = h; c->bestLen = len; }
-		}
-		HMENU bar = GetMenu( h );
-		if ( bar != nullptr ) {
-			c->menus++;
-			UINT id = FindMenuItemIdRecursive( bar, c->wanted );
-			if ( id != 0 && c->id == 0 ) { c->id = id; c->wnd = h; }
-		}
-		return TRUE;
-	}, (LPARAM) &ctx );
-	gVwMainWnd = ctx.main;
-	gPumpCmdId = ctx.id;
-	gVwCmdWnd  = ctx.wnd;
-	char msg[160];
-	if ( gPumpCmdId != 0 )
-		sprintf_s( msg, "pump menu cmd id=%u found on a VW window — WM_COMMAND post ENABLED (background writes)", gPumpCmdId );
-	else
-		sprintf_s( msg, "no HMENU carries the pump item (%d window menu(s) scanned) — background writes need focus", ctx.menus );
-	LogLine( msg );
-}
-
-// Foreground keystroke (Ctrl+Shift+B). Only used when a VW window is already
-// the foreground app — no foreground-steal, so Win11 permits it. Reaches the
-// accelerator -> DoInterface.
-static bool VwIsForeground()
-{
-	HWND fg = GetForegroundWindow();
-	if ( fg == nullptr )
-		return false;
-	DWORD p = 0;
-	GetWindowThreadProcessId( fg, &p );
-	return p == GetCurrentProcessId();
-}
-
-static void SendForegroundHotkey()
-{
-	keybd_event( VK_CONTROL, 0, 0, 0 );
-	keybd_event( VK_SHIFT,   0, 0, 0 );
-	keybd_event( 0x42,       0, 0, 0 );          // 'B'
-	keybd_event( 0x42,       0, KEYEVENTF_KEYUP, 0 );
-	keybd_event( VK_SHIFT,   0, KEYEVENTF_KEYUP, 0 );
-	keybd_event( VK_CONTROL, 0, KEYEVENTF_KEYUP, 0 );
-}
-
-// BACKGROUND keystroke: we run ON VW's main thread, so SetKeyboardState here
-// edits VW's own per-thread key-state table (other apps untouched), and a
-// PostMessage'd WM_KEYDOWN lands in VW's queue no matter which app is
-// foreground. VW's TranslateAccelerator pulls it from the queue, reads the
-// thread key state (Ctrl+Shift down) and fires the Ctrl+Shift+B accelerator ->
-// 'VWX Bridge Start' -> pump_all. keybd_event could never do this: it injects
-// into the GLOBAL input stream, which routes to the foreground app only.
-// Zero crash risk: if the accelerator doesn't fire, jobs simply stay queued.
-static HWND FindVwMainWndForKeys()
-{
-	if ( gVwMainWnd != nullptr && IsWindow( gVwMainWnd ) )
-		return gVwMainWnd;
-	return nullptr;
-}
-
-static void PostBackgroundHotkey()
-{
-	HWND wnd = FindVwMainWndForKeys();
-	if ( wnd == nullptr )
-		return;
-	BYTE oldState[256], newState[256];
-	if ( !GetKeyboardState( oldState ) )
-		return;
-	memcpy( newState, oldState, 256 );
-	newState[VK_CONTROL] |= 0x80;
-	newState[VK_SHIFT]   |= 0x80;
-	SetKeyboardState( newState );
-	UINT scan = MapVirtualKeyW( 0x42, MAPVK_VK_TO_VSC );
-	::PostMessage( wnd, WM_KEYDOWN, 0x42, 1 | (scan << 16) );
-	::PostMessage( wnd, WM_KEYUP,   0x42, 1 | (scan << 16) | (1u << 30) | (1u << 31) );
-	// NOTE: state is restored by the next timer tick (RestoreKeyState below),
-	// AFTER the posted messages have been translated — restoring immediately
-	// here would clear the modifiers before TranslateAccelerator sees them.
-	gKeyStateDirty = true;
-	memcpy( gSavedKeyState, oldState, 256 );
-}
-
-static void RestoreKeyState()
-{
-	if ( gKeyStateDirty ) {
-		SetKeyboardState( gSavedKeyState );
-		gKeyStateDirty = false;
-	}
-}
-
-// Fire triggers. Called from the heartbeat timer when jobs are queued.
+// GS_GetMainHWND is the SDK's authoritative MFC application-frame accessor.
+// Capture it during palette initialization, not a timer, and never guess by
+// title. A floating/custom menu bar need not expose a Win32 HMENU at this HWND.
 static bool ModalDialogOpen();
+static LRESULT CALLBACK MenuBrokerWindowProc(HWND wnd, UINT message, WPARAM token, LPARAM unused);
+
+static bool BackgroundInvocationAllowed()
+{
+    if (gPumpTimer == 0 || gPaused) {
+        gTriggerState = gPaused ? "paused_before_menu_invocation" : "stopped_before_menu_invocation";
+        return false;
+    }
+    HWND wnd = gVwMainWnd;
+    if (wnd == nullptr || !IsWindow(wnd)) {
+        gTriggerState = "no_vectorworks_frame";
+        return false;
+    }
+    DWORD processId = 0;
+    const DWORD threadId = GetWindowThreadProcessId(wnd, &processId);
+    if (processId != GetCurrentProcessId() || threadId != gHostUiThread || threadId != GetCurrentThreadId()) {
+        gTriggerState = "target_ownership_changed";
+        return false;
+    }
+    if (!IsWindowVisible(wnd) || IsIconic(wnd) || !IsWindowEnabled(wnd)) {
+        gTriggerState = !IsWindowVisible(wnd) ? "target_hidden" : IsIconic(wnd) ? "target_minimized" : "target_disabled";
+        return false;
+    }
+    if (ModalDialogOpen()) {
+        gTriggerState = "modal_dialog_open";
+        return false;
+    }
+    GUITHREADINFO threadInfo = {};
+    threadInfo.cbSize = sizeof(threadInfo);
+    if (!GetGUIThreadInfo(threadId, &threadInfo)) {
+        gTriggerState = "ui_thread_state_unavailable";
+        gTriggerError = GetLastError();
+        ++gTriggerFailures;
+        return false;
+    }
+    if (threadInfo.flags & (GUI_INMENUMODE | GUI_SYSTEMMENUMODE | GUI_POPUPMENUMODE | GUI_INMOVESIZE)) {
+        gTriggerState = "ui_thread_interactive_loop";
+        return false;
+    }
+    if (gSDK == nullptr) {
+        gTriggerState = "sdk_unavailable";
+        return false;
+    }
+    return true;
+}
+
+static bool InitializeMenuBroker()
+{
+    gVwMainWnd = GS_GetMainHWND(gCBP);
+    DWORD processId = 0;
+    gHostUiThread = gVwMainWnd ? GetWindowThreadProcessId(gVwMainWnd, &processId) : 0;
+    if (processId != GetCurrentProcessId() || gHostUiThread != GetCurrentThreadId()) {
+        gTriggerState = "sdk_frame_ownership_invalid";
+        return false;
+    }
+    if (gMenuBrokerWindow != nullptr && IsWindow(gMenuBrokerWindow)) return true;
+    HMODULE module = nullptr;
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                           reinterpret_cast<LPCWSTR>(&MenuBrokerWindowProc), &module)) return false;
+    const wchar_t* className = L"VwxBridge.MenuRunnerBroker.v4";
+    WNDCLASSW windowClass = {};
+    windowClass.lpfnWndProc = MenuBrokerWindowProc;
+    windowClass.hInstance = module;
+    windowClass.lpszClassName = className;
+    if (!RegisterClassW(&windowClass)) {
+        WNDCLASSW existing = {};
+        if (GetLastError() != ERROR_CLASS_ALREADY_EXISTS
+            || !GetClassInfoW(module, className, &existing)
+            || existing.lpfnWndProc != MenuBrokerWindowProc || existing.hInstance != module) return false;
+    }
+    gMenuBrokerWindow = CreateWindowExW(0, className, L"", 0, 0, 0, 0, 0,
+                                       HWND_MESSAGE, nullptr, module, nullptr);
+    return gMenuBrokerWindow != nullptr;
+}
+
+static bool PostBackgroundMenuCommand()
+{
+    if (!gMenuBroker.CanQueue() || gMenuBrokerWindow == nullptr || !IsWindow(gMenuBrokerWindow)) {
+        gTriggerState = "menu_broker_unavailable_or_busy";
+        return false;
+    }
+    if (!BackgroundInvocationAllowed()) return false;
+    const TXString pluginDir = VwxPluginDir();
+    gRunnerStamp = ReadRunnerStamp(pluginDir, "pump.stamp");
+    gCompletionStamp = ReadRunnerStamp(pluginDir, "pump.complete.stamp");
+    if (RunnerMayBeActive(gRunnerStamp, gCompletionStamp)) {
+        gTriggerState = "outer_runner_still_active";
+        return false;
+    }
+    gPostedRunnerStamp = gRunnerStamp;
+    const auto token = gMenuBroker.Reserve();
+    // The timer posts only a private event. The SDK menu call occurs later in
+    // an ordinary UI-thread window event, outside timers/CEF/notifications.
+    if (!PostMessageW(gMenuBrokerWindow, kInvokeNamedMenuMessage, static_cast<WPARAM>(token), 0)) {
+        gMenuBroker.PostFailed(token); // No message was queued; no host call occurred.
+        gTriggerState = "post_menu_broker_failed";
+        gTriggerError = GetLastError();
+        ++gTriggerFailures;
+        return false;
+    }
+    gTriggerState = "posted_waiting_for_completion";
+    gTriggerError = 0;
+    return true;
+}
+
+static LRESULT CALLBACK MenuBrokerWindowProc(HWND wnd, UINT message, WPARAM token, LPARAM unused)
+{
+    if (message != kInvokeNamedMenuMessage) return DefWindowProcW(wnd, message, token, unused);
+    if (wnd != gMenuBrokerWindow || unused != 0 || GetCurrentThreadId() != gHostUiThread
+        || !gMenuBroker.BeginDelivery(static_cast<MenuBrokerState::Token>(token))) return 0;
+    struct DeliveryGuard {
+        ~DeliveryGuard() { gMenuBroker.EndDelivery(); }
+    } deliveryGuard;
+    // This token is already consumed. A rejection holds the outstanding
+    // completion fence and never automatically reschedules an unknown call.
+    const auto reject = [](const char* reason) {
+        if (reason) gTriggerState = reason;
+        ++gBrokerRejections;
+        ++gTriggerFailures;
+    };
+    if (gTimerCallbackActive || !gSchedule.pending) {
+        reject("menu_broker_context_changed");
+        return 0;
+    }
+    if (!BackgroundInvocationAllowed()) { reject(nullptr); return 0; }
+    const TXString pluginDir = VwxPluginDir();
+    gLastQueue = CountJobs(pluginDir);
+    gRunnerStamp = ReadRunnerStamp(pluginDir, "pump.stamp");
+    gCompletionStamp = ReadRunnerStamp(pluginDir, "pump.complete.stamp");
+    if (gLastQueue <= 0) { reject("menu_broker_queue_empty"); return 0; }
+    if (gRunnerStamp != gPostedRunnerStamp || gCompletionStamp != gSchedule.stampBefore
+        || RunnerMayBeActive(gRunnerStamp, gCompletionStamp)) {
+        reject("menu_broker_runner_changed");
+        return 0;
+    }
+    ++gMenuInvocations;
+    gHasMenuReturn = false;
+    gTriggerState = "sdk_named_menu_invoking";
+    try {
+        // SDK 3200 APIBase.Legacy.Defs.h:6639 documents external menu-file
+        // names, chunkIndex=0 and recursive invocation. The installed file is
+        // "VWX Bridge Start.vsm". The host creates its Python menu context;
+        // this plugin never calls a Python/script engine. Live safety remains
+        // to be verified. The selector is resolved by the host each invocation,
+        // and does not make workspace/document changes transactional.
+        gLastMenuReturn = gSDK->DoMenuName("VWX Bridge Start", 0);
+        gHasMenuReturn = true;
+        ++gMenuReturns;
+        gTriggerState = "sdk_named_menu_returned_waiting_for_completion";
+    }
+    catch (...) {
+        // Do not unwind through Win32 or replay an uncertain native call.
+        ++gTriggerFailures;
+        gTriggerState = "sdk_named_menu_exception_uncertain";
+        LogLine("SDK named-menu invocation threw; holding without replay");
+    }
+    // The SDK return is diagnostic only. A later timer observes the real
+    // pump.complete.stamp, after this entire synchronous menu call returns.
+    return 0;
+}
+// Fire triggers. Called from the heartbeat timer when jobs are queued.
 static void TriggerPump()
 {
 	DWORD now = GetTickCount();
@@ -296,37 +411,46 @@ static void TriggerPump()
 	// kTrigDebounceMs is an exact multiple of kTickHotMs.
 	if ( now - gLastTrigTick < kTrigDebounceMs )
 		return;
-	if ( ModalDialogOpen() )
+	if (!gSchedule.CanPost()) {
+		gTriggerState = gSchedule.timedOut ? "runner_completion_timeout" : "posted_waiting_for_completion";
+		return;
+	}
+	if ( ModalDialogOpen() ) {
+		gTriggerState = "modal_dialog_open";
 		return;                                  // a real modal is up — hold
+	}
 	gLastTrigTick = now;
 
-	// Every job reaches the Python menu-command runner via its accelerator.
-	if ( VwIsForeground() )
-		SendForegroundHotkey();
-	else
-		PostBackgroundHotkey();
+	// Every job reaches the Python menu-command runner via a targeted message.
+	// Foreground state is recorded only; it never selects a different path.
+	DWORD foregroundProcess = 0;
+	GetWindowThreadProcessId(GetForegroundWindow(), &foregroundProcess);
+	if (PostBackgroundMenuCommand())
+		gSchedule.Posted(GetTickCount64(), gCompletionStamp, foregroundProcess == GetCurrentProcessId());
 }
 
 // --------------------------------------------------------------------------------------------------------
 // Palette heartbeat timer.
 //
-// HARD-WON LESSON: scripts / view-state calls (vs.Layer, …) must NOT run from
-// the web palette's JS sync callback NOR from a WM_TIMER — both are outside
-// VW's command frame. The JS context CRASHED VW; the WM_TIMER context HUNG VW
-// inside vs.Layer (both verified live). The only safe place to drive the app
-// is VW's genuine command dispatch = a menu command. So this timer does the
-// bare minimum (heartbeat + queue count) and the watchdog triggers the
-// "VWX Bridge Start" menu command to actually pump.
+// Historical 2026 failures motivated menu-command-only execution. The timer
+// writes status, counts jobs and schedules the Python menu command. The 2027
+// SDK build alone does not verify live execution safety.
 
 static void CALLBACK PumpTimerProc(HWND, UINT, UINT_PTR, DWORD);
 
 void VwxBridge_StartPumpTimer()
 {
 	if ( gPumpTimer == 0 ) {
+		if (!InitializeMenuBroker()) {
+			gTriggerState = "menu_broker_initialization_failed";
+			gTriggerError = GetLastError();
+			++gTriggerFailures;
+			WriteSchedulerStatus(VwxPluginDir());
+			return;
+		}
 		gTickPeriod   = kTickIdleMs;      // starts idle, goes hot on first job
 		gLastBusyTick = 0;
 		gPumpTimer = SetTimer( nullptr, 0, gTickPeriod, PumpTimerProc );
-		TryFindPumpMenuCommandId();
 		LogLine( "bridge on (palette open)" );
 	}
 }
@@ -338,6 +462,18 @@ void VwxBridge_StopPumpTimer()
 		gPumpTimer = 0;
 		LogLine( "bridge off (palette closed)" );
 	}
+	// Destroying the private target cannot invoke a queued command. Preserve
+	// any outstanding completion fence rather than replay it after reopening.
+	if (gMenuBrokerWindow != nullptr) {
+		const HWND broker = gMenuBrokerWindow;
+		gMenuBrokerWindow = nullptr;
+		if (DestroyWindow(broker))
+			gMenuBroker.TargetDestroyed();
+		else
+			gMenuBrokerWindow = broker; // Preserve the live target/token on failure.
+	}
+	gTriggerState = "stopped";
+	WriteSchedulerStatus(VwxPluginDir());
 	RemoveAlive( VwxPluginDir() );      // external status tooling sees off at once
 }
 
@@ -360,25 +496,36 @@ static bool ModalDialogOpen()
 	return ctx.found;
 }
 
-// Timer = heartbeat + TRIGGER only. It never executes a script itself
-// (WM_TIMER is NOT command context — mutations park it, verified live).
-// TriggerPump() posts a deferred notification / WM_COMMAND; the actual drain
-// runs later, at the top of VW's message loop.
-static void RestoreKeyState();
-static void CALLBACK PumpTimerProc(HWND, UINT, UINT_PTR, DWORD)
+// Timer = heartbeat and posted menu scheduling only. Python executes later
+// through the host menu-command runner. Ignore callbacks queued before close.
+static void CALLBACK PumpTimerProc(HWND, UINT, UINT_PTR timerId, DWORD)
 {
+	if ( gPumpTimer == 0 || timerId != gPumpTimer || gTimerCallbackActive || gMenuBroker.active ) return;
+	// Nested host loops may run another timer. Do not observe or post from
+	// that nested callback.
+	struct CallbackGuard {
+		CallbackGuard() { gTimerCallbackActive = true; }
+		~CallbackGuard() { gTimerCallbackActive = false; }
+	} callbackGuard;
 	DWORD now = GetTickCount();
-	RestoreKeyState();            // undo last tick's background-hotkey key state
-	                              // (posted keys have since been translated)
 	TXString pluginDir = VwxPluginDir();
+	gRunnerStamp = ReadRunnerStamp(pluginDir, "pump.stamp");
+	gCompletionStamp = ReadRunnerStamp(pluginDir, "pump.complete.stamp");
+	const auto beforeTimeouts = gSchedule.timeouts;
+	const auto beforeAcknowledged = gSchedule.acknowledged;
+	gSchedule.Observe(gCompletionStamp, GetTickCount64());
+	if (gSchedule.timeouts != beforeTimeouts)
+		LogLine("menu completion not observed; holding outstanding trigger without replay");
+	if (gSchedule.acknowledged != beforeAcknowledged)
+		gTriggerState = "runner_completion_observed";
+	gLastQueue = CountJobs( pluginDir );   // pickup path — must run every tick
+	if ( gLastQueue > 0 && !gPaused )
+		TriggerPump();
 	if ( now - gLastAlive >= kAliveEveryMs ) {
 		gLastAlive = now;
 		WriteAlive( pluginDir );  // the server tolerates an 8s-old heartbeat,
 		                          // so this need not run at tick resolution
 	}
-	gLastQueue = CountJobs( pluginDir );   // pickup path — must run every tick
-	if ( gLastQueue > 0 && !gPaused && !gPumping )
-		TriggerPump();
 
 	// Adaptive period: hot while there is work or shortly after, idle
 	// otherwise. Changing the period of a timer created with a NULL window
@@ -421,8 +568,7 @@ void CVwxJSProvider::OnInit(IInitContext* context)
 	// creates the window.vwxBridge integrator object on the JS side
 	context->AddReourceAccessFunction( "vwxBridge", DefaultPluginVWRIdentifier() );
 
-	// Sync = executed on the Vectorworks main thread (safe to call the SDK /
-	// the Python engine). The JS side awaits the returned promise.
+	// Sync callbacks expose status and pause control only; never execute Python.
 	context->AddFunctionPromiseSync( "vwxBridge.pump" );
 	context->AddFunctionPromiseSync( "vwxBridge.status" );
 
@@ -447,15 +593,17 @@ void CVwxJSProvider::OnPump(const TXString& objName, const TXString& functionNam
 	// kNotifyGenericWebPalette exists because work must happen "outside the
 	// SyncProxy callback"). The drain runs via TriggerPump's deferred paths.
 	// pump(true/false) toggles pause without closing the palette.
-	if ( !args.empty() && args[0].is_boolean() )
+	if ( !args.empty() && args[0].is_boolean() ) {
 		gPaused = args[0].get<bool>();       // pump(true) = pause, pump(false) = resume
+		if ( gPumpTimer != 0 ) WriteAlive( VwxPluginDir() );
+	}
 	nlohmann::json out;
 	out["jobs"]     = CountJobs( VwxPluginDir() );
 	out["paused"]   = gPaused;
 	out["timer"]    = (gPumpTimer != 0);
-	out["cmdId"]    = (unsigned) gPumpCmdId;   // 0 = no background-write path
-	out["dispatch"] = gDispatchCount;          // times DoInterface ran (trigger proof)
-	out["pumping"]  = gPumping;
+	out["nativeProbeCount"] = gDispatchCount;
+	out["runner"] = "python-menu-command";
+	out["scheduler"] = SchedulerStatus();
 	context->Resolve( out );
 }
 
@@ -466,6 +614,7 @@ void CVwxJSProvider::OnStatus(const TXString& objName, const TXString& functionN
 	out["pluginDir"] = (const char*) pluginDir;
 	out["pluginDirFound"] = !pluginDir.IsEmpty();
 	out["jobs"] = CountJobs( pluginDir );
+	out["scheduler"] = SchedulerStatus();
 	context->Resolve( out );
 }
 
@@ -565,8 +714,8 @@ void CExtMenuShowVwxBridge_EventSink::DoInterface()
 }
 
 // --------------------------------------------------------------------------------------------------------
-// Manual pump menu command — kept as a debug fallback (drains the queue once).
-// The palette self-pumps; this is only for troubleshooting without the palette.
+// Historical native menu entry retained as a manual status probe.
+// It never dispatches Python or consumes queued jobs.
 static SMenuDef		gPumpMenuDef = {
 	/*Needs*/				EMenuEnableFlags::None,
 	/*NeedsNot*/			EMenuEnableFlags::None,
@@ -613,8 +762,8 @@ void CExtMenuVwxPump_EventSink::DoInterface()
 	// unlike VW's own PYTHON menu-command plugin runner, which wraps script
 	// execution in a proper document context. The mutation executor is the
 	// "VWX Bridge Start" Python menu command (BridgeStart_MenuCommand.py,
-	// Ctrl+Shift+B); this native command remains only as a status probe.
+	// menu item); this native command remains only as a status probe.
 	gDispatchCount++;
 	LogLine( "native DoInterface reached — no-op (mutation executor is the "
-	         "'VWX Bridge Start' Python menu command, Ctrl+Shift+B)" );
+	         "'VWX Bridge Start' Python menu command)" );
 }

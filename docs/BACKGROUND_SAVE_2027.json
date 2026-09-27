@@ -1,0 +1,90 @@
+{
+  "status": "passed",
+  "cases": [
+    {
+      "name": "GetFPathName",
+      "arguments": {},
+      "state": "returned",
+      "response": {
+        "status": "ok",
+        "function": "GetFPathName",
+        "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+      }
+    },
+    {
+      "name": "SaveActiveDocument",
+      "arguments": {
+        "filePath": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+      },
+      "state": "returned",
+      "response": {
+        "status": "ok",
+        "function": "SaveActiveDocument",
+        "result": 0
+      }
+    }
+  ],
+  "native_api_coverage_credit": false,
+  "readiness_before": {
+    "ready": true,
+    "scheduler": {
+      "acknowledgment_timeouts": 0,
+      "background_posts": 3643,
+      "completion_stamp": 134349528053654035,
+      "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+      "focus_changed_by_bridge": false,
+      "foreground_posts": 0,
+      "global_input": false,
+      "last_trigger_state": "runner_completion_observed",
+      "last_win32_error": 0,
+      "modifiers_pending_restore": false,
+      "paused": false,
+      "pending": false,
+      "pending_age_ms": 0,
+      "posts": 3643,
+      "process_id": 32764,
+      "queued_jobs": 0,
+      "runner_completions_observed": 3643,
+      "runner_stamp": 134349528053618959,
+      "scheduler": "targeted-accelerator-ack-v1",
+      "schema_version": 1,
+      "sdk_version": 3200,
+      "timer_active": true,
+      "trigger_failures": 0,
+      "updated_epoch": 1790479250
+    },
+    "meaning": "Fresh idle bridge diagnostics only; not current modal, document ownership or native success proof"
+  },
+  "foreground_before": 18864,
+  "readiness_after": {
+    "ready": true,
+    "scheduler": {
+      "acknowledgment_timeouts": 0,
+      "background_posts": 3644,
+      "completion_stamp": 134349528521554502,
+      "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+      "focus_changed_by_bridge": false,
+      "foreground_posts": 0,
+      "global_input": false,
+      "last_trigger_state": "runner_completion_observed",
+      "last_win32_error": 0,
+      "modifiers_pending_restore": false,
+      "paused": false,
+      "pending": false,
+      "pending_age_ms": 0,
+      "posts": 3644,
+      "process_id": 32764,
+      "queued_jobs": 0,
+      "runner_completions_observed": 3644,
+      "runner_stamp": 134349528521550535,
+      "scheduler": "targeted-accelerator-ack-v1",
+      "schema_version": 1,
+      "sdk_version": 3200,
+      "timer_active": true,
+      "trigger_failures": 0,
+      "updated_epoch": 1790479252
+    },
+    "meaning": "Fresh idle bridge diagnostics only; not current modal, document ownership or native success proof"
+  },
+  "foreground_after": 18864
+}

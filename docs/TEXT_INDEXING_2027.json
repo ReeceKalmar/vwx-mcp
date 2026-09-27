@@ -1,0 +1,1121 @@
+{
+  "schema_version": 1,
+  "run_id": "rootcause-batch-20260926-f-258c270e03",
+  "document_path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+  "source_sha256": {
+    "sdk_catalog.json": "fc09980bef0dea14a181de5b1a0c830e9e90aec14186951210ff52b65a078a0e",
+    "sdk_runtime.py": "33e7447a058cc3fa084e60158de6e9c5e71d02ad47caae571fb553ff4d3a749f",
+    "sdk_generated.py": "76b23ef2f31f6742a5e134bf5ee2aa1ab021b844bbcf6e2cc9510fc00b7ffc38",
+    "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa"
+  },
+  "status": "passed",
+  "records": [
+    {
+      "id": "annotation/design:annotation_text_offset_units:create_text",
+      "functions": [
+        "CreateText",
+        "LNewObj"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "creation",
+      "verifies_jobs": [],
+      "input": {
+        "calls": [
+          {
+            "name": "CreateText",
+            "arguments": {
+              "theText": "A😀B"
+            }
+          },
+          {
+            "name": "LNewObj",
+            "arguments": {}
+          }
+        ]
+      },
+      "result": {
+        "status": "ok",
+        "results": [
+          {
+            "status": "ok",
+            "function": "CreateText",
+            "result": null
+          },
+          {
+            "status": "ok",
+            "function": "LNewObj",
+            "result": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+          }
+        ],
+        "count": 2,
+        "cleanup": [],
+        "regeneration_boundary": "after this menu-command job returns"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "results",
+              1,
+              "result"
+            ],
+            "valid_uuid": true
+          },
+          "actual": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "CreateText",
+          "execution_kind": "native"
+        },
+        {
+          "step": 1,
+          "function": "LNewObj",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:initial_text",
+      "functions": [
+        "GetText"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [
+        "annotation/design:annotation_text_offset_units:create_text"
+      ],
+      "input": {
+        "name": "GetText",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetText",
+        "result": "A😀B"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": "A😀B"
+          },
+          "actual": "A😀B",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetText",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:name_text",
+      "functions": [
+        "SetName"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "mutation",
+      "verifies_jobs": [],
+      "input": {
+        "name": "SetName",
+        "arguments": {
+          "h": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "name": "SDK-annotation_text_offset_units-rootcause--9679bbb40923ab16"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "SetName",
+        "result": null
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": null
+          },
+          "actual": null,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "SetName",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:name_text_read",
+      "functions": [
+        "GetName"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [
+        "annotation/design:annotation_text_offset_units:name_text"
+      ],
+      "input": {
+        "name": "GetName",
+        "arguments": {
+          "h": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetName",
+        "result": "SDK-annotation_text_offset_units-rootcause--9679bbb40923ab16"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": "SDK-annotation_text_offset_units-rootcause--9679bbb40923ab16"
+          },
+          "actual": "SDK-annotation_text_offset_units-rootcause--9679bbb40923ab16",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetName",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain",
+      "functions": [
+        "SetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "mutation",
+      "verifies_jobs": [],
+      "input": {
+        "name": "SetTextStyle",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Start": 0,
+          "Count": 4,
+          "Style": 0
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "SetTextStyle",
+        "result": null
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": null
+          },
+          "actual": null,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "SetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain_content",
+      "functions": [
+        "GetText"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [
+        "annotation/design:annotation_text_offset_units:plain"
+      ],
+      "input": {
+        "name": "GetText",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetText",
+        "result": "A😀B"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": "A😀B"
+          },
+          "actual": "A😀B",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetText",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain_style_0",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 0
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain_style_1",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 1
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain_style_2",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 2
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:plain_style_3",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 3
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a",
+      "functions": [
+        "SetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "mutation",
+      "verifies_jobs": [],
+      "input": {
+        "name": "SetTextStyle",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Start": 0,
+          "Count": 1,
+          "Style": 1
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "SetTextStyle",
+        "result": null
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": null
+          },
+          "actual": null,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "SetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a_content",
+      "functions": [
+        "GetText"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [
+        "annotation/design:annotation_text_offset_units:bold_a"
+      ],
+      "input": {
+        "name": "GetText",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetText",
+        "result": "A😀B"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": "A😀B"
+          },
+          "actual": "A😀B",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetText",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a_style_0",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 0
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 1
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 1,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a_style_1",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 1
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a_style_2",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 2
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_a_style_3",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 3
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16",
+      "functions": [
+        "SetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "mutation",
+      "verifies_jobs": [],
+      "input": {
+        "name": "SetTextStyle",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Start": 3,
+          "Count": 1,
+          "Style": 1
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "SetTextStyle",
+        "result": null
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": null
+          },
+          "actual": null,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "SetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16_content",
+      "functions": [
+        "GetText"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [
+        "annotation/design:annotation_text_offset_units:bold_b_utf16"
+      ],
+      "input": {
+        "name": "GetText",
+        "arguments": {
+          "objectHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetText",
+        "result": "A😀B"
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "equals": "A😀B"
+          },
+          "actual": "A😀B",
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetText",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16_style_0",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 0
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 1
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 1,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16_style_1",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 1
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16_style_2",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 2
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 0
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 0,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    },
+    {
+      "id": "annotation/design:annotation_text_offset_units:bold_b_utf16_style_3",
+      "functions": [
+        "GetTextStyle"
+      ],
+      "kind": "native",
+      "coverage_kind": "characterization",
+      "verification_dimension": "characterization",
+      "phase": "readback",
+      "verifies_jobs": [],
+      "input": {
+        "name": "GetTextStyle",
+        "arguments": {
+          "TextHd": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36",
+          "Position": 3
+        }
+      },
+      "result": {
+        "status": "ok",
+        "function": "GetTextStyle",
+        "result": 1
+      },
+      "assertions": [
+        {
+          "expected": {
+            "path": [
+              "result"
+            ],
+            "range_inclusive": [
+              0,
+              127
+            ]
+          },
+          "actual": 1,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "execution_kind": "native",
+      "function_executions": [
+        {
+          "step": 0,
+          "function": "GetTextStyle",
+          "execution_kind": "native"
+        }
+      ]
+    }
+  ],
+  "captures": {
+    "annotation:annotation_text_offset_units:annotation_text_offset_units_text": "f4b6a3b5-4779-4d2c-aba7-ce908eb40d36"
+  },
+  "native_functions_passed": [],
+  "compatibility_functions_passed": [],
+  "characterization_native_functions_observed": [
+    "CreateText",
+    "GetName",
+    "GetText",
+    "GetTextStyle",
+    "LNewObj",
+    "SetName",
+    "SetTextStyle"
+  ],
+  "characterization_compatibility_functions_observed": [],
+  "adapter_functions_passed": [],
+  "native_semantics_fully_verified": false,
+  "execution_path": "typed_mcp_tools",
+  "limitations": [
+    "Adapter cases use a canary or validation-only path and never count as native API execution.",
+    "Accepted ABI boundaries do not establish valid native resource indices or geometry.",
+    "Catalog/name classifications are conservative review hints, not a comprehensive effect system.",
+    "Only explicit native fixtures execute vs functions; unmeasured functions remain pending.",
+    "Each native fixture is one menu job; dependent native reads require later jobs.",
+    "No automatic retries, rollback, deletion, document switching, focus changes or dialog dismissal.",
+    "A designed fixture remains unverified until its recorded native assertions pass.",
+    "Characterization jobs inspect response contracts or unresolved behavior; they provide no semantic native or compatibility API pass credit.",
+    "UprString is local compatibility; HArea and guarded getter repairs may disclose conditional compatibility. Planned categories never replace actual response provenance.",
+    "Readback coverage does not establish all meaningful input combinations or object lifecycles.",
+    "Document guards and mutations are separate invocations; concurrent agents must not switch the active document.",
+    "No dialogs, arbitrary scripts, forced quarantines, preferences or preexisting user resources are used.",
+    "Document/version guards run immediately before each fixture in a separate menu invocation; the document must not be switched between them.",
+    "Only actual semantic fixture results receive test credit; guard calls, characterization observations and local provenance checks receive none."
+  ],
+  "characterization_jobs_completed": 22,
+  "functions_all_planned_cases_passed": [],
+  "fixture_source_sha256": {
+    "sdk_design_fixtures.py": "7bcba047a4ca27c1b7a2e6965025ec65e18d44bef3f1811130ee3876f4bfed78",
+    "sdk_numeric_fixtures.py": "c9070652069d747576afc89d9f0e922f6630c4c6256ade127101ebbffe591e70",
+    "sdk_geometry_fixtures.py": "0cc2f193ef89e070592f31ed42d6aa294e5f4da3e341a7bb5120701ed7c27ca3",
+    "sdk_data_fixtures.py": "676d500cde25562ae3db575c8ebae271b00874fca368d4e2aaef516abcff6a9b",
+    "sdk_annotation_fixtures.py": "f80ef3dcc7699dfb05627f89004b3c9342849482780471c67903da9cc96cb3c7",
+    "sdk_resource_fixtures.py": "19fe6a94555ca545a33cce8f0a0a479ee49b95e855912e5fd7322a8f30e4e537",
+    "sdk_modeling_fixtures.py": "2891b02d5161cacd9844e79e8b5cc9838ba855aeffd3b77bca8057624a509193",
+    "sdk_regression_suite.py": "f2bc6916ca4db722e77d8a32b8e63566e0a4b413a74d68b8d4ef53e733879996",
+    "run_sdk_regression.py": "944c9af7c7b195334b5839dcce5ce135ecffb28cd834e925066f2f529930f986",
+    "sdk_design_runner.py": "90303d789b65fd434f3f88df5ab9eacf16a2072ec0cfa966571f814586ef0596",
+    "sdk_host_suite.py": "b699416f286155dadb11f058379e1117e3e38aad3f42798d56f1313b120153a1"
+  },
+  "host": {
+    "vectorworks_year": 2027,
+    "build": 882075,
+    "version_tuple": [
+      32,
+      0,
+      0,
+      2
+    ]
+  },
+  "sdk": {
+    "vectorworks_year": 2027,
+    "sdk_version": 3200,
+    "sdk_build": 882699
+  }
+}

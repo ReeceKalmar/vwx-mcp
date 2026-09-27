@@ -3,10 +3,8 @@
 build_vs_index.py — parse the Vectorworks `vs.py` stub into a compact JSON
 index of every function: arg names, arity, return type, category, one-line doc.
 
-Purpose (bridge "knowledge index"): commands.py / execute_script can validate
-argument counts BEFORE calling vs.* — turning VW engine errors (which pop a
-modal "Script-Fehler" dialog) into clean Python-level error dicts, and giving
-agents an instant, accurate signature lookup so scripts run right the first time.
+Purpose: signature lookup and offline call auditing. Indexing does not validate
+arbitrary execute_script code or prove live compatibility.
 
 Usage:
     python tools/build_vs_index.py <path-to-vs.py> [out.json]
@@ -16,6 +14,7 @@ import ast, json, os, sys, re
 
 def build(vs_path):
     src = open(vs_path, encoding='utf-8', errors='ignore').read()
+    lines = src.splitlines(keepends=True)
     tree = ast.parse(src)
     index = {}
     for node in tree.body:
@@ -30,9 +29,8 @@ def build(vs_path):
         if m:
             category = m.group(1).strip()
         # return type hint from the trailing "return '<TYPE>'" in the stub
-        rm = re.search(r"return\s*\(?\s*'([^']+)'", src[node.body[-1].lineno-1:node.end_lineno and 0 or 0:] if False else '')
-        # simpler: scan the function's source slice
-        fsrc = ast.get_source_segment(src, node) or ''
+        # Avoid rescanning the entire 1.6 MB stub once per function.
+        fsrc = ''.join(lines[node.lineno - 1:node.end_lineno])
         rm = re.search(r"return\s*\(?\s*'([^']+)'", fsrc)
         if rm:
             ret = rm.group(1)

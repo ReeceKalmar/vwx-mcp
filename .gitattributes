@@ -1,0 +1,8 @@
+# Keep source and documentation consistent on every checkout. Reports and
+# deployed-run journals hash Python/JSON bytes, so those must remain LF.
+* text=auto eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.bat text eol=crlf
+# Vectorworks string resources are UTF-16 with a BOM, not line-normalized text.
+*.vwstrings binary

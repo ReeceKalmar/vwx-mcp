@@ -1,6 +1,6 @@
 """Jeden vs.*-Aufruf in einer Python-Datei gegen den Funktionsindex halten.
 
-Der Index (vwx-plugin/vs_index.json) kennt fuer alle 3071 vs-Funktionen Name,
+Der SDK-3200-Index (vwx-plugin/vs_index.json) kennt 3098 vs-Funktionen: Name,
 Argumentliste und Pflichtstelligkeit. Ein erfundener Name oder eine falsche
 Argumentzahl loest in Vectorworks einen Engine-Fehler aus, der die Bruecke
 blockiert — das faellt sonst erst im laufenden Betrieb auf, mitten in einer
@@ -10,7 +10,7 @@ Geprueft wird ueber den AST, nicht per regulaerem Ausdruck: nur so werden
 Aufrufe in Lambdas, verschachtelte Klammern und mehrzeilige Argumentlisten
 richtig gezaehlt.
 
-Aufruf:  python vs_arity.py <index.json> <datei.py> [<datei.py> ...]
+Aufruf:  python tools/pruefe_vs_aufrufe.py <index.json> <datei.py> [<datei.py> ...]
 """
 import ast
 import io
@@ -18,9 +18,9 @@ import json
 import sys
 
 
-# Der Index fuehrt die VECTORSCRIPT-Signaturen (Pascal). Die Python-Bindung
-# fasst Punkte und Farben zu Tupeln zusammen: Oval(x1,y1,x2,y2) heisst dort
-# Oval(p1,p2), SetVPClOvrdFillFore(vp,cls,r,g,b) nimmt (vp,cls,(r,g,b)).
+# Der Index stammt aus dem Python-SDK-Stub. Einige historische Aufrufe nutzen
+# flache Punktkoordinaten statt Tupeln (z.B. Oval(x1,y1,x2,y2)). Nicht alle
+# Farbfunktionen akzeptieren Tupel: Viewport-Override-Setter verlangen r,g,b.
 # Eine Stelligkeitsabweichung ist deshalb ein HINWEIS, kein Beweis — ein
 # unbekannter FUNKTIONSNAME dagegen ist immer ein Fehler.
 _TUPELWOERTER = ("p1", "p2", "p3", "pt", "point", "x1", "y1", "z1", "x2", "y2",

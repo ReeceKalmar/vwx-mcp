@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-27",
+  "evidence_kind": "controlled_maintenance_cycle",
+  "status": "passed",
+  "scope": "One typed MCP save/quit, confirmed process exit, deployment and reopen cycle for one disposable drawing.",
+  "source_run": ".audit/maintenance-english-atomic-20260927-a",
+  "input_sha256": {
+    ".audit/maintenance-english-atomic-20260927-a/plan.json": "254af21e1f2c97344ca9759d7138738c418f8e4fae7cc4551687f4339f1fc0c9",
+    ".audit/maintenance-english-atomic-20260927-a/journal.jsonl": "7388762c23d73da39d8513a05d21413599bf9a0c0a29fed7acc94427a5157910",
+    ".audit/maintenance-english-atomic-20260927-a/result.json": "1d5f3cd4c8fcc4c42f4694fa61099adc2b511dbd2d01a2ad848bf68e813b74ca"
+  },
+  "source_pinned_deployment_sha256": {
+    "commands.py": "f40f2f8f50ea1f288ce3762f490792ea22be1dc6ce7a5a02e78b8da9a15dc3ac",
+    "vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
+    "BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
+    "vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
+    "vs_index_meta.json": "066056de3cb20044b22a7150e5588529751f5b60b9fcd52d41e65dcc2ca77d06",
+    "sdk_catalog.json": "fc09980bef0dea14a181de5b1a0c830e9e90aec14186951210ff52b65a078a0e",
+    "sdk_generated.py": "76b23ef2f31f6742a5e134bf5ee2aa1ab021b844bbcf6e2cc9510fc00b7ffc38",
+    "sdk_runtime.py": "379dc990fefbbe5ec644d425b9754344c969c88b4b46c6201ac68cf67e38c6e6",
+    "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa",
+    "VwxBridge.vlb": "71d91b0f1dc709d4c829f8205f5b6158b9c34d5dc9c4a5510330c2422c49b3a1",
+    "VwxBridge.vwr": "6e7ab97da0f0484bc7bef869c513a98f9df064d2d3c0590d43e04d5207957601"
+  },
+  "deployment_backup": "20260927-002617-559895-maintenance",
+  "old_process_id": 50096,
+  "new_process_id": 50236,
+  "expected_document_path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+  "helper_revision": 1,
+  "started_utc": "2026-09-27T06:25:58.694880+00:00",
+  "completed_utc": "2026-09-27T06:26:49.336778+00:00",
+  "duration_seconds": 50.641898,
+  "steps": [
+    {
+      "journal_event_index": 1,
+      "utc": "2026-09-27T06:25:58.840083+00:00",
+      "step": "acquire",
+      "result": {
+        "status": "ok",
+        "active": true,
+        "owned": true,
+        "host_process_id": 50096
+      }
+    },
+    {
+      "journal_event_index": 3,
+      "utc": "2026-09-27T06:25:58.912296+00:00",
+      "step": "status",
+      "result": {
+        "status": "ok",
+        "process_id": 50096,
+        "document_count": 1,
+        "expected_path_matches": true,
+        "active": true,
+        "in_memory_only": false,
+        "helper_revision": 1
+      }
+    },
+    {
+      "journal_event_index": 4,
+      "utc": "2026-09-27T06:25:58.914573+00:00",
+      "step": "process_bound",
+      "process_id": 50096
+    },
+    {
+      "journal_event_index": 6,
+      "utc": "2026-09-27T06:25:59.075341+00:00",
+      "step": "save",
+      "result": {
+        "status": "ok",
+        "process_id": 50096,
+        "native_status": 1,
+        "dispatched": true,
+        "exit_confirmed": false
+      }
+    },
+    {
+      "journal_event_index": 8,
+      "utc": "2026-09-27T06:25:59.145746+00:00",
+      "step": "status",
+      "result": {
+        "status": "ok",
+        "process_id": 50096,
+        "document_count": 1,
+        "expected_path_matches": true,
+        "active": true,
+        "in_memory_only": false,
+        "helper_revision": 1
+      }
+    },
+    {
+      "journal_event_index": 10,
+      "utc": "2026-09-27T06:26:00.747312+00:00",
+      "step": "quit",
+      "result": {
+        "status": "ok",
+        "process_id": 50096,
+        "native_status": 1,
+        "dispatched": true,
+        "exit_confirmed": false
+      }
+    },
+    {
+      "journal_event_index": 13,
+      "utc": "2026-09-27T06:26:17.351867+00:00",
+      "step": "exit_confirmed",
+      "process_id": 50096
+    },
+    {
+      "journal_event_index": 15,
+      "utc": "2026-09-27T06:26:17.601804+00:00",
+      "step": "deployment_complete",
+      "backup": "20260927-002617-559895-maintenance",
+      "matching_file_hashes": 11
+    },
+    {
+      "journal_event_index": 17,
+      "utc": "2026-09-27T06:26:17.803919+00:00",
+      "step": "launch_started",
+      "process_id": 50236
+    },
+    {
+      "journal_event_index": 21,
+      "utc": "2026-09-27T06:26:49.321370+00:00",
+      "step": "status",
+      "result": {
+        "status": "ok",
+        "process_id": 50236,
+        "document_count": 1,
+        "expected_path_matches": true,
+        "active": true,
+        "in_memory_only": false,
+        "helper_revision": 1
+      }
+    },
+    {
+      "journal_event_index": 23,
+      "utc": "2026-09-27T06:26:49.335776+00:00",
+      "step": "release",
+      "result": {
+        "status": "ok",
+        "active": false,
+        "owned": false
+      }
+    },
+    {
+      "journal_event_index": 24,
+      "utc": "2026-09-27T06:26:49.336778+00:00",
+      "step": "complete",
+      "process_id": 50236
+    }
+  ],
+  "checks": {
+    "exact_single_use_action_order": true,
+    "timestamps_monotonic": true,
+    "exclusive_lease_acquired_for_original_pid": true,
+    "sole_saved_active_expected_document_before_and_after": true,
+    "save_and_quit_native_status_one": true,
+    "original_process_bound_before_quit": true,
+    "process_exit_confirmed_before_deployment": true,
+    "all_eleven_deployed_hashes_match_pinned_plan": true,
+    "new_process_differs_and_native_inventory_matches": true,
+    "lease_released_after_verification": true,
+    "actual_installed_hashes_rechecked_readonly_at_audit": true
+  },
+  "audit_checked_utc": "2026-09-27T06:32:58.308822+00:00",
+  "reproducibility": {
+    "local_checker": ".audit/check_maintenance_english_atomic_20260927.py",
+    "command": "python .audit/check_maintenance_english_atomic_20260927.py",
+    "method": "Re-read the three hashed inputs; assert ordered action intents/responses, native statuses, document/PID guards, exit/deploy/launch ordering, lease release and all eleven manifest/installed hashes; emit only allowlisted fields."
+  },
+  "native_sdk_api_coverage_credit": false,
+  "desktop_focus_independently_measured": false,
+  "limitations": [
+    "This verifies one controlled cycle on this installation, not every document, startup condition or future restart.",
+    "Quit native status acknowledges the request; the separate bound-process exit observation establishes shutdown.",
+    "No independent desktop-focus measurement was recorded, so no unchanged-focus assertion is made.",
+    "The plan pins eleven deployed files; it does not pin the controller source in the raw run record.",
+    "Startup Vision recovery is documented separately; earlier blocked launches and save-prompt observations remain preserved.",
+    "The local checker and original audit inputs remain in the private workspace audit directory; lease credentials are intentionally excluded."
+  ]
+}

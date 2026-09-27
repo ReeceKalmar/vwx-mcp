@@ -59,6 +59,7 @@
       <!-- Public SDK overloads distinguish wchar_t from unsigned short. -->
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)StdAfx.pch</PrecompiledHeaderOutputFile>
@@ -94,11 +95,17 @@ set VWR_7ZCMD=$(VWSDK2027)\SDKLib\ToolsWin\BuildVWR\7z
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Bridge\VwxBridgePalette.cpp" />
+    <ClCompile Include="Source\Bridge\BridgeVSFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Prefix\CommonPrefix.h" />
     <ClInclude Include="Source\Prefix\StdAfx.h" />
     <ClInclude Include="Source\Bridge\VwxBridgePalette.h" />
+    <ClInclude Include="Source\Bridge\BridgeVSFunctions.h" />
+    <ClInclude Include="Source\Bridge\ArcAnglesPolicy.h" />
+    <ClInclude Include="Source\Bridge\MaintenancePolicy.h" />
+    <ClInclude Include="Source\Bridge\AtomicStatusFile.h" />
+    <ClInclude Include="Source\Bridge\PumpScheduleState.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vectorworks MCP Server — file/socket proxy to the VWX plugin (249 tools).
+Vectorworks 2027 MCP Server — file-IPC proxy to the Python menu-command runner.
 
 Connects to the VWX MCP bridge running inside Vectorworks. The Vectorworks
 target is Vectorworks 2027; host and SDK versions must match.
@@ -12,21 +12,20 @@ import sys
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-import socket
 import json
 import time
 import uuid
 import threading
 from typing import AsyncIterator, Dict, Any, List, Optional
-# Migrated bundled mcp.server.fastmcp -> standalone fastmcp 3.x (see docs/MIGRATION_fastmcp3.md)
+# Standalone FastMCP, pinned in requirements.txt; see mcp-server/AGENTS.md.
 from fastmcp import FastMCP, Context
+from background_policy import check as check_background_operation
+import maintenance as bridge_lease
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("VwxMCPServer")
 
-VWX_HOST = os.environ.get("DESKTOP_HOST", "127.0.0.1")
-VWX_PORT = int(os.environ.get("VWX_MCP_PORT", os.environ.get("VW_MCP_PORT", "9878")))
 # Per-call timeout (seconds) applied to every tool via vtool() -> @mcp.tool(timeout=).
 # Guards against a hung Vectorworks main thread wedging the MCP session.
 #
@@ -37,11 +36,10 @@ VWX_PORT = int(os.environ.get("VWX_MCP_PORT", os.environ.get("VW_MCP_PORT", "987
 # progress heartbeat below keeps the client's idle-abort off the call, so long
 # operations background themselves and return a real result.
 VWX_CALL_TIMEOUT = float(os.environ.get("VWX_CALL_TIMEOUT", "900"))
-# TCP recv / result-file wait towards the VW bridge. Long dispatches (bulk
-# sweeps, imports, exports) legitimately run for minutes while VW's main thread
-# works and the GIL freezes the bridge's I/O threads. Keep just under
-# VWX_CALL_TIMEOUT so the transport error surfaces before the MCP layer kills
-# the call.
+# Result-file wait towards the VW bridge. Preserve VWX_SOCKET_TIMEOUT as the
+# existing configuration name. Long native operations can occupy the host
+# main thread for minutes. Keep this below VWX_CALL_TIMEOUT so an explicit
+# queue/claim outcome reaches the client before the MCP tool timeout.
 VWX_SOCKET_TIMEOUT = float(os.environ.get("VWX_SOCKET_TIMEOUT", "880"))
 # Progress heartbeat interval (seconds). While any tool call is outstanding the
 # heartbeat middleware emits a progress notification on this cadence. Two
@@ -53,7 +51,10 @@ VWX_HEARTBEAT = float(os.environ.get("VWX_HEARTBEAT", "20"))
 # Read-only response cache TTL (seconds). Applies ONLY to the explicit
 # allowlist in _CACHEABLE below — never to anything that can mutate the
 # document. 0 disables the cache entirely.
-VWX_CACHE_TTL = int(os.environ.get("VWX_CACHE_TTL", "45"))
+VWX_CACHE_TTL = int(os.environ.get("VWX_CACHE_TTL", "0"))
+# Keep unattended design work off the user's mouse, keyboard and dialogs.
+# This MCP-side gate is not a sandbox for arbitrary native/third-party code.
+VWX_BACKGROUND_MODE = os.environ.get('VWX_BACKGROUND_MODE', '1').lower() not in {'0', 'false', 'off'}
 # Bridge liveness. The native palette rewrites ipc/native.alive on every timer
 # tick (~100ms) while it is open; nothing drains the job queue while it is
 # closed. A heartbeat older than MAX_AGE means the bridge is down; GRACE is how
@@ -62,7 +63,7 @@ VWX_CACHE_TTL = int(os.environ.get("VWX_CACHE_TTL", "45"))
 VWX_ALIVE_MAX_AGE = float(os.environ.get("VWX_ALIVE_MAX_AGE", "8"))
 VWX_ALIVE_GRACE = float(os.environ.get("VWX_ALIVE_GRACE", "20"))
 
-# MCP Tasks extension (RC spec, finalizes 2026-07-28). OFF by default: a task=True
+# MCP Tasks support is OFF by default: a task=True
 # tool returns a task handle the client must poll (tasks/get), which breaks clients
 # that don't yet support the extension. Also requires the `fastmcp[tasks]` extra
 # (docket). Set VWX_TASKS=1 to opt the long-running tools below into it once both
@@ -82,18 +83,8 @@ if VWX_TASKS and not _TASKS_AVAILABLE:
                    "install with: pip install 'fastmcp[tasks]'. Tasks disabled.")
 
 
-# Wake-on-demand: seconds to wait for the watchdog to start an idle-closed
-# bridge (touching bridge.wake in the VW plugin dir triggers the restart
-# hotkey). Works only on the same machine as VW — for remote setups set
-# VWX_WAKE_TIMEOUT=0 to skip.
-VWX_WAKE_TIMEOUT = float(os.environ.get('VWX_WAKE_TIMEOUT', '25'))
-
-# Transport: 'file' (default on Windows) = job/result files in the VW plugin
-# dir; the watchdog fires the pump menu command per job, VW stays responsive
-# for the user (no modal bridge dialog). 'tcp' = classic dialog-pump bridge
-# on :9878 (the only option on macOS / remote setups).
-VWX_TRANSPORT = os.environ.get(
-    'VWX_TRANSPORT', 'file' if sys.platform == 'win32' else 'tcp').lower()
+# 2027 supports file IPC and the native palette/menu runner only.
+VWX_TRANSPORT = os.environ.get('VWX_TRANSPORT', 'file').lower()
 
 def vw_versions():
     """This fork targets 2027, regardless of other installed versions."""
@@ -109,26 +100,25 @@ def _plugin_dir():
     if base:
         if not os.path.isdir(base):
             raise RuntimeError('VWX_PLUGIN_DIR does not exist: ' + base)
+        if not all(os.path.isfile(os.path.join(base, name))
+                   for name in ('commands.py', 'vwx_pump.py')):
+            raise RuntimeError('VWX_PLUGIN_DIR must contain commands.py and vwx_pump.py: ' + base)
         return base
     appdata = os.environ.get('APPDATA', '')
     for version in vw_versions():
-        for name in ('VW-MCP', 'VWX-MCP'):
+        for name in ('VWX-MCP', 'VW-MCP'):
             cand = os.path.join(appdata, 'Nemetschek', 'Vectorworks', version,
                                 'Plug-ins', name)
-            if os.path.isdir(cand):
+            if all(os.path.isfile(os.path.join(cand, filename))
+                   for filename in ('commands.py', 'vwx_pump.py')):
                 return cand
     return None
 
-def _wake_file_path():
-    base = _plugin_dir()
-    return os.path.join(base, 'bridge.wake') if base else None
-
-
 class VwxFileTransport:
-    """File-IPC to the in-VW pump (bridge v4, Windows).
+    """File IPC to the 2027 Python menu-command runner on Windows.
 
-    send_command writes ipc/jobs/<ts>-<cid>.json; the watchdog's file watcher
-    fires the 'VWX Bridge Start' hotkey; vwx_pump.py executes the job on the
+    send_command writes ipc/jobs/<ts>-<cid>.json; the native palette
+    invokes the 'VWX Bridge Start' menu command; vwx_pump.py executes one job on the
     VW main thread and writes ipc/results/<cid>.json. VW stays responsive for
     the user except while a command actually executes.
     """
@@ -136,6 +126,7 @@ class VwxFileTransport:
         base = _plugin_dir()
         if not base:
             raise RuntimeError("VW plugin dir not found (set VWX_PLUGIN_DIR)")
+        self.base = base
         self.jobs = os.path.join(base, 'ipc', 'jobs')
         self.results = os.path.join(base, 'ipc', 'results')
         self.alive = os.path.join(base, 'ipc', 'native.alive')
@@ -156,16 +147,17 @@ class VwxFileTransport:
         and keep checking.
         """
         try:
-            with open(self.alive, 'r') as fh:
-                parts = fh.read().split()
-            stamp = float(parts[0])
-            paused = len(parts) > 1 and parts[1] == '1'
+            parts = bridge_lease.read_diagnostic_text(self.alive).split()
+            if len(parts) != 2 or not parts[0].isdigit() or parts[1] not in {'0', '1'}:
+                raise ValueError('Malformed native heartbeat')
+            stamp = int(parts[0])
+            paused = parts[1] == '1'
+            age = time.time() - stamp
         except Exception:
             return (False, False, float('inf'))
-        age = max(0.0, time.time() - stamp)
-        return (age <= VWX_ALIVE_MAX_AGE, paused, age)
+        return (-2 <= age <= VWX_ALIVE_MAX_AGE, paused, max(0.0, age))
 
-    # keep the VwxMCPServer interface so callers don't care about transport
+    # Lifecycle compatibility: file IPC holds no persistent connection.
     def disconnect(self):
         pass
 
@@ -178,12 +170,25 @@ class VwxFileTransport:
         context, against a document that has moved on.
         """
         try:
-            if os.path.exists(job_path):
-                os.remove(job_path)
-        except Exception:
-            pass
+            os.remove(job_path)
+            self._finish_publication(os.path.basename(job_path).rsplit('-', 1)[-1].removesuffix('.json'))
+            return True
+        except OSError:
+            return False
+
+    def _finish_publication(self, cid):
+        try:
+            bridge_lease.finish_publication(self.base, cid)
+        except (bridge_lease.MaintenanceError, OSError):
+            # The result remains valid. Preserve a record that could not be
+            # cleared; maintenance acquisition will fail closed until reviewed.
+            logger.warning('Could not clear completed publication cid=%s', cid)
 
     def _read_result(self, cid):
+        # Validate before constructing or touching any path. Poll is local and
+        # remains available during maintenance, so traversal here could read
+        # and delete the lease or another unrelated JSON file.
+        bridge_lease._cid(cid)
         rp = os.path.join(self.results, cid + '.json')
         if not os.path.exists(rp):
             return None
@@ -192,6 +197,7 @@ class VwxFileTransport:
                 result = json.load(f)
         except Exception:
             return None      # writer may be mid-replace; retry next poll
+        self._finish_publication(cid)
         try:
             os.remove(rp)
         except Exception:
@@ -203,7 +209,12 @@ class VwxFileTransport:
         t0 = time.perf_counter()
         # 'poll' (async retrieval): just look for the result file.
         if command_type == 'poll':
-            pcid = str((params or {}).get('cid', ''))
+            pcid = params.get('cid') if type(params) is dict else None
+            try:
+                bridge_lease._cid(pcid)
+            except bridge_lease.MaintenanceError:
+                return {'error': 'Result correlation ID must be exactly 12 lowercase hexadecimal characters',
+                        'code': 'VWX_INVALID_CID', 'dispatched': False}
             result = self._read_result(pcid)
             if result is not None:
                 return {'status': 'done', 'cid': pcid, 'result': result}
@@ -212,11 +223,35 @@ class VwxFileTransport:
         job = {'type': command_type, 'params': params or {}, '_cid': cid,
                'ts': time.time()}
         jp = os.path.join(self.jobs, '%013d-%s.json' % (time.time() * 1000, cid))
-        with self._lock:
-            tmp = jp + '.tmp'
-            with open(tmp, 'w', encoding='utf-8') as f:
-                json.dump(job, f, ensure_ascii=False)
-            os.replace(tmp, jp)
+        tmp = jp + '.tmp'
+        replace_attempted = False
+        try:
+            encoded = json.dumps(job, ensure_ascii=False, allow_nan=False)
+            with self._lock, bridge_lease.publication_guard(self.base, command_type, params or {}, cid):
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    f.write(encoded)
+                    f.flush()
+                    os.fsync(f.fileno())
+                replace_attempted = True
+                os.replace(tmp, jp)
+        except bridge_lease.MaintenanceError as error:
+            return dict(error.response(), cid=cid)
+        except (OSError, TypeError, ValueError) as error:
+            # A remaining temporary file proves atomic rename did not publish
+            # it. If rename may have completed and the host consumed the job,
+            # retain the publication record and report uncertainty, never replay.
+            unpublished = not replace_attempted or os.path.isfile(tmp)
+            if unpublished:
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
+                self._finish_publication(cid)
+            response = {'error': 'Native job publication failed: ' + str(error), 'cid': cid,
+                        'code': 'VWX_PUBLICATION_FAILED' if unpublished else 'VWX_PUBLICATION_UNCERTAIN'}
+            if unpublished:
+                response['dispatched'] = False
+            return response
         deadline = time.monotonic() + VWX_SOCKET_TIMEOUT
         dead_since = None
         while time.monotonic() < deadline:
@@ -234,7 +269,10 @@ class VwxFileTransport:
             if alive:
                 dead_since = None
                 if paused:
-                    self._discard(jp)
+                    if not self._discard(jp):
+                        return {'error': 'Bridge paused after the job may have been claimed. '
+                                         'Do not retry a mutation; poll this cid and inspect the document.',
+                                'cid': cid, 'code': 'VW_DISPATCH_UNCONFIRMED'}
                     return {'error': "the VWX Bridge palette is PAUSED — press "
                                      "Resume in the palette, then retry.",
                             'cid': cid, 'code': 'VW_BRIDGE_PAUSED'}
@@ -242,7 +280,11 @@ class VwxFileTransport:
                 now = time.monotonic()
                 dead_since = dead_since or now
                 if now - dead_since > VWX_ALIVE_GRACE:
-                    self._discard(jp)
+                    if not self._discard(jp):
+                        return {'error': 'Heartbeat stopped after the job may have been claimed. '
+                                         'It may be running or have completed before a host crash. '
+                                         'Do not retry a mutation; poll this cid and inspect the document.',
+                                'cid': cid, 'code': 'VW_DISPATCH_UNCONFIRMED'}
                     seen = ("never" if age == float('inf')
                             else f"{age:.0f}s ago")
                     return {'error': "the VWX Bridge palette is not running "
@@ -257,149 +299,25 @@ class VwxFileTransport:
         # retry would run a mutation twice. An opaque timeout cannot tell the
         # caller which of those it is.
         try:
-            if os.path.exists(jp):
-                os.remove(jp)
+            if self._discard(jp):
                 code = 'VW_JOB_UNCLAIMED'
-                hint = ("job was never picked up — is the VWX Bridge palette "
-                        "open (bridge on) and Ctrl+Shift+B assigned to "
-                        "'VWX Bridge Start' in VW? Safe to retry.")
+                hint = ("job was never picked up. Check the bridge palette and "
+                        "the enabled 'VWX Bridge Start' Python command in the current workspace. "
+                        "Inspect native.scheduler.json for the trigger failure before starting a fresh request.")
             else:
                 code = 'VW_DISPATCH_STUCK'
-                hint = ("job is executing but slow (long operation, Marionette "
-                        "execution, or a modal dialog in VW). Do NOT retry — "
-                        "fetch the result with command 'poll' and this cid.")
+                hint = ("job was claimed and may still be running, have completed, "
+                        "or have been interrupted by a host crash. Do NOT retry a mutation — "
+                        "poll this cid and inspect the document first.")
         except Exception:
             code, hint = 'VW_UNKNOWN', "unknown"
         logger.error(f"tool={command_type} cid={cid} status=timeout transport=file")
-        return {'error': f"timed out after {VWX_SOCKET_TIMEOUT:.0f}s — {hint}",
-                'cid': cid, 'code': code}
+        response = {'error': f"timed out after {VWX_SOCKET_TIMEOUT:.0f}s — {hint}",
+                    'cid': cid, 'code': code}
+        if code == 'VW_JOB_UNCLAIMED':
+            response['dispatched'] = False
+        return response
 
-
-class VwxMCPServer:
-    def __init__(self, host=VWX_HOST, port=VWX_PORT):
-        self.host = host
-        self.port = port
-        self.socket = None
-        # The single bridge socket is shared across tools that may run concurrently
-        # (sync tools execute in fastmcp's threadpool, async ones via to_thread).
-        # Serialize one full request/response round-trip at a time, else interleaved
-        # sendall/recv corrupts the stream (WinError 10053 / aborted connection).
-        self._lock = threading.Lock()
-
-    def _try_connect(self):
-        try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(VWX_SOCKET_TIMEOUT)
-            self.socket.connect((self.host, self.port))
-            return True
-        except Exception:
-            self.socket = None
-            return False
-
-    def connect(self):
-        """Connect; if the bridge is idle-asleep (it closes its modal pump
-        dialog after VWX_IDLE_CLOSE seconds so the VW UI is usable), request a
-        wake-up: touch bridge.wake — the watchdog sends the restart hotkey —
-        and keep retrying for VWX_WAKE_TIMEOUT seconds."""
-        if self._try_connect():
-            return True
-        wake = _wake_file_path()
-        if not wake:
-            logger.error("Error connecting to VW (no wake file path — plugin dir not found)")
-            return False
-        deadline = time.monotonic() + VWX_WAKE_TIMEOUT
-        logger.info(f"bridge down — touching {wake} and waiting for the watchdog to start it")
-        last_touch = 0.0
-        while time.monotonic() < deadline:
-            now = time.monotonic()
-            if now - last_touch > 3.0:      # re-touch: survives a watchdog race
-                try:
-                    with open(wake, 'w') as f:
-                        f.write(str(time.time()))
-                except Exception as e:
-                    logger.error(f"cannot write wake file: {e}")
-                    return False
-                last_touch = now
-            time.sleep(1.0)
-            if self._try_connect():
-                logger.info("bridge woke up")
-                return True
-        logger.error(f"Error connecting to VW: bridge did not wake within {VWX_WAKE_TIMEOUT:.0f}s "
-                     "(watchdog not running, or hotkey not assigned?)")
-        return False
-
-    def disconnect(self):
-        if self.socket:
-            try: self.socket.close()
-            except Exception: pass
-            self.socket = None
-
-    def send_command(self, command_type, params=None):
-        """Send newline-delimited JSON command, read newline-delimited response.
-
-        One round-trip is serialized under self._lock so concurrent tool calls
-        can't interleave on the shared socket. A correlation id (cid) + latency
-        are logged per call; cid also rides in the command envelope so the VW-side
-        plugin log can be matched up.
-        """
-        cid = uuid.uuid4().hex[:8]
-        command = {"type": command_type, "params": params or {}, "_cid": cid}
-        payload = json.dumps(command).encode('utf-8') + b'\n'
-        t0 = time.perf_counter()
-        try:
-            with self._lock:
-                # Send — a stale socket (bridge re-run in VW, idle RST) fails
-                # HERE, before VW saw anything, so one reconnect+resend is safe.
-                # This is the "first call fails, retry works" flakiness, fixed.
-                try:
-                    if not self.socket:
-                        raise ConnectionError("no socket")
-                    self.socket.sendall(payload)
-                except Exception as se:
-                    logger.warning(f"tool={command_type} cid={cid} stale socket "
-                                   f"({se}) — reconnecting")
-                    self.disconnect()
-                    if not self.connect():
-                        raise ConnectionError(
-                            f"Could not connect to Vectorworks at {self.host}:{self.port} "
-                            "and the wake-up request was not answered. Is the TCP "
-                            "dialog bridge (vwx_mcp_bridge.py) running in VW? "
-                            "Fallback: run the bridge script manually in VW.")
-                    self.socket.sendall(payload)
-                # Receive — NO retry here: the command may already be executing
-                # in VW; resending would double-execute mutating commands.
-                response_data = b''
-                result = None
-                while True:
-                    chunk = self.socket.recv(65536)
-                    if not chunk:
-                        break
-                    response_data += chunk
-                    if b'\n' in response_data:
-                        line = response_data.split(b'\n', 1)[0]
-                        result = json.loads(line.decode('utf-8'))
-                        break
-                if result is None:
-                    result = (json.loads(response_data.strip().decode('utf-8'))
-                              if response_data.strip() else {"error": "Empty response"})
-            ms = (time.perf_counter() - t0) * 1000
-            status = "err" if isinstance(result, dict) and result.get("error") else "ok"
-            logger.info(f"tool={command_type} cid={cid} ms={ms:.0f} status={status}")
-            return result
-        except socket.timeout:
-            ms = (time.perf_counter() - t0) * 1000
-            logger.error(f"tool={command_type} cid={cid} ms={ms:.0f} status=timeout")
-            self.disconnect()
-            return {"error": f"timed out after {VWX_SOCKET_TIMEOUT:.0f}s — VW main thread busy "
-                             "(long operation, Marionette execution, or a modal dialog is open "
-                             "in Vectorworks). The command may still complete in VW. "
-                             "Check the VW window for dialogs.",
-                    "cid": cid}
-        except Exception as e:
-            ms = (time.perf_counter() - t0) * 1000
-            logger.error(f"tool={command_type} cid={cid} ms={ms:.0f} status=exc err={e}")
-            self.disconnect()
-            return {"error": str(e), "cid": cid}
 
 
 _vwx_connection = None
@@ -407,28 +325,11 @@ _vwx_connection = None
 
 def get_vwx_connection():
     global _vwx_connection
-    if VWX_TRANSPORT == 'file':
-        if _vwx_connection is None or not isinstance(_vwx_connection, VwxFileTransport):
-            _vwx_connection = VwxFileTransport()
-        return _vwx_connection
-    if _vwx_connection is not None:
-        # NOTE: no sendall(b'') "probe" — sending 0 bytes never fails, even on a
-        # dead socket, so it detected nothing. send_command now reconnects on a
-        # failed send itself.
-        if _vwx_connection.socket is not None:
-            return _vwx_connection
-        if _vwx_connection.connect():
-            return _vwx_connection
-        _vwx_connection = None
-    _vwx_connection = VwxMCPServer()
-    if not _vwx_connection.connect():
-        _vwx_connection = None
-        raise Exception(
-            f"Could not connect to Vectorworks at {VWX_HOST}:{VWX_PORT} and the wake-up "
-            "request was not answered. Check: VW running? TCP dialog bridge "
-            "(vwx_mcp_bridge.py) running in VW? Fallback: run the bridge script "
-            "manually in VW. (Windows default is the file-IPC pump, not this path.)")
-    logger.info(f"Connected to Vectorworks at {VWX_HOST}:{VWX_PORT}")
+    vw_versions()
+    if VWX_TRANSPORT != 'file':
+        raise RuntimeError('Vectorworks 2027 requires VWX_TRANSPORT=file and the Python menu-command runner; legacy TCP is unsupported.')
+    if _vwx_connection is None or not isinstance(_vwx_connection, VwxFileTransport):
+        _vwx_connection = VwxFileTransport()
     return _vwx_connection
 
 
@@ -441,6 +342,10 @@ def cmd(command_type, params=None):
     layer, class and plant names (Winkelstützen, Grünfläche) as real characters
     instead of \\uXXXX escapes, which is both shorter and readable.
     """
+    if VWX_BACKGROUND_MODE:
+        blocked = check_background_operation(command_type, params)
+        if blocked:
+            return json.dumps(blocked, ensure_ascii=False, separators=(",", ":"))
     return json.dumps(get_vwx_connection().send_command(command_type, params),
                       ensure_ascii=False, separators=(",", ":"))
 
@@ -463,7 +368,7 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
 mcp = FastMCP(
     "vwx-mcp",
     instructions=(
-        "Drives a LIVE Vectorworks desktop session — the user's open drawing, "
+        "Drives a LIVE Vectorworks 2027 desktop session — the user's open drawing, "
         "edited in place. Search these tools for anything about: CAD or BIM "
         "drawings, .vwx documents, layers/classes/sheet layers/viewports, "
         "symbols and plug-in objects, walls slabs roofs and their components, "
@@ -474,16 +379,25 @@ mcp = FastMCP(
         "Three access layers, widest last: (1) explicit verbs for common "
         "operations; (2) `vwx(command, params)` reaches every function in the "
         "bridge — `list_commands(filter)` to discover; (3) `execute_script` "
-        "runs arbitrary vs.* Python inside VW.\n"
+        "runs arbitrary vs.* Python inside VW. Generated `sdk_<Name>` tools and "
+        "`sdk_call` cover the SDK contract surface; `sdk_list` documents exact "
+        "arguments and context restrictions.\n"
+        "Background mode is enabled by default: use typed workflows and SDK calls "
+        "without computer-use tools. Known modal operations, arbitrary scripts and "
+        "menu execution are rejected before queueing. Native error dialogs may still "
+        "require user attention. Keep Vectorworks open and unminimized behind other "
+        "applications with its bridge palette running.\n"
         "Conventions: object IDs are UUID strings; coordinates and distances "
         "are in DOCUMENT units (`get_document_units`), y grows up, angles in "
         "degrees. Results are JSON, either {status:'ok',...} or {error:'...'}.\n"
-        "Speed: `vwx_batch` runs many commands in ONE round-trip — each "
-        "separate call costs a fixed bridge crossing, so batch aggressively.\n"
+        "Execution: every read and write runs as one Python menu-command job. "
+        "Allow the command to return before inspecting regenerated native objects. "
+        "Keep creation/reset and regeneration-dependent reads in SEPARATE requests; "
+        "vwx_batch and execute_script each remain a single job.\n"
         "Accuracy: call `vs_signature(name)` BEFORE writing an execute_script "
         "body. The index carries exact signatures for all 3098 vs.* functions, "
-        "so a script runs right the first time instead of tripping a VW engine "
-        "error on arity.\n"
+        "but indexing is not proof of live compatibility or an automatic validator. "
+        "After timeout or crash, inspect before retrying mutations.\n"
         "Bulk work goes through criteria strings — criteria_count / "
         "select_by_criteria / for_each_criteria with e.g. \"(T=RECT)\" or "
         "\"(L='Layer-1')\" — not per-object loops.\n"
@@ -492,9 +406,9 @@ mcp = FastMCP(
     ),
     lifespan=server_lifespan,
 )
-# fastmcp 3.x: host/port are run() transport kwargs, not constructor args (see main()).
+# host/port are run() transport kwargs, not constructor args (see main()).
 
-# Tag taxonomy lives in tool_tags.py (single source of truth, 150/150 mapped).
+# Tag taxonomy lives in tool_tags.py (single source of truth).
 # vtool() forwards to mcp.tool() and injects the tool's primary tag declaratively
 # at registration (by function name), so the fastmcp Visibility API (mcp.enable/
 # disable(tags=...)) can filter the toolset by workflow preset — see main().
@@ -504,15 +418,12 @@ from mcp.types import ToolAnnotations
 # ── Tool classification ────────────────────────────────────────────
 # Read-only means: touches no document state at all — no creation, no mutation,
 # no selection change, no active layer/class switch, no dialog, no redraw.
-# This is the SAME contract the in-VW pump uses to decide whether a job may
-# drain in the crash-prone OnIdle notification context, so the two must agree.
-# The pump previously decided on its own by name prefix; the server now exports
-# this set to the plugin dir at startup (see _export_readonly_manifest) so the
-# classification has one owner instead of two heuristics that can drift apart.
+# These classifications control client hints and optional caching only.
+# Every command uses the same menu runner, irrespective of its classification.
 _RO_NAMES = frozenset({
     "ping", "distance", "distance_3d", "polygon_centroid",
     "get_document_info", "get_document_preferences", "get_georeferencing",
-    "vs_signature", "vs_index_stats", "list_commands", "criteria_count",
+    "vs_signature", "vs_index_stats", "sdk_list", "list_commands", "criteria_count",
     "eval_expression", "three_point_center",
 })
 _RO_PREFIXES = ("get_", "list_", "count_", "find_")
@@ -523,7 +434,7 @@ _RO_PREFIXES = ("get_", "list_", "count_", "find_")
 _DESTRUCTIVE_PREFIXES = ("delete_", "remove_", "clear_", "purge_")
 _DESTRUCTIVE_NAMES = frozenset({
     "subtract_solid", "clip_surface", "add_hole", "delete_component",
-    "delete_all_components", "delete_poly_vertex", "save_document_as",
+    "delete_all_components", "delete_poly_vertex", "save_document_as", "bridge_maintenance",
 })
 
 # Pinned into client context permanently instead of being discovered on demand.
@@ -584,7 +495,7 @@ def vtool(fn=None, **kwargs):
     def deco(f):
         name = f.__name__
         kwargs.setdefault("output_schema", None)
-        kwargs.setdefault("timeout", VWX_CALL_TIMEOUT)   # native fastmcp 3.x per-tool timeout
+        kwargs.setdefault("timeout", VWX_CALL_TIMEOUT)   # FastMCP per-tool timeout
         if VWX_TASKS and _TASKS_AVAILABLE and name in _TASK_TOOLS:
             kwargs.setdefault("task", True)              # opt-in MCP Tasks for long-running tools
         tag = TOOL_TAGS.get(name)
@@ -617,35 +528,37 @@ def vtool(fn=None, **kwargs):
     return deco(fn) if callable(fn) else deco
 
 
-def _export_readonly_manifest():
-    """Write the read-only tool set where the in-VW pump can read it.
-
-    The pump must never run a mutating command in the OnIdle notification
-    context (verified to crash Vectorworks). It decided what was safe by name
-    prefix alone — an unenforced convention that a single carelessly named
-    future command would violate silently. Audited today: 0 of 70 prefix-
-    matching commands actually mutate, so this is a latent gap rather than a
-    live bug — but it costs nothing to close it. The pump prefers this manifest
-    and falls back to its own prefixes when it is absent.
-    """
-    base = _plugin_dir()
-    if not base:
-        return
-    try:
-        path = os.path.join(base, 'ipc', 'readonly.json')
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        tmp = path + '.tmp'
-        with open(tmp, 'w', encoding='utf-8') as fh:
-            json.dump(sorted(READONLY_TOOLS), fh)
-        os.replace(tmp, path)
-        logger.info(f"exported {len(READONLY_TOOLS)} read-only tool names to {path}")
-    except Exception as e:
-        logger.warning(f"could not export the read-only manifest: {e}")
-
-
 # ═══════════════════════════════════════════════════════════════════
 # Document
 # ═══════════════════════════════════════════════════════════════════
+
+@vtool
+def bridge_maintenance(ctx: Context, action: str, token: str = '', expected_path: str = '') -> str:
+    """Coordinate a reviewed restart with an exclusive cooperative lease.
+
+    Generate and securely journal a 64-character lowercase hexadecimal token
+    before acquire. Local actions: acquire, release, lease_status. Host actions:
+    status, save, quit; these require the owning token and run as separate typed
+    jobs. Save/quit require the reviewed document path. Leases never expire or
+    steal another owner's work; uncertain results must not be replayed.
+    """
+    try:
+        if action not in {'acquire', 'release', 'lease_status', 'status', 'save', 'quit'}:
+            raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Unknown maintenance action')
+        if VWX_TRANSPORT != 'file':
+            raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Maintenance requires the supported file transport')
+        if action in bridge_lease.NATIVE_ACTIONS:
+            return cmd('bridge_maintenance', {'action': action, 'token': token, 'expected_path': expected_path})
+        base = _plugin_dir()
+        if base is None:
+            raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_STATE', 'Bridge installation not found')
+        result = getattr(bridge_lease, action)(base, token)
+    except bridge_lease.MaintenanceError as error:
+        result = error.response()
+    except (OSError, ValueError, TypeError) as error:
+        result = {'error': str(error), 'code': 'VWX_MAINTENANCE_STATE', 'dispatched': False}
+    return json.dumps(result, ensure_ascii=False, separators=(',', ':'))
+
 
 @vtool
 def ping(ctx: Context) -> str:
@@ -663,9 +576,9 @@ def save_document(ctx: Context) -> str:
     return cmd("save_document")
 
 @vtool
-def save_document_as(ctx: Context, path: str) -> str:
-    """Save document to a new path (absolute .vwx path)"""
-    return cmd("save_document_as", {"path": path})
+def save_document_as(ctx: Context, path: str, expected_current_path: Optional[str] = None) -> str:
+    """Save to an absolute .vwx path. Optional exact-current-path guard restricts this to saving that existing drawing."""
+    return cmd("save_document_as", {"path": path, "expected_current_path": expected_current_path})
 
 @vtool
 def list_documents(ctx: Context) -> str:
@@ -735,7 +648,7 @@ def delete_layer(ctx: Context, name: str) -> str:
 
 @vtool
 def set_active_layer(ctx: Context, name: str) -> str:
-    """Set the active (current) layer"""
+    """Check an already-active layer; switching is quarantined pending 2027 live testing."""
     return cmd("set_active_layer", {"name": name})
 
 @vtool
@@ -1106,7 +1019,7 @@ def get_symbol_instances(ctx: Context, name: str) -> str:
 @vtool
 def create_symbol_from_objects(ctx: Context, object_ids: list, name: str,
                                 origin_x: float = 0, origin_y: float = 0) -> str:
-    """Create a symbol definition from selected objects"""
+    """Duplicate objects into a symbol definition relative to origin_x/origin_y."""
     return cmd("create_symbol_from_objects", {"object_ids": object_ids, "name": name,
                                                "origin_x": origin_x, "origin_y": origin_y})
 
@@ -1293,7 +1206,8 @@ def create_plant(ctx: Context, x: float, y: float,
                  botanical_name: str = None, common_name: str = None,
                  height: float = None, spread: float = None,
                  layer: str = None) -> str:
-    """Create a VW plant object at (x, y). Returns object id."""
+    """Insert an existing plant symbol at (x, y). Native Plant PIO creation and
+    height/spread overrides are unsupported and return an error."""
     p = {"x": x, "y": y}
     if botanical_name: p["botanical_name"] = botanical_name
     if common_name: p["common_name"] = common_name
@@ -1358,7 +1272,8 @@ def get_viewports(ctx: Context) -> str:
 @vtool
 def create_viewport(ctx: Context, sheet_layer: str, x: float, y: float,
                     scale: float, design_layers: list = None) -> str:
-    """Create a viewport on a sheet layer. Returns object id."""
+    """Create a viewport on an existing sheet layer. Makes specified design_layers
+    visible without changing other layer defaults. Inspect in a separate request."""
     p = {"sheet_layer": sheet_layer, "x": x, "y": y, "scale": scale}
     if design_layers: p["design_layers"] = design_layers
     return cmd("create_viewport", p)
@@ -1421,17 +1336,17 @@ def export_pdf(ctx: Context, path: str, pages: str = "all") -> str:
 
 @vtool
 def export_dxf(ctx: Context, path: str) -> str:
-    """Export document to DXF/DWG format"""
+    """Report the unsupported unattended DXF/DWG export (SDK export opens a dialog)."""
     return cmd("export_dxf", {"path": path})
 
 @vtool
 def export_image(ctx: Context, path: str, object_id: Optional[str] = None,
-                 width: int = 2000, height: int = 1500,
-                 dpi: int = 150, format: str = "png") -> str:
+                 width: Optional[int] = None, height: Optional[int] = None,
+                 dpi: Optional[int] = None, format: Optional[str] = None) -> str:
     """Export an Image OBJECT in the document to a file (pass its object_id).
 
-    This canNOT rasterize the drawing itself — VW2026 has no headless
-    render-to-file API. To see what the drawing looks like use `screenshot`;
+    Resizing and format options are unsupported and must be omitted.
+    This cannot rasterize the drawing itself. To see the drawing use `screenshot`;
     for a vector deliverable use `export_pdf`. Called without object_id this
     returns an explanatory error rather than silently writing nothing."""
     return cmd("export_image", {"path": path, "object_id": object_id,
@@ -1447,7 +1362,7 @@ def import_dwg(ctx: Context, path: str, layer: str = None) -> str:
 
 @vtool
 def export_shp(ctx: Context, path: str, layer: str = None) -> str:
-    """Export to Shapefile (GIS export)"""
+    """Report the unsupported unattended Shapefile export (SDK export opens a dialog)."""
     p = {"path": path}
     if layer: p["layer"] = layer
     return cmd("export_shp", p)
@@ -1491,8 +1406,10 @@ def refresh_view(ctx: Context) -> str:
 # ═══════════════════════════════════════════════════════════════════
 
 @vtool
-def set_georeferencing(ctx: Context, crs: str, origin_x: float, origin_y: float) -> str:
-    """Set document georeferencing CRS (e.g. EPSG:25832) and origin coordinates"""
+def set_georeferencing(ctx: Context, crs: str, origin_x: Optional[float] = None,
+                       origin_y: Optional[float] = None) -> str:
+    """Set CRS (e.g. EPSG:25832) using the current user origin.
+    Explicit origin coordinates are unsupported and must be omitted."""
     return cmd("set_georeferencing", {"crs": crs, "origin_x": origin_x, "origin_y": origin_y})
 
 @vtool
@@ -1552,7 +1469,7 @@ def vwx(ctx: Context, command: str, params: Optional[Dict[str, Any]] = None) -> 
 
 @vtool
 def vwx_batch(ctx: Context, calls: List[Dict[str, Any]]) -> str:
-    """Run multiple VWX commands in one round-trip (saves socket + main-thread trips).
+    """Run multiple VWX commands in one queued job and main-thread invocation.
     calls: [{'command': str, 'params': dict}, ...]. Returns list of results in order."""
     return cmd("_batch", {"calls": calls})
 
@@ -1582,6 +1499,34 @@ def vs_index_stats(ctx: Context) -> str:
     """Size + per-category counts of the loaded `vs.*` knowledge index.
     Confirms vs_index.json is deployed and current."""
     return cmd("vs_index_stats")
+
+@vtool
+def sdk_call(ctx: Context, name: str, arguments: Dict[str, Any],
+             options: Optional[Dict[str, Any]] = None) -> str:
+    """Call a generated Vectorworks 2027 SDK adapter. Use exact parameter names
+    from sdk_list, UUID strings for object handles, and JSON point arrays.
+    Native geometry and execution-context prerequisites still apply."""
+    return cmd('sdk_call', {'name': name, 'arguments': arguments, 'options': options or {}})
+
+@vtool
+def sdk_list(ctx: Context, name: Optional[str] = None, search: str = '',
+             category: Optional[str] = None, offset: int = 0, limit: int = 50,
+             include_presence: bool = False) -> str:
+    """Discover SDK adapters and their exact transport contracts, return types,
+    and context restrictions. Pass name for one complete contract. include_presence
+    inspects installed callable availability without executing the SDK functions;
+    presence does not establish native correctness or valid execution context."""
+    return cmd('sdk_list', {'name': name, 'search': search, 'category': category,
+                            'offset': offset, 'limit': limit, 'include_presence': include_presence})
+
+@vtool
+def sdk_sequence(ctx: Context, calls: List[Dict[str, Any]],
+                 options: Optional[Dict[str, Any]] = None) -> str:
+    """Execute a bounded SDK sequence with balanced Begin/End scopes in one job.
+    Steps are {name, arguments}. Reference an earlier output using
+    {$ref: step_index, path: ['result']}. Stops on failure and closes scopes.
+    This provides neither rollback nor a regeneration boundary between steps."""
+    return cmd('sdk_sequence', {'calls': calls, 'options': options or {}})
 
 # ── SDK enrichment tools (3D modeling, 2D surfaces, graphic calc) ────────────
 
@@ -2784,8 +2729,8 @@ def screenshot(ctx: Context, max_width: int = 1400, fit_to_objects: bool = False
 # Every one of these is a question an agent asks constantly while working
 # ("what units? which layer am I on? what classes exist?") and each answer was
 # costing a full tool call plus a bridge crossing. As resources a client can
-# pull them as context directly. All are read-only by construction — they drain
-# through the pump's OnIdle path and never reach document mutation.
+# pull them as context directly. Resource reads use the same one-job menu runner
+# as tool calls; there is no notification-based Python execution.
 
 @mcp.resource("vwx://document", mime_type="application/json",
               description="Open Vectorworks document: filename, path, units, scale, version")
@@ -2890,7 +2835,7 @@ def export_document(fmt: str = "pdf") -> str:
 
 @vtool
 def set_toolset(ctx: Context, preset: str) -> str:
-    """Reshape the visible toolset in place: full | gis | modeling | baumkataster | minimal.
+    """Reshape the visible toolset: full | sdk | gis | modeling | baumkataster | minimal.
 
     Previously this needed the VWX_TOOLSET environment variable and a server
     restart. Switching emits tools/list_changed, so the client picks up the new
@@ -2927,8 +2872,8 @@ class ProgressHeartbeatMiddleware(Middleware):
     from a hung one.
 
     The tool bodies are synchronous (they block in fastmcp's threadpool on the
-    file or socket transport), so they cannot await anything themselves. Doing
-    the heartbeat here in async middleware keeps all 248 of them unchanged.
+    file transport), so they cannot await anything themselves. Doing
+    the heartbeat here in async middleware covers all registered tools.
     """
 
     def __init__(self, interval: float = 20.0):
@@ -3011,9 +2956,11 @@ def _install_middleware():
 
 
 def main():
+    vw_versions()
+    if VWX_TRANSPORT != 'file':
+        raise RuntimeError('Vectorworks 2027 requires VWX_TRANSPORT=file; use the native palette and Python menu command.')
     _init_otel()
     _install_middleware()
-    _export_readonly_manifest()
     # Optional toolset filtering via the fastmcp Visibility API.
     # VWX_TOOLSET=gis|modeling|baumkataster|minimal|full (default full = no filter).
     from tool_tags import preset_tags
@@ -3038,10 +2985,6 @@ def main():
         )
     else:
         mcp.run(transport=transport)
-
-if __name__ == "__main__":
-    main()
-
 
 # ──────────────────────────────────────────────────────────────────────────
 # Baustein pset-import
@@ -3306,3 +3249,14 @@ def confirm_active_document(ctx: Context, expected: str) -> str:
     cannot rule out the wrong folder, so it is not allowed to override it).
     """
     return cmd("confirm_active_document", {"expected": expected})
+
+
+# Register every tool before starting stdio/HTTP. Starting main() above the
+# later decorators left those tools invisible when launched as a script.
+SDK_TOOL_COUNT = 0
+if os.environ.get('VWX_SDK_TOOLS', '1').lower() not in ('0', 'false', 'off'):
+    from sdk_tools import register_sdk_tools
+    SDK_TOOL_COUNT = register_sdk_tools(mcp, cmd, VWX_CALL_TIMEOUT, TOOL_TAGS)
+
+if __name__ == '__main__':
+    main()

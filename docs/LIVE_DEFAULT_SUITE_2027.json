@@ -1,0 +1,1704 @@
+{
+  "schema_version": 1,
+  "status": "all_default_families_passed_across_fresh_batches",
+  "scope": "Saved typed-MCP default noninteractive regression plans for Vectorworks 2027 on Windows; historical observations independently re-evaluated offline.",
+  "summary": {
+    "default_families": 57,
+    "complete_families": 57,
+    "unique_planned_jobs": 2303,
+    "successful_job_executions": 2343,
+    "successful_executions_from_partial_attempts": 40,
+    "recorded_fixture_attempts": 2344,
+    "blocked_undispatched_fixture_attempts": 1,
+    "passing_assertions_including_partial_attempt": 2408,
+    "failed_semantic_assertions": 0,
+    "excluded_diagnostic_families": 8,
+    "excluded_characterization_families": 13,
+    "native_semantics_fully_verified": false,
+    "passing_assertions_in_complete_families": 2368
+  },
+  "provenance": {
+    "sdk": {
+      "vectorworks_year": 2027,
+      "sdk_version": 3200,
+      "sdk_build": 882699
+    },
+    "source_sha256": {
+      "sdk_catalog.json": "fc09980bef0dea14a181de5b1a0c830e9e90aec14186951210ff52b65a078a0e",
+      "sdk_runtime.py": "379dc990fefbbe5ec644d425b9754344c969c88b4b46c6201ac68cf67e38c6e6",
+      "sdk_generated.py": "76b23ef2f31f6742a5e134bf5ee2aa1ab021b844bbcf6e2cc9510fc00b7ffc38",
+      "sdk_sequences.py": "c4fd9ee2b96ac1926441e399fbcbd779f5e7e7e3e5d0422ac591b976d7e299fa"
+    },
+    "fixture_source_sha256": {
+      "sdk_design_fixtures.py": "7bcba047a4ca27c1b7a2e6965025ec65e18d44bef3f1811130ee3876f4bfed78",
+      "sdk_numeric_fixtures.py": "c9070652069d747576afc89d9f0e922f6630c4c6256ade127101ebbffe591e70",
+      "sdk_geometry_fixtures.py": "365fe393a7a93d161023e5dee188fd4a5dc99035812990bf5f15f6e558ef3445",
+      "sdk_data_fixtures.py": "dda8ae6d355c7f23c64e80e73168c741c8af21ab5305b8d132214c0cd4efe490",
+      "sdk_annotation_fixtures.py": "92866c82be75761fe40df3ed3a13d960805d4503eeb85967e47452aa029f64e2",
+      "sdk_resource_fixtures.py": "bedbd6a1ce39963fe2725b0db3e510f29aad689c2671c3b1455dbd8fccfe408e",
+      "sdk_modeling_fixtures.py": "70fc5cfda8d5f0896930ef29078243d67d37bdec4a7f5cde32d44ed043fef371",
+      "sdk_regression_suite.py": "c1f6fdafda9b9570928094dca787224b08edded030761b88ec6a4ac9fb3e4d97",
+      "run_sdk_regression.py": "944c9af7c7b195334b5839dcce5ce135ecffb28cd834e925066f2f529930f986",
+      "sdk_design_runner.py": "90303d789b65fd434f3f88df5ab9eacf16a2072ec0cfa966571f814586ef0596",
+      "sdk_host_suite.py": "b699416f286155dadb11f058379e1117e3e38aad3f42798d56f1313b120153a1"
+    },
+    "document_path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+    "host": {
+      "vectorworks_year": 2027,
+      "build": 882075,
+      "version_tuple": [
+        32,
+        0,
+        0,
+        2
+      ]
+    }
+  },
+  "verification": {
+    "method": [
+      "Validated saved plan/result provenance, ordered request identity, substituted captures, assertion declarations and recomputed outcomes with import_sdk_regression.validate_bound_run.",
+      "Rechecked every completed family with run_sdk_regression_batch._passed_family.",
+      "Matched every result row to its journal, typed request/response, successful disposable-document guard and actual deployed four-file SDK source hashes.",
+      "Validated each measured GetVersionEx prelude and exact common source/fixture pins; compared executed plans to their reserved batch plans.",
+      "Matched completed-family union to current default family selection; diagnostic and characterization families receive no credit."
+    ],
+    "validators": {
+      "import_sdk_regression.py": "60927b52db13469533b73e2a85e3ff234f2740d485f0bc9cc3f015d6755841db",
+      "sdk_regression_suite.py": "c1f6fdafda9b9570928094dca787224b08edded030761b88ec6a4ac9fb3e4d97",
+      "sdk_host_suite.py": "b699416f286155dadb11f058379e1117e3e38aad3f42798d56f1313b120153a1",
+      "sdk_design_runner.py": "90303d789b65fd434f3f88df5ab9eacf16a2072ec0cfa966571f814586ef0596",
+      "run_sdk_regression.py": "944c9af7c7b195334b5839dcce5ce135ecffb28cd834e925066f2f529930f986",
+      "run_sdk_regression_batch.py": "853537482ce41ad1b19b8d76d63d4470e86ed0a34362ebc7d072fb162cc13aaf"
+    }
+  },
+  "batches": [
+    {
+      "batch": "A",
+      "manifest": {
+        "path": ".audit/fullsuite-native-20260927-a/batch-plan.json",
+        "sha256": "46f8c4d8401e174a99e6ba50ba16d0c343066166071b53e37ec0f03b4e91ffa8"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/batch-result.json",
+        "sha256": "dc9e18724107f119d19ee89fbbcdc57905ff6ff916911fbccfe9bee6b1f28a44"
+      },
+      "batch_source_sha256": "835bf4307db14b9d936473399bd4c84409e60274fcf1b3d1e52fd0eba7ab6e10",
+      "status": "blocked",
+      "counts": {
+        "successful_jobs": 1814,
+        "passing_assertions": 1848,
+        "recorded_fixture_attempts": 1814,
+        "complete_families": 44,
+        "planned_jobs": 2303,
+        "planned_families": 57,
+        "jobs_in_complete_families": 1814,
+        "successful_jobs_in_partial_families": 0
+      },
+      "remaining_families_at_stop": [
+        "resource:resource_gradient_segments",
+        "resource:resource_gradient_opacity",
+        "resource:resource_gradient_aggregate_opacity",
+        "modeling:modeling_bounds",
+        "modeling:modeling_rounded",
+        "modeling:modeling_oriented_primitives",
+        "modeling:modeling_duplicates",
+        "modeling:modeling_planar_conversion",
+        "modeling:modeling_primitive_solids",
+        "modeling:modeling_extrude_info",
+        "modeling:modeling_nurbs_sampling",
+        "modeling:modeling_csg",
+        "modeling:modeling_centroid_units"
+      ],
+      "error": "Malformed bridge diagnostics"
+    },
+    {
+      "batch": "B",
+      "manifest": {
+        "path": ".audit/fullsuite-native-20260927-b/batch-plan.json",
+        "sha256": "a04a4a15c180c37ae1d638f354a2f8fcd933921759db6e9e0742d7ed9f030bd0"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-b/batch-result.json",
+        "sha256": "be85ec52b91782d4362946427bea6910d0719dc772546a6372cdeb246cf56535"
+      },
+      "batch_source_sha256": "835bf4307db14b9d936473399bd4c84409e60274fcf1b3d1e52fd0eba7ab6e10",
+      "status": "blocked",
+      "counts": {
+        "successful_jobs": 211,
+        "passing_assertions": 211,
+        "recorded_fixture_attempts": 212,
+        "complete_families": 3,
+        "blocked_undispatched_jobs": 1,
+        "planned_jobs": 489,
+        "planned_families": 13,
+        "jobs_in_complete_families": 171,
+        "successful_jobs_in_partial_families": 40
+      },
+      "remaining_families_at_stop": [
+        "modeling:modeling_rounded",
+        "modeling:modeling_oriented_primitives",
+        "modeling:modeling_duplicates",
+        "modeling:modeling_planar_conversion",
+        "modeling:modeling_primitive_solids",
+        "modeling:modeling_extrude_info",
+        "modeling:modeling_nurbs_sampling",
+        "modeling:modeling_csg",
+        "modeling:modeling_centroid_units"
+      ],
+      "error": "timed out after 40s — job was never picked up. Check the bridge palette and the enabled 'VWX Bridge Start' Python command in the current workspace. Inspect native.scheduler.json for the trigger failure before starting a fresh request."
+    },
+    {
+      "batch": "C",
+      "manifest": {
+        "path": ".audit/fullsuite-native-20260927-c/batch-plan.json",
+        "sha256": "0faeec5ae3dac7cb39751641a418af29a443e2841ab9902e7a330c88ff6f10ee"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/batch-result.json",
+        "sha256": "ae988cc919b3c78ab0bf84fc569a28d587df760d6253a52c92384bf9c0b2f024"
+      },
+      "batch_source_sha256": "853537482ce41ad1b19b8d76d63d4470e86ed0a34362ebc7d072fb162cc13aaf",
+      "status": "passed",
+      "counts": {
+        "successful_jobs": 318,
+        "passing_assertions": 349,
+        "recorded_fixture_attempts": 318,
+        "complete_families": 10,
+        "planned_jobs": 318,
+        "planned_families": 10,
+        "jobs_in_complete_families": 318,
+        "successful_jobs_in_partial_families": 0
+      },
+      "remaining_families_at_stop": []
+    }
+  ],
+  "completed_families": [
+    {
+      "family": "design:attributes",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-e0e4108d65",
+      "status": "passed",
+      "planned_jobs": 37,
+      "successful_jobs": 37,
+      "passing_assertions": 37,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/001-e0e4108d6510/plan.json",
+        "sha256": "4bb20a8114a558ebe403bd8a86a6cbd7b71c2fe46bb1ee99110a5d13ac58d17e"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/001-e0e4108d6510/result.json",
+        "sha256": "c458fd3557e3aecd23bc245040c71b0b887a78a1d5a77fd11002870db9f56288"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/001-e0e4108d6510/journal.jsonl",
+        "sha256": "cb7bb736b28726c56fb0b3d6be4e3150b5c6813fa11e22661e1bae7c1b5e1669"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/001-e0e4108d6510/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:line",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-0f8fb69d30",
+      "status": "passed",
+      "planned_jobs": 10,
+      "successful_jobs": 10,
+      "passing_assertions": 10,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/002-0f8fb69d3086/plan.json",
+        "sha256": "820ded246d9dbbf7dae0fd3fc2ef9a2b0d1a2a63c3d60d2f570b600b3cc15487"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/002-0f8fb69d3086/result.json",
+        "sha256": "be1bd058fd854fbb56a73fab93ac964eda97ed6ab0e6655fcaabe965345f0f2f"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/002-0f8fb69d3086/journal.jsonl",
+        "sha256": "141935d76270496be33a85a546728ee2ba4525680653acc100b35822d9490a83"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/002-0f8fb69d3086/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:polygon",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-dae56667b6",
+      "status": "passed",
+      "planned_jobs": 18,
+      "successful_jobs": 18,
+      "passing_assertions": 18,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/003-dae56667b696/plan.json",
+        "sha256": "c0ad1dd52271ccb6f6f5b246b5cd61b6fc3be4abe7334bca04420d3821f743b9"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/003-dae56667b696/result.json",
+        "sha256": "60a83e14d4111aa781356bd1b1e6b75964cc53b8f4b0778ba96144d7b600f024"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/003-dae56667b696/journal.jsonl",
+        "sha256": "38e29105073539b3eefe87d79626f7158a11eb891d47d508ad0a2dc0909852e9"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/003-dae56667b696/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:text",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-045596dc1e",
+      "status": "passed",
+      "planned_jobs": 20,
+      "successful_jobs": 20,
+      "passing_assertions": 20,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/004-045596dc1e57/plan.json",
+        "sha256": "4fde246bb6f12cd4fd56856fe8d1238522ee0250a487fd82005180b063fe7c9f"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/004-045596dc1e57/result.json",
+        "sha256": "1513edd4d135a5ff613a2ee42108480d091ebc7af5dd5494f156b19d45668186"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/004-045596dc1e57/journal.jsonl",
+        "sha256": "1fe578687a825e33878020951b6b05f74cc3c176172ea3f2fc43b94a1c790ad4"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/004-045596dc1e57/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:worksheet",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-fb0604e711",
+      "status": "passed",
+      "planned_jobs": 28,
+      "successful_jobs": 28,
+      "passing_assertions": 28,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/005-fb0604e711e7/plan.json",
+        "sha256": "51a443dc792bcd5c1f2c36f654bcec942591a7f0621fe3bd25b56042ea70efe0"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/005-fb0604e711e7/result.json",
+        "sha256": "153359e54b6d1321a07eec2981cbb125a4950055df79fc1fec7ec85cb6fc68ad"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/005-fb0604e711e7/journal.jsonl",
+        "sha256": "a0862e600f5103e60f52d10fa0bb28640ab2b126385931f34c591508d204f6ea"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/005-fb0604e711e7/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:records",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-cd52495676",
+      "status": "passed",
+      "planned_jobs": 10,
+      "successful_jobs": 10,
+      "passing_assertions": 10,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/006-cd5249567678/plan.json",
+        "sha256": "8b2e3f4fdf82eceae75c25a2772bc8d52b08102353d5c6c0af1ce2357f245c3b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/006-cd5249567678/result.json",
+        "sha256": "caf59449e367ad87a6d8422b16fc11ab5224fa9c25133f0ace1049974e9ff3d5"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/006-cd5249567678/journal.jsonl",
+        "sha256": "e87552506596c5aaf621c2a2177e622a4f3d22096751c34b32b5400b5dc2e19a"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/006-cd5249567678/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:resources",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-e3dabcb2d3",
+      "status": "passed",
+      "planned_jobs": 8,
+      "successful_jobs": 8,
+      "passing_assertions": 8,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/007-e3dabcb2d339/plan.json",
+        "sha256": "eff5885b389263f0b9a3a4ec610fb17a6efd29a19fe0e0aae622aea69bf2b4ea"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/007-e3dabcb2d339/result.json",
+        "sha256": "fadc21b86911ad0294e3768d81b82082d319fb182ef5553163550d6755a1d080"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/007-e3dabcb2d339/journal.jsonl",
+        "sha256": "59ba4c7343098affc48458b58124b82137e8db762ef9720cae3b9198cf61bb5d"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/007-e3dabcb2d339/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "design:solid",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-3645c3f54d",
+      "status": "passed",
+      "planned_jobs": 8,
+      "successful_jobs": 8,
+      "passing_assertions": 8,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/008-3645c3f54d88/plan.json",
+        "sha256": "51989e7007540ffa12fd824d683b572fda8eb2cb1a68f7dc0b011613908d1e9b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/008-3645c3f54d88/result.json",
+        "sha256": "4b7bdcd9300784f399695f278301875ce5d9557ac08b3317d01fe3ec91664307"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/008-3645c3f54d88/journal.jsonl",
+        "sha256": "29348c68fb72be780c20a16c3272358d90ea57d57f50ae7ea6546cbfe6d8adf1"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/008-3645c3f54d88/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "numeric:scalar_math",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-005b775619",
+      "status": "passed",
+      "planned_jobs": 99,
+      "successful_jobs": 99,
+      "passing_assertions": 99,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/009-005b775619fc/plan.json",
+        "sha256": "60baf4a669068b889b7658b6e84fcaecc049d64ea9289772d5da2deefbc74cb2"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/009-005b775619fc/result.json",
+        "sha256": "eec8b672126607b132a7b6f0f0b337ce5c11dab6ef42433c7669d8d3c5c6ae15"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/009-005b775619fc/journal.jsonl",
+        "sha256": "876eaf10ba28607f93f21cc6cb372e07c52aacb5ef5572414e66e64d172f56fd"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/009-005b775619fc/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "numeric:vector_math",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-520a6352f9",
+      "status": "passed",
+      "planned_jobs": 33,
+      "successful_jobs": 33,
+      "passing_assertions": 33,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/010-520a6352f911/plan.json",
+        "sha256": "1f47a2d047ef30a3a626c8f2b4e76b8ee577d556fa9a6bc600dff2f26bbbf33b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/010-520a6352f911/result.json",
+        "sha256": "6bc0bd2943978b41f0618da0c1c447202139e6098975570667a9f981e3cbfb83"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/010-520a6352f911/journal.jsonl",
+        "sha256": "2b9f15a6279d5dc435a7f62c06ece4e0249c82898b56dd187a2f61c860a5b46f"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/010-520a6352f911/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "numeric:coordinate_math",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-4965f68589",
+      "status": "passed",
+      "planned_jobs": 37,
+      "successful_jobs": 37,
+      "passing_assertions": 37,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/011-4965f6858986/plan.json",
+        "sha256": "197e02eb22070859dd794f776363d1866f002efa30532b97bca19b9c9a4c033c"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/011-4965f6858986/result.json",
+        "sha256": "a8b413f0d0aa94cf9813f0da5979ae2cb742404c10e41bcf6098fb966c42f4ef"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/011-4965f6858986/journal.jsonl",
+        "sha256": "23c02aa589a5d7b47f429d8c13c226f9fef114d8e257e2418ac9bdb0be2c4e1d"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/011-4965f6858986/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "numeric:string_edges",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-984c331f9f",
+      "status": "passed",
+      "planned_jobs": 45,
+      "successful_jobs": 45,
+      "passing_assertions": 45,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/012-984c331f9f1c/plan.json",
+        "sha256": "3e2ae9edf8806ca0aee67c1a61b4f01334d187957767068c8167e20fcf377352"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/012-984c331f9f1c/result.json",
+        "sha256": "4f27ed22a5f39736f66237a6d5a78021d4cade9c5b275e38b015f6e5d5a51e9a"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/012-984c331f9f1c/journal.jsonl",
+        "sha256": "147c8fad31f5a82d4feb9ad3e7ce80d3de8921d4b6bcc4ced3f17e67354830e7"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/012-984c331f9f1c/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "numeric:string_encoding",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-90a977d978",
+      "status": "passed",
+      "planned_jobs": 16,
+      "successful_jobs": 16,
+      "passing_assertions": 16,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/013-90a977d9784a/plan.json",
+        "sha256": "078625363a748e2ef8d2a7229f72689124e130848da9b8fac5b4fe99e2df4c04"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/013-90a977d9784a/result.json",
+        "sha256": "ac3cd6ab4af77fbd3b06d350ca87e4b6daed1e5416b5822a7a6367fc2a314861"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/013-90a977d9784a/journal.jsonl",
+        "sha256": "b02c6ecceca9bba55f0925860ff3c5df4f6091e98d4a5e4ba852f6c13d3d271a"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/013-90a977d9784a/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_rectangles",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-23d49d1ce6",
+      "status": "passed",
+      "planned_jobs": 61,
+      "successful_jobs": 61,
+      "passing_assertions": 61,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/014-23d49d1ce620/plan.json",
+        "sha256": "d9c8f9fe8c0343159de499a9c2e7c4e545dde19c80049a8f63107d5dd6870787"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/014-23d49d1ce620/result.json",
+        "sha256": "81c3369d16ef599e1f556d39b228e9f8230a044b52f737a48db9d172d73006e5"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/014-23d49d1ce620/journal.jsonl",
+        "sha256": "66d9c56f1ce3c8b4b1a3512767b56791c04baaad2532d7a51358940e1c7b097a"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/014-23d49d1ce620/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_ovals",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-77b35ed23c",
+      "status": "passed",
+      "planned_jobs": 30,
+      "successful_jobs": 30,
+      "passing_assertions": 30,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/015-77b35ed23c56/plan.json",
+        "sha256": "639164fa3af3749f20662a44a9021c9d49764b85df1f22df670cc3c564101138"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/015-77b35ed23c56/result.json",
+        "sha256": "36446db71e3222318e463850bb29dd2417ede0791efe2de0f78f713a352c8c0d"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/015-77b35ed23c56/journal.jsonl",
+        "sha256": "0d79fc6bde2fadad8f8b1a152da3577992a92e420580ae3d65455e540c202c85"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/015-77b35ed23c56/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_arcs",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-3b96a9c9d2",
+      "status": "passed",
+      "planned_jobs": 20,
+      "successful_jobs": 20,
+      "passing_assertions": 20,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/016-3b96a9c9d281/plan.json",
+        "sha256": "6b184e7d348aca2101daaa355a024cc3c434857a5a697ead00187b81876e908b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/016-3b96a9c9d281/result.json",
+        "sha256": "053fbbfc2aeab924b48f490417581ca8f060441aef5cd84319f99e5ce2374f09"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/016-3b96a9c9d281/journal.jsonl",
+        "sha256": "0f1009eb95658812ae967d4850761d7922c9c9cd2b09a810507add395c5d6f93"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/016-3b96a9c9d281/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_lines",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-77b6d3f1ac",
+      "status": "passed",
+      "planned_jobs": 35,
+      "successful_jobs": 35,
+      "passing_assertions": 35,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/017-77b6d3f1ac33/plan.json",
+        "sha256": "9f170bedeb4a1623de092af56b566ee36065b981d52b80be4aafee5baaae30f1"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/017-77b6d3f1ac33/result.json",
+        "sha256": "9c284dd975e2e65fdfc9030ebb87ddabfc3fb7f7d7c14128ed6a9aa378ca53d4"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/017-77b6d3f1ac33/journal.jsonl",
+        "sha256": "bf101f51a4e88904a61af94b8abeaf81e2144cbf8f878a02d115d3d18db39982"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/017-77b6d3f1ac33/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_polygons",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-70593e9fe9",
+      "status": "passed",
+      "planned_jobs": 46,
+      "successful_jobs": 46,
+      "passing_assertions": 46,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/018-70593e9fe990/plan.json",
+        "sha256": "791c3d29dff595b1f7b0393cd902d0103b9d0ff9dee689d9fef92fdab08feac7"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/018-70593e9fe990/result.json",
+        "sha256": "dcddca8704421a4b0df091ec2d190ce6d1b6659c5b81268406dd7c7ba3a8abd5"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/018-70593e9fe990/journal.jsonl",
+        "sha256": "3788a7eacaffbaf6336b4497c5013ffb1feb00d6287d5f03ca36ce57afa4039b"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/018-70593e9fe990/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_loci",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-a99ae1586b",
+      "status": "passed",
+      "planned_jobs": 13,
+      "successful_jobs": 13,
+      "passing_assertions": 13,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/019-a99ae1586bee/plan.json",
+        "sha256": "c4d47b494677e3dec9af82cf5315c7f50143bd0da3abb23851b9c2b803bf6ead"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/019-a99ae1586bee/result.json",
+        "sha256": "becf82442a0465de34ef6da0c2b215c9f6c673ccf25e189e0d04e6ca3983010c"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/019-a99ae1586bee/journal.jsonl",
+        "sha256": "56f2c6f8fbdaad9708f311fc3ced4fb911417844b798ff0ce3de8de2963b34ef"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/019-a99ae1586bee/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_poly3d",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-119030ff2f",
+      "status": "passed",
+      "planned_jobs": 9,
+      "successful_jobs": 9,
+      "passing_assertions": 9,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/020-119030ff2fa5/plan.json",
+        "sha256": "cc43b4709f3dcfb9553b5f8c6ed6324f789a85ad9ecbbdcc2208b8aa38265375"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/020-119030ff2fa5/result.json",
+        "sha256": "18a92c9b3bb36b95e289792b088c2c604788d4409fd25fcaf47f5d29ba07fb26"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/020-119030ff2fa5/journal.jsonl",
+        "sha256": "eb8a8f2b48fb6c2ef7d29e765f4dad72206a4e49717df3d6ea4c42ad06757760"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/020-119030ff2fa5/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_extrudes",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-b3290590df",
+      "status": "passed",
+      "planned_jobs": 17,
+      "successful_jobs": 17,
+      "passing_assertions": 17,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/021-b3290590df5a/plan.json",
+        "sha256": "4808ff6fe59083793aa2f92a6e26052c8c57e3e207ca0205f251a8a1a50930b7"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/021-b3290590df5a/result.json",
+        "sha256": "583b741b50cf65c9e76ee02745f45964b42b7352c4721370ff3fee929b555051"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/021-b3290590df5a/journal.jsonl",
+        "sha256": "7a94216da3f6ee926caa2ba204a95d82bd452a3c5b79742bb2933882927e1646"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/021-b3290590df5a/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_nurbs",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-51cb8bfc5a",
+      "status": "passed",
+      "planned_jobs": 18,
+      "successful_jobs": 18,
+      "passing_assertions": 18,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/022-51cb8bfc5ac6/plan.json",
+        "sha256": "49fc7ef430c6b5297d8aa7412019e5e7e7ab6a3214fa4e4dda19dbbeb19e5d27"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/022-51cb8bfc5ac6/result.json",
+        "sha256": "3b7cae5fba53087a8b90da7b2a72affad5ea0f9251c601dcfde040623c63912b"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/022-51cb8bfc5ac6/journal.jsonl",
+        "sha256": "7fa387923fd863b29789b758f436cc45b207a321bdb84ae84995108641e4aba6"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/022-51cb8bfc5ac6/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_harea",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-71e105b011",
+      "status": "passed",
+      "planned_jobs": 17,
+      "successful_jobs": 17,
+      "passing_assertions": 17,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/023-71e105b0118e/plan.json",
+        "sha256": "ee34032e623bea3f99dbab3b64a89d90ce68e9f32a0dbd7e2971eebbc312f716"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/023-71e105b0118e/result.json",
+        "sha256": "698307a10e0c968500395e029c3f6f28681c6bc4f48df8f4ab7d3716dd744a66"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/023-71e105b0118e/journal.jsonl",
+        "sha256": "454146679340d165256a9cf7d766a1ceaaeed9ff7aa3bbfb211a97a34d2e68da"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/023-71e105b0118e/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "geometry:geometry_arc_repair_geometry",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-68f8eee23f",
+      "status": "passed",
+      "planned_jobs": 148,
+      "successful_jobs": 148,
+      "passing_assertions": 180,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/024-68f8eee23f9b/plan.json",
+        "sha256": "7ba0edbaa36df90da675e683ed941cafb4e7fb5567fa8c15fe6e46edf4313393"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/024-68f8eee23f9b/result.json",
+        "sha256": "8794ce6cca4bd3801dbd4a9e2397970d745bd05f257feae440cc9c3226540b5b"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/024-68f8eee23f9b/journal.jsonl",
+        "sha256": "2a7f3dbcd611d38680729822bc3704226fd5626488044eb8e3e95284f4eda4ed"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/024-68f8eee23f9b/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_attributes",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-44b8e6fdd1",
+      "status": "passed",
+      "planned_jobs": 38,
+      "successful_jobs": 38,
+      "passing_assertions": 38,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/025-44b8e6fdd183/plan.json",
+        "sha256": "447feae5a6662667e4a29f28205d85700081744e66903aa6d8236783d1a08d2b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/025-44b8e6fdd183/result.json",
+        "sha256": "32078c50874a28954aa6ad00c048896682ed9889fe7a95092e297038bfdcaf2b"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/025-44b8e6fdd183/journal.jsonl",
+        "sha256": "d2b882720ea2d7c5b7010e1c80d23546731eaeb4dafb6c9c4080a6cdb0ea6f15"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/025-44b8e6fdd183/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_records",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-22e4158a47",
+      "status": "passed",
+      "planned_jobs": 55,
+      "successful_jobs": 55,
+      "passing_assertions": 55,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/026-22e4158a4783/plan.json",
+        "sha256": "bbb93943256de0595b2ec5c8909b20451a0af7c9cb1f36be7833f360c7ef60ea"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/026-22e4158a4783/result.json",
+        "sha256": "d335bedd658e4f12d440459fe1a71b81450df0243ed6572c16c127277f33af47"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/026-22e4158a4783/journal.jsonl",
+        "sha256": "83fbee7377cb6488765c6731a5618fa0bbef055ab998a0975d22c3af70b359cf"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/026-22e4158a4783/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_values",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-557852e47e",
+      "status": "passed",
+      "planned_jobs": 46,
+      "successful_jobs": 46,
+      "passing_assertions": 46,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/027-557852e47e35/plan.json",
+        "sha256": "bc52d99056d2fda2160b9e0524001dd1e9f6fbf865341759d71159379f0ff895"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/027-557852e47e35/result.json",
+        "sha256": "f97ac9343136dbaf501be769e581004f3816d0b9eba8c22de0161fa3448bfa10"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/027-557852e47e35/journal.jsonl",
+        "sha256": "f9b00796c05992548563f6e8c87a4a8bce115e35f8574f4fc3412e09073b5693"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/027-557852e47e35/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_format",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-bedd2c4982",
+      "status": "passed",
+      "planned_jobs": 63,
+      "successful_jobs": 63,
+      "passing_assertions": 63,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/028-bedd2c4982e3/plan.json",
+        "sha256": "3bc3b5b29d819d2c1f4d81aa121696ecf6d9ceec6ba7eb16c09ae060838857b2"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/028-bedd2c4982e3/result.json",
+        "sha256": "7b389fda269c08c17cc8dcf9e627ad2c08d1d90b532ccc5ee70a8b58b55bd7d4"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/028-bedd2c4982e3/journal.jsonl",
+        "sha256": "22569860043c0fa776551320dac4625453677d99302e3cc4557d4c4ab86e5916"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/028-bedd2c4982e3/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_structure",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-7b59c4057d",
+      "status": "passed",
+      "planned_jobs": 20,
+      "successful_jobs": 20,
+      "passing_assertions": 20,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/029-7b59c4057d26/plan.json",
+        "sha256": "2b5e8e7bfd21fbcc5e35ef99b9902e20ac97af97f491491ee27470fbf05fb75e"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/029-7b59c4057d26/result.json",
+        "sha256": "d08d962312341bf7aae198abfa17802eeea343a30724c00223a782159670f6f9"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/029-7b59c4057d26/journal.jsonl",
+        "sha256": "de2b6423874fc4b8a1997cba3372f020637bce806cd1de50bba02b074e3cfe01"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/029-7b59c4057d26/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_materials",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-7482d0ffa7",
+      "status": "passed",
+      "planned_jobs": 30,
+      "successful_jobs": 30,
+      "passing_assertions": 32,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/030-7482d0ffa760/plan.json",
+        "sha256": "4980991597f1982b48b696834d4bed96d5df06efc876c6e68a67b43957906b80"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/030-7482d0ffa760/result.json",
+        "sha256": "2da729d361004b538045d8cab2153866be81ec59bec0f6421be0448e375b1eac"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/030-7482d0ffa760/journal.jsonl",
+        "sha256": "4f72a3455477c79f41b7dab7d18becd97af59fe19135a61e29286c69800939c0"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/030-7482d0ffa760/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_resource_tags",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-f0ea0c1b7e",
+      "status": "passed",
+      "planned_jobs": 6,
+      "successful_jobs": 6,
+      "passing_assertions": 6,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/031-f0ea0c1b7e5e/plan.json",
+        "sha256": "22147c594260d6d7d18d5ce2338fa6ae2857ec0a0ac621c558364b9d69af9ab9"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/031-f0ea0c1b7e5e/result.json",
+        "sha256": "93379f1b2322e3414319880eaaaf819757aa5365ad135bed225aa49a29b08426"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/031-f0ea0c1b7e5e/journal.jsonl",
+        "sha256": "7b46eb407b8d31167773889a2e63287e6a21f6b42bfe66af86f435e65f1edc9c"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/031-f0ea0c1b7e5e/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_database",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-78d69a52de",
+      "status": "passed",
+      "planned_jobs": 54,
+      "successful_jobs": 54,
+      "passing_assertions": 54,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/032-78d69a52dec2/plan.json",
+        "sha256": "126d2e3243b367625205f025be13ee96063f141d2c57ba05d16174d059bb0ecf"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/032-78d69a52dec2/result.json",
+        "sha256": "350b5da908ae2dcc93591b96bdfde417b9367a3462ae4ca6bedfb2ceab2828d3"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/032-78d69a52dec2/journal.jsonl",
+        "sha256": "a6ca34844de93f97647f92df7e81c43ab1f564ff5eddbde38ca52e6faad3c3c0"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/032-78d69a52dec2/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_operators",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-a7174867c1",
+      "status": "passed",
+      "planned_jobs": 70,
+      "successful_jobs": 70,
+      "passing_assertions": 70,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/033-a7174867c193/plan.json",
+        "sha256": "1efc7145a6497862eb44f72bee73a25438a267f297175c55ae54c36c20e3d191"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/033-a7174867c193/result.json",
+        "sha256": "beeeb5e4f4c2f1bad2fe12eef6fd1bb23c451aab2659ff7e461f809e6a3c5f57"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/033-a7174867c193/journal.jsonl",
+        "sha256": "0e02adc74330fea44f4bafea02e23fe27ebb7d3d4c02c441740c133e6fc9ecd9"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/033-a7174867c193/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "data:data_worksheet_edge_edits",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-e16d697c98",
+      "status": "passed",
+      "planned_jobs": 66,
+      "successful_jobs": 66,
+      "passing_assertions": 66,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/034-e16d697c9823/plan.json",
+        "sha256": "e9ff13d9c4f6c362accc64e15b557963b6092f81ee34a7ae3d99237b5d777740"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/034-e16d697c9823/result.json",
+        "sha256": "5defa2c8f421ee30aec974f24ca4698fa2a53dbacc3763c91f7c5981c3c8193f"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/034-e16d697c9823/journal.jsonl",
+        "sha256": "625f66df10ac9616e4074a0eb68ea0798289dd3d3ffc013652fc4f93ca5cfe0d"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/034-e16d697c9823/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_text_runs",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-1a1ea13179",
+      "status": "passed",
+      "planned_jobs": 120,
+      "successful_jobs": 120,
+      "passing_assertions": 120,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/035-1a1ea13179a6/plan.json",
+        "sha256": "01718dbf71f31f60d3c1d88265c0df04d8f0c9a56f8028332959afb9dba40242"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/035-1a1ea13179a6/result.json",
+        "sha256": "668bf88d6702d1f2b9181cf562a95dd8d86a62d636aa306437b1926e6a1c90ae"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/035-1a1ea13179a6/journal.jsonl",
+        "sha256": "96540960333e2eb040950857965138e7979948fb1522c7fe02dd9e75eaf77fb4"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/035-1a1ea13179a6/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_text_layout",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-ec99cf9936",
+      "status": "passed",
+      "planned_jobs": 39,
+      "successful_jobs": 39,
+      "passing_assertions": 39,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/036-ec99cf993669/plan.json",
+        "sha256": "639aa01534290df8e0633900f0289dc26d62b176bf3bf36b97f72d451cb68104"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/036-ec99cf993669/result.json",
+        "sha256": "9633379269439dd9b9175ae85143236ce86b6c45d6197095c1ee68d273fdcd3f"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/036-ec99cf993669/journal.jsonl",
+        "sha256": "18c4eb2d6d6922422d0989dcb0228bc344bc61a54c6f24f5af4ea4759332d08b"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/036-ec99cf993669/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_text_replacements",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-2f2f38bbc5",
+      "status": "passed",
+      "planned_jobs": 38,
+      "successful_jobs": 38,
+      "passing_assertions": 38,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/037-2f2f38bbc5bc/plan.json",
+        "sha256": "0e3efb23e15d6c15b1b56d9bd494cca779fdbdbb838094a4fc71fae0f063f87a"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/037-2f2f38bbc5bc/result.json",
+        "sha256": "ccd3be0ec1f26b3ec8888df8c9e095ab4260ee4b9105d0421c3203114e4a45fd"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/037-2f2f38bbc5bc/journal.jsonl",
+        "sha256": "49757f666913819d0bb076c638320a0439187bad0c2dffa9fe9ce4bc6f161bc3"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/037-2f2f38bbc5bc/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_ws_borders",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-1f73d251d5",
+      "status": "passed",
+      "planned_jobs": 80,
+      "successful_jobs": 80,
+      "passing_assertions": 80,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/038-1f73d251d50b/plan.json",
+        "sha256": "0c327a1e292ed40b1257f400e2fc631a65ab86f158c6a1923b24cad14b671cc2"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/038-1f73d251d50b/result.json",
+        "sha256": "77cf685dc59ee18c4141227aaeb42ad1b0f10743284c05f1715aa643602a1998"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/038-1f73d251d50b/journal.jsonl",
+        "sha256": "a8ccf8905163f2981328eff7bf03d923510e406d99e816a3c5026ef9acfa51d0"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/038-1f73d251d50b/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_ws_images",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-fc9b15db09",
+      "status": "passed",
+      "planned_jobs": 37,
+      "successful_jobs": 37,
+      "passing_assertions": 37,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/039-fc9b15db09e7/plan.json",
+        "sha256": "221a89ca16d8beb1976778d3dc6fee17e7b5d049238a27b53cba7dec121be3aa"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/039-fc9b15db09e7/result.json",
+        "sha256": "bc9f76de9a6ad9338f2dd7435ef16653e1c1789121050df1515daa490317d2c1"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/039-fc9b15db09e7/journal.jsonl",
+        "sha256": "ed923e2d1f912bdbc38983846009c616a331d32768fec63ce3bbd6aebf284e7f"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/039-fc9b15db09e7/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_text_utf16_runs",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-8fdd6ed1de",
+      "status": "passed",
+      "planned_jobs": 22,
+      "successful_jobs": 22,
+      "passing_assertions": 22,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/040-8fdd6ed1ded2/plan.json",
+        "sha256": "5ff7575b516ddf186a0bb2d73ce51f2d20a122177741210949cf52cbcbe57351"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/040-8fdd6ed1ded2/result.json",
+        "sha256": "634091ada547cffee2b7d4abb629f079e71df3bb4286bf047c2ce9d70a166c15"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/040-8fdd6ed1ded2/journal.jsonl",
+        "sha256": "f3c197c820fcc5100a45fcdd5df84a461e245583994d15a30f0b4756358e299a"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/040-8fdd6ed1ded2/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "annotation:annotation_text_utf16_lengths",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-450b9636e4",
+      "status": "passed",
+      "planned_jobs": 49,
+      "successful_jobs": 49,
+      "passing_assertions": 49,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/041-450b9636e4c8/plan.json",
+        "sha256": "258fc44344bd91b08e48aedaf299839e092d5adcd3f562e48b5595109b5fe389"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/041-450b9636e4c8/result.json",
+        "sha256": "711db8e6018d5dcbeaf69eb246d0000c9f3ae1631bcd778529c095ee7feb301f"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/041-450b9636e4c8/journal.jsonl",
+        "sha256": "472fcbad4a039df25311b4c1c5362029551ac6fe65b7d35292e27cc1ff28a689"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/041-450b9636e4c8/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_symbols",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-b81e7799a1",
+      "status": "passed",
+      "planned_jobs": 44,
+      "successful_jobs": 44,
+      "passing_assertions": 44,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/042-b81e7799a16a/plan.json",
+        "sha256": "1f68bf25de95b73a8f4c6346601537ebb6f339696e294d0ff02912bce9750c71"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/042-b81e7799a16a/result.json",
+        "sha256": "5c0c7af873b16d943afcbd388755484247fb2abc22a0256a6a68c2831e7236d5"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/042-b81e7799a16a/journal.jsonl",
+        "sha256": "675ea4b8dfb9dac24c4fdb986ed13b64da8cf65c734ada1274fa8dd829fff29e"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/042-b81e7799a16a/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_textures",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-9a00e9f3c0",
+      "status": "passed",
+      "planned_jobs": 65,
+      "successful_jobs": 65,
+      "passing_assertions": 65,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/043-9a00e9f3c068/plan.json",
+        "sha256": "3cc5089c989e808dff32ddb994623ef86b7fb772f5befc96302459d61078c1b2"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/043-9a00e9f3c068/result.json",
+        "sha256": "0a95ee53cae7bddaf0f57ddacdb85974253aa6342014e524cd33a1e7a9736337"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/043-9a00e9f3c068/journal.jsonl",
+        "sha256": "dc60c10fb963a35bcf1e3feb30a0c31223e255c6e1cc241a85a0fd1cefa8bb1b"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/043-9a00e9f3c068/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_lights",
+      "batch": "A",
+      "run_id": "fullsuite-20260927-a-dc774350e7",
+      "status": "passed",
+      "planned_jobs": 89,
+      "successful_jobs": 89,
+      "passing_assertions": 89,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-a/044-dc774350e78b/plan.json",
+        "sha256": "f7a936f8139bc5297e694116b7db4973d300add87e61a8347e17aabbf9089e9b"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-a/044-dc774350e78b/result.json",
+        "sha256": "ac7ef4a6cc1f16b424a885e0a5e57b3d520f4c7dd8653f8f6179d5c5543072a2"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-a/044-dc774350e78b/journal.jsonl",
+        "sha256": "ad947b416de4ca839088723a4b8dde98eb12404d977902464b60ddc94f74e538"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-a/044-dc774350e78b/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_gradient_segments",
+      "batch": "B",
+      "run_id": "fullsuite-20260927-b-a68e61417d",
+      "status": "passed",
+      "planned_jobs": 51,
+      "successful_jobs": 51,
+      "passing_assertions": 51,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-b/001-a68e61417dbe/plan.json",
+        "sha256": "50aeccf575ba931c5dbf799d04e9f3aebd97be78e9248b175e34ec27630d21be"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-b/001-a68e61417dbe/result.json",
+        "sha256": "ef6fbbfc5f1b6d0a131ccfcda48565687470fac6a36b6493d0326e63ef0a78f5"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-b/001-a68e61417dbe/journal.jsonl",
+        "sha256": "e93a3de84e8c9ec20230b70761523059fb99ae98a1e0eb8f450e59e642a8f628"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-b/001-a68e61417dbe/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_gradient_opacity",
+      "batch": "B",
+      "run_id": "fullsuite-20260927-b-0d6141fb42",
+      "status": "passed",
+      "planned_jobs": 41,
+      "successful_jobs": 41,
+      "passing_assertions": 41,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-b/002-0d6141fb42b9/plan.json",
+        "sha256": "1b81ec8d10ef68e8c4b9dacf3fd4788840fa37f5c001b3135e7bbc445f9d96eb"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-b/002-0d6141fb42b9/result.json",
+        "sha256": "cbb7e4d84227cb0a70b8c23eab3cff73dafd3f26e304a58c21892345b8bc5834"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-b/002-0d6141fb42b9/journal.jsonl",
+        "sha256": "670d3b6fb0c3567b23e86d0cf3634171dc6d4b0c62606128114be6aac76358e8"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-b/002-0d6141fb42b9/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "resource:resource_gradient_aggregate_opacity",
+      "batch": "B",
+      "run_id": "fullsuite-20260927-b-a9ac09f241",
+      "status": "passed",
+      "planned_jobs": 79,
+      "successful_jobs": 79,
+      "passing_assertions": 79,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-b/003-a9ac09f2411d/plan.json",
+        "sha256": "3fa4e3fe2c55a8b520047e035d4d722d6c8d6f3db24f1f7c2bf7eade228a20e5"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-b/003-a9ac09f2411d/result.json",
+        "sha256": "b2d415f4772cd8424d5d4e6c6194eb2071e95d0b21b9ce634d7e4d9b0470809d"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-b/003-a9ac09f2411d/journal.jsonl",
+        "sha256": "8f0b92ebaee113f2a4e64479133506241c3530edbabb16fcf59b8644a298f038"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-b/003-a9ac09f2411d/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_bounds",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-e08fceb459",
+      "status": "passed",
+      "planned_jobs": 45,
+      "successful_jobs": 45,
+      "passing_assertions": 45,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/001-e08fceb45969/plan.json",
+        "sha256": "5401e2ff8bff9c31570709e51a1a3bd54dc5d464d1f2d2ffdb75673a7a9a3631"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/001-e08fceb45969/result.json",
+        "sha256": "69617b592c9389769fcf51c662aa17e1c842d16dba99566691b9d5d5bed4cbe2"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/001-e08fceb45969/journal.jsonl",
+        "sha256": "bd661f67cff4d8a25c9cf579eeb8fefafb668dfd84df85821593d424e2ef69cd"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/001-e08fceb45969/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_rounded",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-7eadd2a50a",
+      "status": "passed",
+      "planned_jobs": 22,
+      "successful_jobs": 22,
+      "passing_assertions": 22,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/002-7eadd2a50a64/plan.json",
+        "sha256": "18f0f60929ec338b790c199ab8387a578de422d73e917de21d2599bb7a0d53ce"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/002-7eadd2a50a64/result.json",
+        "sha256": "49ecd9aaee4afee8b20d7465328c2d083f27a7232f72cc42b9655fb80ae13327"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/002-7eadd2a50a64/journal.jsonl",
+        "sha256": "4964a6a9f93ea267e83690327adb23014936015c17406d869614452a4d5e659e"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/002-7eadd2a50a64/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_oriented_primitives",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-d9ed011717",
+      "status": "passed",
+      "planned_jobs": 42,
+      "successful_jobs": 42,
+      "passing_assertions": 42,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/003-d9ed0117172a/plan.json",
+        "sha256": "7690289905c89a84a9dae988e117f9e9d74a992a9ec915003eddbb00a8753957"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/003-d9ed0117172a/result.json",
+        "sha256": "5dc9223121d946c99489a45ae568cb481051a18757e03a176d35f6bc2169e9ce"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/003-d9ed0117172a/journal.jsonl",
+        "sha256": "da6432d7045cfaf8ac348ded207bb4fd815a134ae63d6a0dfa66be41e88aa8b6"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/003-d9ed0117172a/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_duplicates",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-1dd54386b9",
+      "status": "passed",
+      "planned_jobs": 27,
+      "successful_jobs": 27,
+      "passing_assertions": 27,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/004-1dd54386b9d0/plan.json",
+        "sha256": "fecbdcca2f68396fc69391ef52b9ce2c9a8a2114886f245c5ca58abfa986a416"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/004-1dd54386b9d0/result.json",
+        "sha256": "33938a8a9145e638c6b00bc19cda84151faf4cb38d927379cc0e92c12baa7b8b"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/004-1dd54386b9d0/journal.jsonl",
+        "sha256": "2f881cb2483478b32e4f56e44856278a3377da487aa95cc8fa8a498d7e108390"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/004-1dd54386b9d0/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_planar_conversion",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-c25ff3f51d",
+      "status": "passed",
+      "planned_jobs": 28,
+      "successful_jobs": 28,
+      "passing_assertions": 28,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/005-c25ff3f51d8a/plan.json",
+        "sha256": "4326574f819cc214362b62f2602863334b1f9c80d8a203d44cdf9981228efa74"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/005-c25ff3f51d8a/result.json",
+        "sha256": "9b4a4f4eb945b5e7094f0e34529ba30b8de97fcf8d7d4e0d04cb11e95e67b0fc"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/005-c25ff3f51d8a/journal.jsonl",
+        "sha256": "c48cd7710507c5e92999587aa34b32fb410d48761579d6589553413f125750aa"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/005-c25ff3f51d8a/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_primitive_solids",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-685232013c",
+      "status": "passed",
+      "planned_jobs": 25,
+      "successful_jobs": 25,
+      "passing_assertions": 25,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/006-685232013c1c/plan.json",
+        "sha256": "4ea1297a3f8dd0909da145221b2f344e7bc5443e3dd549a227bc1c37eb7ee819"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/006-685232013c1c/result.json",
+        "sha256": "d760ed736191a77a5f0f7cb28b734b03480e393977c678156abf7614f97789e7"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/006-685232013c1c/journal.jsonl",
+        "sha256": "099df9f554cee319958bac4cc2a9705716a95ee0c36e6ea826828817c6aa60d0"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/006-685232013c1c/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_extrude_info",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-84ae86f7a7",
+      "status": "passed",
+      "planned_jobs": 19,
+      "successful_jobs": 19,
+      "passing_assertions": 19,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/007-84ae86f7a71f/plan.json",
+        "sha256": "65824336bbeb2370675979f2517e97f4f5ab18c4475bfc0572f73306839db1e4"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/007-84ae86f7a71f/result.json",
+        "sha256": "91636861aa10a067d3cde11a2060085c16a6fea44faa6d226c780db0d622a26e"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/007-84ae86f7a71f/journal.jsonl",
+        "sha256": "321443c8a033275278b2c8d2145a666fc8bec05111416f7659641cb0b2ae3376"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/007-84ae86f7a71f/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_nurbs_sampling",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-d308cd2473",
+      "status": "passed",
+      "planned_jobs": 34,
+      "successful_jobs": 34,
+      "passing_assertions": 49,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/008-d308cd247325/plan.json",
+        "sha256": "8d32ddcf806ce80ed70d2aaf37aff6bf73a5c28a714e54ebff461645f5d244d5"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/008-d308cd247325/result.json",
+        "sha256": "bd20bb2cec97cd1907cb8c38acb8df63f1a89d455f0723cf8872b283d2526d81"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/008-d308cd247325/journal.jsonl",
+        "sha256": "9bfb03f3509789e656ec99aade6a0d1af096154c2131d144e6ddf9d9e50251c1"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/008-d308cd247325/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_csg",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-c5bcfe787e",
+      "status": "passed",
+      "planned_jobs": 45,
+      "successful_jobs": 45,
+      "passing_assertions": 48,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/009-c5bcfe787e8c/plan.json",
+        "sha256": "a389fd3ed5152971a5e84fa2e20ba64518f1b8c0dc564fbf1232b07f46848589"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/009-c5bcfe787e8c/result.json",
+        "sha256": "f5075de73c0ee50635849b7912610e5d70ae808de1df76dbae26e7b6c6238bfb"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/009-c5bcfe787e8c/journal.jsonl",
+        "sha256": "f964797cf90e308e557a00414573a390881704ec80c7ff9ecbe090506de0adc2"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/009-c5bcfe787e8c/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    },
+    {
+      "family": "modeling:modeling_centroid_units",
+      "batch": "C",
+      "run_id": "fullsuite-20260927-c-21eca0b358",
+      "status": "passed",
+      "planned_jobs": 31,
+      "successful_jobs": 31,
+      "passing_assertions": 44,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-c/010-21eca0b358ff/plan.json",
+        "sha256": "fd9ce73eacaa45b5ead61eafe263d0fad19d419c6a6fcd8714ec30a6cf7c9355"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-c/010-21eca0b358ff/result.json",
+        "sha256": "63bd0857bcca98ae31b1b40bbc2dfd3757b055013042abf6216b5e4e0f1be680"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-c/010-21eca0b358ff/journal.jsonl",
+        "sha256": "6f2a8a37be3aae0c81b08a425b62c56f33dff6031a817c279e56328fddca8761"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-c/010-21eca0b358ff/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      }
+    }
+  ],
+  "retained_interruptions": [
+    {
+      "batch": "A",
+      "phase": "between_families_readiness",
+      "artifact": {
+        "path": ".audit/fullsuite-native-20260927-a/045-a68e61417dbe-readiness.json",
+        "sha256": "a7a7660ed12bc95bed8548992982238e1962db3f404fec85e1e944bed7963b83"
+      },
+      "error": "Malformed bridge diagnostics",
+      "fixture_dispatched_for_next_family": false,
+      "coverage_credit": false
+    },
+    {
+      "family": "modeling:modeling_bounds",
+      "batch": "B",
+      "run_id": "fullsuite-20260927-b-e08fceb459",
+      "status": "blocked",
+      "planned_jobs": 45,
+      "successful_jobs": 40,
+      "passing_assertions": 40,
+      "plan": {
+        "path": ".audit/fullsuite-native-20260927-b/004-e08fceb45969/plan.json",
+        "sha256": "5d2c363f4d4131516274ea48f2730ae985235a1b7162184714e9a844b3b784e2"
+      },
+      "result": {
+        "path": ".audit/fullsuite-native-20260927-b/004-e08fceb45969/result.json",
+        "sha256": "6d6d006aedf11c94c26651bd6e4547ef7496066027ffbe6d62098b71c018320b"
+      },
+      "journal": {
+        "path": ".audit/fullsuite-native-20260927-b/004-e08fceb45969/journal.jsonl",
+        "sha256": "e750c9fa2833ae27501392e38c9f693e447d87f5dafa742df3e4b5be601614ce"
+      },
+      "host_provenance": {
+        "path": ".audit/fullsuite-native-20260927-b/004-e08fceb45969/provenance-response.json",
+        "sha256": "6e2defc12e4b66ee14e7c0f208d1b197ff3e1257c9ca343f01abfb520722cd36"
+      },
+      "blocked_job": {
+        "id": "modeling/design:modeling_bounds:height_area_1",
+        "functions": [
+          "HAreaN"
+        ],
+        "response": {
+          "error": "timed out after 40s — job was never picked up. Check the bridge palette and the enabled 'VWX Bridge Start' Python command in the current workspace. Inspect native.scheduler.json for the trigger failure before starting a fresh request.",
+          "cid": "05df44317d4b",
+          "code": "VW_JOB_UNCLAIMED",
+          "dispatched": false
+        },
+        "native_api_executed": false,
+        "coverage_credit": false
+      }
+    }
+  ],
+  "excluded_families": {
+    "diagnostic": [
+      "data:data_worksheet_classification",
+      "data:data_worksheet_boundaries",
+      "annotation:annotation_text_styles",
+      "annotation:annotation_text_leading_sentinel",
+      "annotation:annotation_ws_border_clearing",
+      "annotation:annotation_unicode_length",
+      "resource:resource_light_defaults",
+      "modeling:modeling_nurbs_distance"
+    ],
+    "characterization": [
+      "geometry:geometry_arc_characterization",
+      "geometry:geometry_arc_geometry_characterization",
+      "data:data_worksheet_type_probe",
+      "data:data_worksheet_validity_probe",
+      "annotation:annotation_text_length_encoding",
+      "annotation:annotation_text_style_scope",
+      "annotation:annotation_text_offset_units",
+      "annotation:annotation_ws_border_scope",
+      "annotation:annotation_text_style_size_scope",
+      "resource:resource_light_default_probe",
+      "resource:resource_gradient_opacity_probe",
+      "modeling:modeling_nurbs_distance_characterization",
+      "modeling:modeling_curve_bounds_characterization"
+    ]
+  },
+  "final_save": {
+    "artifact": {
+      "path": ".audit/fullsuite-final-save-20260927-a.json",
+      "sha256": "be57e7df4db889919975e83fc7a0aab1c2e4de1931ea11d12c31b984096e8c86"
+    },
+    "response": {
+      "status": "ok",
+      "path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+      "code": 0
+    },
+    "document_path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+    "document_size": 1633719,
+    "document_mtime_ns": 1790490939088282000,
+    "document_sha256": "1028906a71cd71417fe0b099df737927ec5e24f4a564d21d4502b421497a0167",
+    "readiness_after_ready": true,
+    "coverage_credit": false
+  },
+  "limitations": [
+    "This is a union of fresh completed family runs, not one uninterrupted batch. A and B remain blocked in their original records. C recreated the interrupted bounds family with a fresh run ID; the 40 earlier successful jobs remain additional observations.",
+    "Jobs include compatibility replacements and local behavior; totals do not mean every job or API executed its original native function. Guard probes and the final save are excluded from fixture counts.",
+    "Passing this selected suite does not establish all 3,098 SDK APIs, all inputs, excluded families, or arbitrary native object lifecycles. Setter return success alone is not a geometry-effect assertion; original linked readback assertions retain their exact scope.",
+    "This report makes no focus-preservation claim. Native binary identity and broader deployment verification belong to separate deployment evidence; per-job pins here cover the four SDK Python/catalog files."
+  ]
+}

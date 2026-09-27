@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "source": ".audit\\rootcause-batch-20260926-j\\002-fa56b5449111\\result.json",
+  "source_sha256": "a3dfa802700bb6016dce51656f14cb68f3e1ddad8bf0c2c1832b7536abf72f3d",
+  "host": {
+    "vectorworks_year": 2027,
+    "build": 882075,
+    "version_tuple": [
+      32,
+      0,
+      0,
+      2
+    ]
+  },
+  "coverage": "Independent post-run measurements; original characterization receives no semantic fixture credit",
+  "checks": [
+    {
+      "role": "quarter_control",
+      "kind": "open_arc_length",
+      "actual": 15.707963267948967,
+      "expected": 15.707963267948966,
+      "passed": true
+    },
+    {
+      "role": "quarter_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0,
+      "actual": [
+        330.0,
+        -260.0,
+        0.0
+      ],
+      "expected": [
+        330.0,
+        -260.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "quarter_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0.5,
+      "actual": [
+        327.0710678030274,
+        -252.92893217929645,
+        0.0
+      ],
+      "expected": [
+        327.0710678118655,
+        -252.92893218813452,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "quarter_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 1,
+      "actual": [
+        320.0,
+        -249.99999999999997,
+        0.0
+      ],
+      "expected": [
+        320.0,
+        -250.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "target_control",
+      "kind": "open_arc_length",
+      "actual": 31.415926535897935,
+      "expected": 31.41592653589793,
+      "passed": true
+    },
+    {
+      "role": "target_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0,
+      "actual": [
+        320.0,
+        -250.0,
+        0.0
+      ],
+      "expected": [
+        320.0,
+        -250.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "target_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0.5,
+      "actual": [
+        310.00000000000006,
+        -260.00000003945377,
+        0.0
+      ],
+      "expected": [
+        310.0,
+        -260.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "target_control",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 1,
+      "actual": [
+        320.0,
+        -270.0,
+        0.0
+      ],
+      "expected": [
+        320.0,
+        -270.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "setter_candidate",
+      "kind": "open_arc_length",
+      "actual": 31.415926535897935,
+      "expected": 31.41592653589793,
+      "passed": true
+    },
+    {
+      "role": "setter_candidate",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0,
+      "actual": [
+        320.0,
+        -250.0,
+        0.0
+      ],
+      "expected": [
+        320.0,
+        -250.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "setter_candidate",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 0.5,
+      "actual": [
+        310.00000000000006,
+        -260.00000003945377,
+        0.0
+      ],
+      "expected": [
+        310.0,
+        -260.0,
+        0
+      ],
+      "passed": true
+    },
+    {
+      "role": "setter_candidate",
+      "kind": "nurbs_length_fraction_point",
+      "fraction": 1,
+      "actual": [
+        320.0,
+        -270.0,
+        0.0
+      ],
+      "expected": [
+        320.0,
+        -270.0,
+        0
+      ],
+      "passed": true
+    }
+  ],
+  "compatibility": {
+    "native_function": "SetArc",
+    "replacement_function": "VWXBridgeSetArc",
+    "reason": "python_setarc_binding_noop",
+    "host_build": 882075,
+    "native_dispatched": false,
+    "helper_revision": 1
+  }
+}

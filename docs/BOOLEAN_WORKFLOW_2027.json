@@ -1,0 +1,1557 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-26",
+  "evidence_kind": "handwritten_workflow_native_verification",
+  "status": "geometry_assertions_passed",
+  "workflow_operations_verified": 3,
+  "native_api_coverage_credit": false,
+  "native_semantics_fully_verified": false,
+  "host": {
+    "vectorworks_year": 2027,
+    "build": 882075,
+    "version_tuple": [
+      32,
+      0,
+      0,
+      2
+    ],
+    "source": "recorded GetVersionEx response"
+  },
+  "sdk": {
+    "vectorworks_year": 2027,
+    "sdk_version": 3200,
+    "sdk_build": 882699,
+    "provenance": "Repository SDK target; the recorded scheduler reports SDK 3200. The probe records the deployed commands hash, not a complete deployed SDK file manifest."
+  },
+  "source_sha256": {
+    "commands.py": "2515b37b81ed988bde2296e78b2c6485bcc7185cdf43ae7ac8d5aadfbc0086e5"
+  },
+  "deployment_backup": "20260926-210149-864-solid-contract",
+  "document_path": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+  "execution_path": "typed MCP handwritten boolean_operation with separate sdk_call readbacks and document guards",
+  "fixture_geometry": {
+    "fresh_solids_per_operation": true,
+    "a_xyz_intervals": [
+      [
+        0,
+        30
+      ],
+      [
+        0,
+        20
+      ],
+      [
+        0,
+        10
+      ]
+    ],
+    "b_xyz_intervals": [
+      [
+        20,
+        40
+      ],
+      [
+        -5,
+        25
+      ],
+      [
+        -5,
+        15
+      ]
+    ],
+    "oracle_basis": "Analytic union/intersection/difference bounds and volume-weighted centroid of two positive-overlap rectangular prisms."
+  },
+  "operations": [
+    {
+      "operation": "add",
+      "status": "passed",
+      "workflow_tool": "boolean_operation",
+      "object_id": "15c0fd60-b8cd-4c1e-af98-70c71e883199",
+      "request_indices_zero_based": {
+        "workflow": 10,
+        "dimensions_readback": 12,
+        "centroid_readback": 14
+      },
+      "assertions": [
+        {
+          "kind": "valid_uuid",
+          "actual": "15c0fd60-b8cd-4c1e-af98-70c71e883199",
+          "passed": true
+        },
+        {
+          "function": "Get3DInfo",
+          "comparison": "exact_numeric_array",
+          "expected_height_width_depth": [
+            30,
+            40,
+            20
+          ],
+          "actual": [
+            30.0,
+            40.0,
+            20.0
+          ],
+          "passed": true
+        },
+        {
+          "function": "Centroid3D",
+          "success_flag_required": true,
+          "comparison": "math.isclose_per_coordinate",
+          "rel_tol": 1e-09,
+          "abs_tol": 1e-09,
+          "expected_xyz": [
+            25,
+            10,
+            5
+          ],
+          "actual": [
+            true,
+            25.0,
+            10.0,
+            4.999999999999999
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "operation": "intersect",
+      "status": "passed",
+      "workflow_tool": "boolean_operation",
+      "object_id": "52aa5003-6e00-4833-8611-98c17c631c59",
+      "request_indices_zero_based": {
+        "workflow": 24,
+        "dimensions_readback": 26,
+        "centroid_readback": 28
+      },
+      "assertions": [
+        {
+          "kind": "valid_uuid",
+          "actual": "52aa5003-6e00-4833-8611-98c17c631c59",
+          "passed": true
+        },
+        {
+          "function": "Get3DInfo",
+          "comparison": "exact_numeric_array",
+          "expected_height_width_depth": [
+            20,
+            10,
+            10
+          ],
+          "actual": [
+            20.0,
+            10.0,
+            10.0
+          ],
+          "passed": true
+        },
+        {
+          "function": "Centroid3D",
+          "success_flag_required": true,
+          "comparison": "math.isclose_per_coordinate",
+          "rel_tol": 1e-09,
+          "abs_tol": 1e-09,
+          "expected_xyz": [
+            25,
+            10,
+            5
+          ],
+          "actual": [
+            true,
+            25.0,
+            10.0,
+            5.0
+          ],
+          "passed": true
+        }
+      ]
+    },
+    {
+      "operation": "subtract",
+      "status": "passed",
+      "workflow_tool": "boolean_operation",
+      "object_id": "f96c7d8f-040c-4001-bc79-439b0b57f497",
+      "request_indices_zero_based": {
+        "workflow": 38,
+        "dimensions_readback": 40,
+        "centroid_readback": 42
+      },
+      "assertions": [
+        {
+          "kind": "valid_uuid",
+          "actual": "f96c7d8f-040c-4001-bc79-439b0b57f497",
+          "passed": true
+        },
+        {
+          "function": "Get3DInfo",
+          "comparison": "exact_numeric_array",
+          "expected_height_width_depth": [
+            20,
+            20,
+            10
+          ],
+          "actual": [
+            20.0,
+            20.0,
+            10.0
+          ],
+          "passed": true
+        },
+        {
+          "function": "Centroid3D",
+          "success_flag_required": true,
+          "comparison": "math.isclose_per_coordinate",
+          "rel_tol": 1e-09,
+          "abs_tol": 1e-09,
+          "expected_xyz": [
+            10,
+            10,
+            5
+          ],
+          "actual": [
+            true,
+            10.0,
+            10.0,
+            5.0
+          ],
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "background_observations": {
+    "foreground_process_before": 18864,
+    "foreground_process_after": 18864,
+    "foreground_process_unchanged": true,
+    "foreground_posts_before": 0,
+    "foreground_posts_after": null,
+    "readiness_before": {
+      "ready": true,
+      "scheduler": {
+        "acknowledgment_timeouts": 0,
+        "background_posts": 1571,
+        "completion_stamp": 134349520456514945,
+        "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+        "focus_changed_by_bridge": false,
+        "foreground_posts": 0,
+        "global_input": false,
+        "last_trigger_state": "runner_completion_observed",
+        "last_win32_error": 0,
+        "modifiers_pending_restore": false,
+        "paused": false,
+        "pending": false,
+        "pending_age_ms": 0,
+        "posts": 1571,
+        "process_id": 32764,
+        "queued_jobs": 0,
+        "runner_completions_observed": 1571,
+        "runner_stamp": 134349520456474736,
+        "scheduler": "targeted-accelerator-ack-v1",
+        "schema_version": 1,
+        "sdk_version": 3200,
+        "timer_active": true,
+        "trigger_failures": 0,
+        "updated_epoch": 1790478458
+      },
+      "meaning": "Fresh idle bridge diagnostics only; not current modal, document ownership or native success proof"
+    },
+    "readiness_after": {
+      "ready": false,
+      "error": "Bridge is paused, busy, stopped, or has pending modifier restoration"
+    },
+    "final_idle_confirmed": false,
+    "interpretation": "The final snapshot was not ready during protocol settling. This result verifies geometry and the unchanged foreground PID, not a final idle queue or all protocol conditions."
+  },
+  "limitations": [
+    "Only these three concrete handwritten workflow cases are verified; arbitrary solids, every SDK boolean input, and all edge cases remain unverified.",
+    "This standalone workflow record receives no generated SDK API-case credit and does not update LIVE_SDK_2027.json.",
+    "The 43 returned requests include provenance, document guards, construction sequences and readbacks; they are not 43 distinct API confirmations.",
+    "Document guards and mutations were separate jobs, with no atomic document lock, rollback or per-agent isolation.",
+    "The unchanged foreground PID is a before/after observation, not continuous focus telemetry.",
+    "The initial scheduler snapshot records zero foreground posts. No final scheduler counters were returned by the failed readiness snapshot.",
+    "Final readiness was false; a final idle queue and complete protocol success are not established.",
+    "The earlier exact-float assertion failure is retained below. A later deliberate run created fresh solids and used 1e-9 relative/absolute centroid tolerances; it was not automatic replay."
+  ],
+  "raw_probe": {
+    "artifact": ".audit/boolean-workflow-1790478458444479600.json",
+    "sha256": "90d989425667d1443e2d4fde578188387716f13af9e672be1eeba52ad80a16f0",
+    "result": {
+      "status": "passed",
+      "cases": [
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetVersionEx",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetVersionEx",
+            "result": [
+              32,
+              0,
+              0,
+              2,
+              882075
+            ],
+            "outputs": {
+              "major": 32,
+              "minor": 0,
+              "maintenance": 0,
+              "platform": 2,
+              "buildNum": 882075
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    0,
+                    20
+                  ],
+                  "p2": [
+                    30,
+                    0
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "e8944e8e-0d7e-4f14-931a-12c3d6f44111"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "e8944e8e-0d7e-4f14-931a-12c3d6f44111",
+              "bottom": 0,
+              "top": 10
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "0a18e318-21ac-4677-bb2f-5e955ab1a69f"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    20,
+                    25
+                  ],
+                  "p2": [
+                    40,
+                    -5
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "3ac6c959-7134-4ccd-91f9-e8a449b799eb"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "3ac6c959-7134-4ccd-91f9-e8a449b799eb",
+              "bottom": -5,
+              "top": 15
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "8d9acfd1-0e32-45cd-8e62-0903bce5a55c"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "boolean_operation",
+          "arguments": {
+            "object_id_a": "0a18e318-21ac-4677-bb2f-5e955ab1a69f",
+            "object_id_b": "8d9acfd1-0e32-45cd-8e62-0903bce5a55c",
+            "operation": "add"
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "object_id": "15c0fd60-b8cd-4c1e-af98-70c71e883199"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Get3DInfo",
+            "arguments": {
+              "h": "15c0fd60-b8cd-4c1e-af98-70c71e883199"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Get3DInfo",
+            "result": [
+              30.0,
+              40.0,
+              20.0
+            ],
+            "outputs": {
+              "height": 30.0,
+              "width": 40.0,
+              "depth": 20.0
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Centroid3D",
+            "arguments": {
+              "object": "15c0fd60-b8cd-4c1e-af98-70c71e883199"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Centroid3D",
+            "result": [
+              true,
+              25.0,
+              10.0,
+              4.999999999999999
+            ],
+            "outputs": {
+              "result": true,
+              "xCG": 25.0,
+              "yCG": 10.0,
+              "zCG": 4.999999999999999
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    0,
+                    20
+                  ],
+                  "p2": [
+                    30,
+                    0
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "8fdd54c1-205e-40db-9f09-0801ed8d1b37"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "8fdd54c1-205e-40db-9f09-0801ed8d1b37",
+              "bottom": 0,
+              "top": 10
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "5d2a051a-0f03-4cbc-a8ca-055f99ed46ff"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    20,
+                    25
+                  ],
+                  "p2": [
+                    40,
+                    -5
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "3ec879f8-0263-41af-bd73-173d271b3d09"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "3ec879f8-0263-41af-bd73-173d271b3d09",
+              "bottom": -5,
+              "top": 15
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "431eb27d-ea6b-468d-a6a8-5bbb3cf37fae"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "boolean_operation",
+          "arguments": {
+            "object_id_a": "5d2a051a-0f03-4cbc-a8ca-055f99ed46ff",
+            "object_id_b": "431eb27d-ea6b-468d-a6a8-5bbb3cf37fae",
+            "operation": "intersect"
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "object_id": "52aa5003-6e00-4833-8611-98c17c631c59"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Get3DInfo",
+            "arguments": {
+              "h": "52aa5003-6e00-4833-8611-98c17c631c59"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Get3DInfo",
+            "result": [
+              20.0,
+              10.0,
+              10.0
+            ],
+            "outputs": {
+              "height": 20.0,
+              "width": 10.0,
+              "depth": 10.0
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Centroid3D",
+            "arguments": {
+              "object": "52aa5003-6e00-4833-8611-98c17c631c59"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Centroid3D",
+            "result": [
+              true,
+              25.0,
+              10.0,
+              5.0
+            ],
+            "outputs": {
+              "result": true,
+              "xCG": 25.0,
+              "yCG": 10.0,
+              "zCG": 5.0
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    0,
+                    20
+                  ],
+                  "p2": [
+                    30,
+                    0
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "c69a33f0-fc17-4e12-af2d-ba522cdd125f"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "c69a33f0-fc17-4e12-af2d-ba522cdd125f",
+              "bottom": 0,
+              "top": 10
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "2e95e8bd-9789-42aa-b5af-038679d66b57"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    20,
+                    25
+                  ],
+                  "p2": [
+                    40,
+                    -5
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "4f2c28b5-4108-489e-8336-6f9c108706c6"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "4f2c28b5-4108-489e-8336-6f9c108706c6",
+              "bottom": -5,
+              "top": 15
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "baaeb505-22e1-4f1d-9eb4-2da79890169c"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "boolean_operation",
+          "arguments": {
+            "object_id_a": "2e95e8bd-9789-42aa-b5af-038679d66b57",
+            "object_id_b": "baaeb505-22e1-4f1d-9eb4-2da79890169c",
+            "operation": "subtract"
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "object_id": "f96c7d8f-040c-4001-bc79-439b0b57f497"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Get3DInfo",
+            "arguments": {
+              "h": "f96c7d8f-040c-4001-bc79-439b0b57f497"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Get3DInfo",
+            "result": [
+              20.0,
+              20.0,
+              10.0
+            ],
+            "outputs": {
+              "height": 20.0,
+              "width": 20.0,
+              "depth": 10.0
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Centroid3D",
+            "arguments": {
+              "object": "f96c7d8f-040c-4001-bc79-439b0b57f497"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Centroid3D",
+            "result": [
+              true,
+              10.0,
+              10.0,
+              5.0
+            ],
+            "outputs": {
+              "result": true,
+              "xCG": 10.0,
+              "yCG": 10.0,
+              "zCG": 5.0
+            }
+          }
+        }
+      ],
+      "native_semantics_fully_verified": false,
+      "readiness_before": {
+        "ready": true,
+        "scheduler": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 1571,
+          "completion_stamp": 134349520456514945,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "global_input": false,
+          "last_trigger_state": "runner_completion_observed",
+          "last_win32_error": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 1571,
+          "process_id": 32764,
+          "queued_jobs": 0,
+          "runner_completions_observed": 1571,
+          "runner_stamp": 134349520456474736,
+          "scheduler": "targeted-accelerator-ack-v1",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790478458
+        },
+        "meaning": "Fresh idle bridge diagnostics only; not current modal, document ownership or native success proof"
+      },
+      "foreground_before": 18864,
+      "document": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+      "commands_sha256": "2515b37b81ed988bde2296e78b2c6485bcc7185cdf43ae7ac8d5aadfbc0086e5",
+      "host_response": {
+        "status": "ok",
+        "function": "GetVersionEx",
+        "result": [
+          32,
+          0,
+          0,
+          2,
+          882075
+        ],
+        "outputs": {
+          "major": 32,
+          "minor": 0,
+          "maintenance": 0,
+          "platform": 2,
+          "buildNum": 882075
+        }
+      },
+      "verified_operations": [
+        "add",
+        "intersect",
+        "subtract"
+      ],
+      "readiness_after": {
+        "ready": false,
+        "error": "Bridge is paused, busy, stopped, or has pending modifier restoration"
+      },
+      "foreground_after": 18864
+    }
+  },
+  "prior_attempt": {
+    "artifact": ".audit/boolean-workflow-1790478443284178300.json",
+    "sha256": "2f0bfc9700e348de4bb27bd5da02ab61aa78d804222e64c8f328790cceed850a",
+    "classification": "Exact-float harness assertion stopped after add returned centroid z=4.999999999999999 against expected 5; original failed_or_uncertain status is retained.",
+    "result": {
+      "status": "failed_or_uncertain",
+      "cases": [
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetVersionEx",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetVersionEx",
+            "result": [
+              32,
+              0,
+              0,
+              2,
+              882075
+            ],
+            "outputs": {
+              "major": 32,
+              "minor": 0,
+              "maintenance": 0,
+              "platform": 2,
+              "buildNum": 882075
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    0,
+                    20
+                  ],
+                  "p2": [
+                    30,
+                    0
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "f3e9e7fe-a179-4a48-a51f-400e17e56114"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "f3e9e7fe-a179-4a48-a51f-400e17e56114",
+              "bottom": 0,
+              "top": 10
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "17a2e571-c3f4-4efb-8c39-959527f6de13"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_sequence",
+          "arguments": {
+            "calls": [
+              {
+                "name": "Rect",
+                "arguments": {
+                  "p1": [
+                    20,
+                    25
+                  ],
+                  "p2": [
+                    40,
+                    -5
+                  ]
+                }
+              },
+              {
+                "name": "LNewObj",
+                "arguments": {}
+              }
+            ]
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "results": [
+              {
+                "status": "ok",
+                "function": "Rect",
+                "result": null
+              },
+              {
+                "status": "ok",
+                "function": "LNewObj",
+                "result": "b3743d20-576a-4fb1-8b2f-49b1424104e8"
+              }
+            ],
+            "count": 2,
+            "cleanup": [],
+            "regeneration_boundary": "after this menu-command job returns"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "HExtrude",
+            "arguments": {
+              "objectH": "b3743d20-576a-4fb1-8b2f-49b1424104e8",
+              "bottom": -5,
+              "top": 15
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "HExtrude",
+            "result": "18d07f9e-97c7-4c75-9f6f-bbe702caa8a0"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "boolean_operation",
+          "arguments": {
+            "object_id_a": "17a2e571-c3f4-4efb-8c39-959527f6de13",
+            "object_id_b": "18d07f9e-97c7-4c75-9f6f-bbe702caa8a0",
+            "operation": "add"
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "object_id": "fccb1b7c-3260-4314-b925-8af30aa3e9c4"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Get3DInfo",
+            "arguments": {
+              "h": "fccb1b7c-3260-4314-b925-8af30aa3e9c4"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Get3DInfo",
+            "result": [
+              30.0,
+              40.0,
+              20.0
+            ],
+            "outputs": {
+              "height": 30.0,
+              "width": 40.0,
+              "depth": 20.0
+            }
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "GetFPathName",
+            "arguments": {}
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "GetFPathName",
+            "result": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx"
+          }
+        },
+        {
+          "tool": "sdk_call",
+          "arguments": {
+            "name": "Centroid3D",
+            "arguments": {
+              "object": "fccb1b7c-3260-4314-b925-8af30aa3e9c4"
+            }
+          },
+          "state": "returned",
+          "response": {
+            "status": "ok",
+            "function": "Centroid3D",
+            "result": [
+              true,
+              25.0,
+              10.0,
+              4.999999999999999
+            ],
+            "outputs": {
+              "result": true,
+              "xCG": 25.0,
+              "yCG": 10.0,
+              "zCG": 4.999999999999999
+            }
+          }
+        }
+      ],
+      "native_semantics_fully_verified": false,
+      "readiness_before": {
+        "ready": true,
+        "scheduler": {
+          "acknowledgment_timeouts": 0,
+          "background_posts": 1556,
+          "completion_stamp": 134349519297074135,
+          "evidence_scope": "Posting and outer menu-invocation completion; not job success or native semantics",
+          "focus_changed_by_bridge": false,
+          "foreground_posts": 0,
+          "global_input": false,
+          "last_trigger_state": "runner_completion_observed",
+          "last_win32_error": 0,
+          "modifiers_pending_restore": false,
+          "paused": false,
+          "pending": false,
+          "pending_age_ms": 0,
+          "posts": 1556,
+          "process_id": 32764,
+          "queued_jobs": 0,
+          "runner_completions_observed": 1556,
+          "runner_stamp": 134349519297033908,
+          "scheduler": "targeted-accelerator-ack-v1",
+          "schema_version": 1,
+          "sdk_version": 3200,
+          "timer_active": true,
+          "trigger_failures": 0,
+          "updated_epoch": 1790478443
+        },
+        "meaning": "Fresh idle bridge diagnostics only; not current modal, document ownership or native success proof"
+      },
+      "foreground_before": 18864,
+      "document": "C:\\Users\\Reece\\Documents\\GitHub\\vwx-mcp\\.audit\\VWX-MCP-SDK-TEST-20260926.vwx",
+      "commands_sha256": "2515b37b81ed988bde2296e78b2c6485bcc7185cdf43ae7ac8d5aadfbc0086e5",
+      "host_response": {
+        "status": "ok",
+        "function": "GetVersionEx",
+        "result": [
+          32,
+          0,
+          0,
+          2,
+          882075
+        ],
+        "outputs": {
+          "major": 32,
+          "minor": 0,
+          "maintenance": 0,
+          "platform": 2,
+          "buildNum": 882075
+        }
+      },
+      "error": "AssertionError({'status': 'ok', 'function': 'Centroid3D', 'result': [True, 25.0, 10.0, 4.999999999999999], 'outputs': {'result': True, 'xCG': 25.0, 'yCG': 10.0, 'zCG': 4.999999999999999}})"
+    }
+  }
+}
