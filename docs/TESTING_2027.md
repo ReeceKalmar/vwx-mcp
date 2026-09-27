@@ -14,10 +14,10 @@ Read [VECTORWORKS_2027.md](VECTORWORKS_2027.md) and
 The plan generator prints its own current case, assertion, and API counts;
 these are fixture availability counts, not native passes.
 
-The final publication run passed **818 tests in 91.704 seconds** from a clean
-staged-source export, including the compiled native harnesses. One test requiring
+The final publication run passed **821 tests in 91.918 seconds** after the Windows
+short-path fixes, including the compiled native harnesses. One test requiring
 Windows symlink-creation privileges was skipped; separate reparse-path checks
-passed. The local log is `.audit/publication-clean-unittest.log` (not published).
+passed. The local log is `.audit/publication-shortpath-unittest.log` (not published).
 See [publication validation](PUBLICATION_2027.md) for the companion checks. The
 earlier 793-test run predates the cleanup tests and remains historical.
 

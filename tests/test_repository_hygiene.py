@@ -1,4 +1,5 @@
 """Real isolated Git repositories exercise publication boundaries; no host calls."""
+import ctypes
 import importlib.util
 import os
 from pathlib import Path
@@ -18,7 +19,10 @@ class RepositoryHygieneTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='vwx-publication-')
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        # Windows runners can expose TEMP through RUNNER~1 while the checker
+        # canonicalizes its root to runneradmin. Compare filesystem identities
+        # consistently without weakening the guard against reading a reparse.
+        self.root = Path(self.temporary.name).resolve(strict=True)
         self.git('init', '-q')
 
     def git(self, *arguments):
@@ -114,6 +118,9 @@ class RepositoryHygieneTests(unittest.TestCase):
         self.assertTrue(any(':3:' in error and 'nonportable' in error for error in errors))
 
     def test_reparse_directory_is_never_read_or_traversed(self):
+        self.assert_reparse_directory_is_not_read(self.root)
+
+    def assert_reparse_directory_is_not_read(self, checkout):
         self.write('linked/secret.md', 'private')
         original_reparse = CHECK._reparse
         original_read = Path.read_bytes
@@ -124,9 +131,26 @@ class RepositoryHygieneTests(unittest.TestCase):
                 self.fail('Checker traversed a reparse directory')
             return original_read(path)
         with patch.object(CHECK, '_reparse', side_effect=reparse), patch.object(Path, 'read_bytes', new=read):
-            errors = self.errors()
+            errors = CHECK.check_repository(checkout)
         self.assertEqual(len(errors), 1)
         self.assertIn('linked/secret.md: cannot safely inspect', errors[0])
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows short-path aliases only')
+    def test_reparse_guard_survives_short_path_checkout_alias(self):
+        short_path = ctypes.WinDLL('kernel32', use_last_error=True).GetShortPathNameW
+        short_path.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32]
+        short_path.restype = ctypes.c_uint32
+        needed = short_path(str(self.root), None, 0)
+        self.assertGreater(needed, 0)
+        buffer = ctypes.create_unicode_buffer(needed)
+        written = short_path(str(self.root), buffer, len(buffer))
+        self.assertGreater(written, 0)
+        self.assertLess(written, len(buffer))
+        alias = Path(buffer.value)
+        if alias == self.root:
+            self.skipTest('This filesystem does not provide a distinct short-path alias')
+        self.assertEqual(alias.resolve(strict=True), self.root)
+        self.assert_reparse_directory_is_not_read(alias)
 
     def test_real_symlink_is_never_followed(self):
         self.write('target.md', 'Safe content\n')

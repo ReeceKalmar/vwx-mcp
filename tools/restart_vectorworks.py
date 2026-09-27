@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import secrets
 import shutil
+import stat
 import subprocess
 import sys
 
@@ -28,6 +29,20 @@ PYTHON_FILES = ('commands.py', 'vwx_pump.py', 'BridgeStart_MenuCommand.py',
 
 def normalized(path):
     return ntpath.normcase(ntpath.normpath(str(path)))
+
+
+def deployment_path(path):
+    """Canonicalize 8.3 names only after rejecting links/reparse ancestors."""
+    absolute = Path(path).absolute()
+    for part in reversed((absolute, *absolute.parents)):
+        try:
+            info = part.lstat()
+        except FileNotFoundError:
+            continue
+        if (stat.S_ISLNK(info.st_mode)
+                or getattr(info, 'st_file_attributes', 0) & 0x400):  # FILE_ATTRIBUTE_REPARSE_POINT
+            raise ValueError('Unexpected reparse path in deployment: ' + str(part))
+    return absolute.resolve()
 
 
 def inventory(response, expected_path, expected_pid=None):
@@ -243,19 +258,21 @@ class WindowsHost:
         if not self.all_exited():
             raise ValueError('Vectorworks is still running')
         self.verify_sources()
-        backups = self.plugin_dir.parent.parent / 'MCP-Backups'
+        plugin_dir = deployment_path(self.plugin_dir)
+        backups = deployment_path(plugin_dir.parent.parent / 'MCP-Backups')
+        queue = deployment_path(plugin_dir / 'ipc')
+        for _, installed in self.pairs:
+            deployment_path(installed)
         backup = backups / (datetime.now().strftime('%Y%m%d-%H%M%S-%f') + '-maintenance')
+        deployment_path(backup)
         backup.mkdir(parents=True, exist_ok=False)
-        queue = self.plugin_dir / 'ipc'
         destination = backup / 'ipc'
         # Resolve and constrain both directories before any recursive move.
-        if (normalized(backup.resolve()) != normalized(backup.absolute())
-                or not backup.resolve().is_relative_to(backups.resolve())):
+        if deployment_path(backup).parent != backups:
             raise ValueError('Unexpected backup directory resolution')
         if queue.exists():
-            if (normalized(queue.resolve()) != normalized(queue.absolute())
-                    or not queue.resolve().is_relative_to(self.plugin_dir.resolve())
-                    or not destination.resolve().is_relative_to(backup.resolve())):
+            if (deployment_path(queue).parent != plugin_dir
+                    or deployment_path(destination).parent != backup):
                 raise ValueError('Unexpected IPC archive path')
             queue.rename(destination)
         for source, installed in self.pairs:
@@ -333,10 +350,10 @@ def main():
     if os.name != 'nt' or not 1 <= args.timeout <= 600:
         parser.error('Requires Windows and timeout1..600')
     args.document = args.document.resolve(strict=True)
-    args.plugin_dir = args.plugin_dir.resolve(strict=True)
+    args.plugin_dir = deployment_path(args.plugin_dir).resolve(strict=True)
     args.executable = args.executable.resolve(strict=True)
     default_plugin = Path(os.environ['APPDATA']) / 'Nemetschek/Vectorworks/2027/Plug-ins/VWX-MCP'
-    if normalized(args.plugin_dir) != normalized(default_plugin):
+    if normalized(args.plugin_dir) != normalized(deployment_path(default_plugin)):
         parser.error('The deployment script targets the default 2027 VWX-MCP installation only')
     if args.document.suffix.lower() != '.vwx' or args.executable.name.lower() != 'vectorworks2027.exe':
         parser.error('An existing ordinary .vwx drawing and Vectorworks2027.exe are required')

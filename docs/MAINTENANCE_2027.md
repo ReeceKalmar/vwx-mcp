@@ -7,7 +7,7 @@ Vectorworks process, not independent document sessions for multiple agents.
 
 The implementation builds against SDK 3200 and has offline tests for document
 guards, native callbacks, lease races and controller failures. The clean
-publication suite ran **818 tests** successfully, with one Windows symlink test
+publication suite ran **821 tests** successfully, with one Windows symlink test
 skipped; see [publication validation](PUBLICATION_2027.md). SDK adapter/index
 freshness, generated reports and static consistency checks also passed.
 

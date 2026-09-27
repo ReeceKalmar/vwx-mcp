@@ -37,7 +37,7 @@ it was not deployed and does not replace the artifact identities in the saved
 native evidence. Build/deployment changes have separate offline tests using
 temporary SDK/install fixtures.
 
-The final staged-source export passed **818 offline tests in 91.704 seconds**
+The initial staged-source export passed **818 offline tests in 91.704 seconds**
 on Windows, with one symlink-creation test skipped because this account could
 not create a symlink. The separate reparse-path tests and compiled native
 harnesses passed. The earlier 793-test run predates the cleanup tests.
@@ -48,6 +48,18 @@ The generated wrappers and index matched SDK 3200 build 882699, and the
 handwritten SDK-call audit reported no hard signature findings. Pending native
 plans were generated offline without connecting to Vectorworks. No new native
 verification or deployment is claimed by these checks.
+
+The first GitHub run passed on Linux but exposed Windows 8.3 path aliases in
+the hosted runner's temporary directory. Follow-up fixes canonicalize installer
+and maintenance paths without relaxing reparse checks. The build and repository
+hygiene test fixtures also compare canonical identities. Regression coverage
+uses real Windows short-path aliases and verifies that redirected maintenance
+paths are rejected before creating backups. These changes were not deployed to
+the running Vectorworks installation. The full local rerun completed **821 tests
+in 91.918 seconds**, with only the original symlink-privilege test skipped.
+The actual short-path regressions, native compiled harnesses, repository hygiene
+and current generated-report checks passed. Hosted results remain available
+through the commit's GitHub Actions checks.
 
 The earlier native baseline remains **57 default families / 2,303 unique jobs**,
 with interruptions preserved in [its audit](LIVE_DEFAULT_SUITE_2027.json).

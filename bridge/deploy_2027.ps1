@@ -64,7 +64,9 @@ New-Item -ItemType Directory -Path $backup | Out-Null
 if (Test-Path -LiteralPath (Join-Path $pythonDir 'ipc')) {
     # Move pending jobs out of the active queue; never replay work from an old session.
     $queuePath = (Resolve-Path -LiteralPath (Join-Path $pythonDir 'ipc')).Path
-    $expected = [IO.Path]::GetFullPath((Join-Path $plugins 'VWX-MCP\ipc'))
+    # Resolve both sides through the same filesystem provider. APPDATA may use
+    # an 8.3 alias (for example RUNNER~1), which GetFullPath does not expand.
+    $expected = Join-Path (Resolve-Path -LiteralPath $pythonDir).Path 'ipc'
     if ($queuePath -ne $expected) { throw 'Unexpected queue path.' }
     Move-Item -LiteralPath $queuePath -Destination (Join-Path $backup 'ipc')
 }

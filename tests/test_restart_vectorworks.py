@@ -4,7 +4,8 @@ import importlib.util
 from pathlib import Path
 import unittest
 import tempfile
-from unittest.mock import Mock
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('maintenance_controller', ROOT / 'tools/restart_vectorworks.py')
@@ -251,6 +252,33 @@ class InventoryTests(unittest.TestCase):
 
 
 class DeploymentTests(unittest.TestCase):
+    def test_reparse_ancestors_are_rejected_before_creating_backups(self):
+        for redirect in ('2027', '2027/MCP-Backups', '2027/Plug-ins/VWX-MCP/ipc'):
+            with self.subTest(redirect=redirect), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary).resolve()
+                plugin = root / '2027/Plug-ins/VWX-MCP'
+                (plugin / 'ipc/jobs').mkdir(parents=True)
+                (root / '2027/MCP-Backups').mkdir()
+                target = root / redirect
+                original_lstat = Path.lstat
+
+                def lstat(path, *args, **kwargs):
+                    info = original_lstat(path, *args, **kwargs)
+                    if path == target:
+                        return SimpleNamespace(st_mode=info.st_mode,
+                                               st_file_attributes=0x400)
+                    return info
+
+                host = object.__new__(module.WindowsHost)
+                host.plugin_dir = plugin
+                host.pairs = []
+                host.all_exited = Mock(return_value=True)
+                host.verify_sources = Mock()
+                with patch.object(Path, 'lstat', lstat), self.assertRaisesRegex(ValueError, 'reparse'):
+                    host.deploy()
+                self.assertEqual(list((root / '2027/MCP-Backups').iterdir()), [])
+                self.assertTrue((plugin / 'ipc/jobs').is_dir())
+
     def test_file_deployment_preserves_queue_old_binary_and_maintenance_lease(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

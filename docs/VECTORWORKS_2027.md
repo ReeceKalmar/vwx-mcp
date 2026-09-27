@@ -8,7 +8,7 @@ documentation; subsystem `AGENTS.md` files identify the implementation boundarie
 
 ## Verified status
 
-The publication checkpoint ran **818 offline tests** successfully, with one
+The publication checkpoint ran **821 offline tests** successfully, with one
 Windows symlink test skipped; see [validation details](PUBLICATION_2027.md).
 The native baseline passed the complete default selection:
 **57 routine families / 2,303 unique fixture jobs**.

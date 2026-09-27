@@ -123,7 +123,7 @@ imports the real `vs` module or opens a host connection.
 
 ## Test and verification limits
 
-The clean publication run passed **818 tests in 91.704 seconds**, with one Windows
+The final publication run passed **821 tests in 91.918 seconds**, with one Windows
 symlink test skipped (see [publication details](PUBLICATION_2027.md)), including
 all **75,701** current
 adapter-contract cases. These include independent fixture models,

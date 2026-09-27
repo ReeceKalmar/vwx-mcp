@@ -99,7 +99,7 @@ class Build2027Tests(unittest.TestCase):
                 patch.object(BUILD.subprocess, 'call', return_value=17) as launch:
             self.assertEqual(BUILD.main([]), 17)
         command = launch.call_args.args[0]
-        self.assertIn('/p:VWSDK2027=' + str(self.sdk), command)
+        self.assertIn('/p:VWSDK2027=' + str(self.sdk.resolve()), command)
         self.assertIn('/p:Configuration=Release', command)
         self.assertIn('/p:Platform=x64', command)
         self.assertEqual(command[1], str(ROOT / 'native/VwxBridge2027.vcxproj'))
