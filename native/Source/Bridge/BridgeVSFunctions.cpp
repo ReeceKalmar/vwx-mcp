@@ -3,6 +3,7 @@
 #include "BridgeVSFunctions.h"
 #include "ArcAnglesPolicy.h"
 #include "MaintenancePolicy.h"
+#include "DocumentTransition.h"
 
 using namespace VwxBridge;
 
@@ -29,6 +30,14 @@ namespace
         { "VWXMaintQuit", "VWX Bridge", "Save and recheck the sole expected drawing, then request normal quit with save prompts preserved.",
           0, kVLIBScopeUniversal, true,
           { { "expectedPath", kStringArgType }, { "RETURN", kLongArgType } } },
+        { "VWXDocRevision", "VWX Bridge", "Private deferred document-transition ABI revision.",
+          0, kVLIBScopeUniversal, true, { { "RETURN", kLongArgType } } },
+        { "VWXDocStage", "VWX Bridge", "Stage an exact source/target transition for after this broker menu returns.",
+          0, kVLIBScopeUniversal, true,
+          { { "sourcePath", kStringArgType }, { "targetPath", kStringArgType },
+            { "requestId", kStringArgType }, { "RETURN", kLongArgType } } },
+        { "VWXDocStatus", "VWX Bridge", "Read the process-local transition outcome; independent inventory verification is required.",
+          0, kVLIBScopeUniversal, true, { { "RETURN", kStringArgType } } },
         {}
     };
 
@@ -191,6 +200,11 @@ void CBridgeVSRoutines::DispatchRoutine(Sint32 routineSelector, VWPluginLibraryA
         return; // No result channel exists on a malformed host dispatch.
 
     auto& result = argTable.GetResult();
+    if (routineSelector == 8)
+    {
+        result.SetArgString(TXString(DocumentTransition::Status(fRegistrationThread).c_str()));
+        return;
+    }
     if (routineSelector == 3)
     {
         MaintenanceHost host(fRegistrationThread);
@@ -198,6 +212,28 @@ void CBridgeVSRoutines::DispatchRoutine(Sint32 routineSelector, VWPluginLibraryA
         return;
     }
     result.SetArgLong(static_cast<Sint32>(ArcAngles::Status::UnknownRoutine));
+    if (routineSelector == 6)
+    {
+        result.SetArgLong(DocumentTransition::Revision(fRegistrationThread));
+        return;
+    }
+    if (routineSelector == 7)
+    {
+        if (raw->args[0].argType != kStringArgType || raw->args[1].argType != kStringArgType
+            || raw->args[2].argType != kStringArgType)
+        {
+            result.SetArgLong(-202);
+            return;
+        }
+        const auto source = argTable.GetArgument(0).GetArgString();
+        const auto target = argTable.GetArgument(1).GetArgString();
+        const auto request = argTable.GetArgument(2).GetArgString();
+        result.SetArgLong(DocumentTransition::Stage(fRegistrationThread,
+            std::wstring(source.GetWCharPtr(), source.GetLength()),
+            std::wstring(target.GetWCharPtr(), target.GetLength()),
+            std::wstring(request.GetWCharPtr(), request.GetLength())));
+        return;
+    }
     if (routineSelector == 0)
     {
         result.SetArgLong(ArcAngles::kNativeRevision);

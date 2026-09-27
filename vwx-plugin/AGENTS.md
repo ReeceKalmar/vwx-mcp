@@ -33,11 +33,53 @@ retry native `UprString`, or weaken the private arc/maintenance ABI checks.
 Maintenance save/quit rechecks the sole expected saved drawing and owner lease;
 no discard, force-kill or dialog dismissal fallback is permitted.
 
+## Native design command contracts
+
+Terrain queries pass `(model, tin_type, x, y)` to `DTM6_GetZatXY`, with finite
+coordinates, TIN 0/1/2 and verified model identity/readiness. Implicit discovery
+accepts only one model on the requested layer and never opens the SDK model
+picker; pass an exact `site_model_id` when several models exist. Failed queries
+do not expose undefined elevation outputs. Recheck an unready model in a later
+job without replaying its preceding mutation.
+
+`get_walls` returns top/bottom endpoint levels, `start_height`, `end_height` and
+numeric `thickness`; `height` is null for unequal endpoint heights. Per-field
+errors remain explicit. Selector 173 is not a wall-height contract.
+
+`create_wall` owns only its newly created type-68 UUID. It leaves document wall
+defaults alone, removes an inherited style only from that new instance, and
+preserves inherited components/materials while scaling their widths
+proportionally to the requested thickness. It requires at least one component,
+strict native success flags and matching component-width parameter readbacks.
+Height uses `SetWallOverallHeights` with bottom/top bound to layer Z at offsets
+0/height. It avoids the failed `SetWallHeights` binding and does not delete or
+insert components. Failures retain the partial object's UUID and failing phase;
+never retry the creation automatically. Success means accepted parameters, with
+`geometry_verified=false`; call `get_walls` in a later job. The unstyled
+single-component constructor passed a separate native dimensional readback in
+an inch-based disposable drawing; styled and multiple-component branches have
+offline tests only. [Wall repair evidence](../docs/WALL_CREATION_2027.json) pins
+that deployment and preserves the non-Boolean `SetWallHeights` diagnostic and
+false `DeleteAllComponents` result. Their raw failures must not be relabeled
+as native success; save/reopen persistence remains unverified.
+
+Component material/texture setters require documented architectural object or
+style types, a valid component index and a typed named resource. They resolve
+LONGINT references with `Name2Index`, honor native false and read back the stored
+parameter before reset. `parameter_verified` does not verify regenerated
+geometry; perform that inspection in a later job. Errors report whether a
+mutation was dispatched and never retry it. Hardscape/Landscape Area PIOs need
+a separately verified component-owner workflow; these setters reject generic
+PIO handles. These corrections have offline contract tests, not new native
+workflow certification.
+
 ## Checks from repository root
 
 ```text
 python -m unittest discover -s tests -p "test_menu_runner.py" -v
 python -m unittest discover -s tests -p "test_command_contracts_2027.py" -v
+python -m unittest discover -s tests -p "test_native_design_command_contracts.py" -v
+python -m unittest discover -s tests -p "test_plain_wall_creation.py" -v
 python -m unittest discover -s tests -p "test_sdk_runtime.py" -v
 python -m unittest discover -s tests -p "test_sdk_sequences.py" -v
 python -m unittest discover -s tests -p "test_sdk_*repair*.py" -v

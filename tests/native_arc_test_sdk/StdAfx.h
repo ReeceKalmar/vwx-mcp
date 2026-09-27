@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <memory>
 
 using Sint32 = std::int32_t;
 using DWORD = std::uint32_t;
@@ -39,29 +40,35 @@ public:
 // called through this declaration; all application/thread APIs remain modeled.
 extern "C" __declspec(dllimport) int __stdcall CompareStringOrdinal(const wchar_t*, int, const wchar_t*, int, int);
 
+inline bool modelTargetDiskExists = true;
+inline int modelTargetSetError = 0;
 struct ModelFile
 {
     std::wstring path = L"C:\\Projects\\Drawing.vwx";
     Sint32 reference = 10;
     bool active = true, inMemory = false, exists = true;
     int pathError = 0, existsError = 0;
+    int Set(const TXString& value) { path = value.value; exists = modelTargetDiskExists; return modelTargetSetError; }
     int GetFileFullPath(TXString& text) { text.value = path; return pathError; }
     int ExistsOnDisk(bool& present) { present = exists; return existsError; }
 };
 
 namespace VectorWorks::Filing
 {
+    inline constexpr int IID_FileIdentifier = 301;
     using IFileIdentifier = ModelFile;
     class IFileIdentifierPtr
     {
     public:
         IFileIdentifierPtr() = default;
         IFileIdentifierPtr(ModelFile* value) : pointer(value) {}
-        void Release() { pointer = nullptr; }
+        explicit IFileIdentifierPtr(int) : owned(std::make_shared<ModelFile>()), pointer(owned.get()) {}
+        void Release() { pointer = nullptr; owned.reset(); }
         operator ModelFile*() const { return pointer; }
         ModelFile* operator->() const { return pointer; }
         ModelFile** operator&() { return &pointer; }
     private:
+        std::shared_ptr<ModelFile> owned;
         ModelFile* pointer = nullptr;
     };
 }
@@ -126,6 +133,12 @@ struct ModelSDK
     std::vector<std::string> maintenanceEvents;
     std::function<void(int)> onInventory;
     std::function<void()> onSave;
+    int switchCalls = 0, openCalls = 0;
+    Sint32 switchedReference = -1;
+    bool switchReturns = true, openReturns = true, throwSwitch = false, throwOpen = false;
+    bool transitionNoOp = false, lastShowErrorMessages = true;
+    std::wstring openedPath;
+    std::function<void()> onSwitch, onOpen;
     short GetObjectTypeN(MCObjectHandle handle)
     {
         ++typeReads;
@@ -162,6 +175,29 @@ struct ModelSDK
         maintenanceEvents.push_back("quit");
         ++quitCalls; lastAskForSave = ask; lastRestart = restart;
         if (throwQuit) throw std::runtime_error("quit outcome unknown");
+    }
+    bool SwitchToOpenFile(Sint32 reference)
+    {
+        maintenanceEvents.push_back("switch");
+        ++switchCalls; switchedReference = reference;
+        if (!transitionNoOp) for (auto& doc : documents) doc.active = doc.reference == reference;
+        if (onSwitch) onSwitch();
+        if (throwSwitch) throw std::runtime_error("switch outcome unknown");
+        return switchReturns;
+    }
+    bool OpenDocumentPath(ModelFile* file, bool showErrors)
+    {
+        maintenanceEvents.push_back("open");
+        ++openCalls; lastShowErrorMessages = showErrors; openedPath = file->path;
+        if (!transitionNoOp)
+        {
+            ModelFile added = *file; added.active = true; added.reference = 100;
+            for (auto& doc : documents) doc.active = false;
+            documents.push_back(added);
+        }
+        if (onOpen) onOpen();
+        if (throwOpen) throw std::runtime_error("open outcome unknown");
+        return openReturns;
     }
 };
 inline ModelSDK modelSDK;

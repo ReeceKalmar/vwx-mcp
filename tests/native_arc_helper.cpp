@@ -1,4 +1,5 @@
 // Exercise the actual production callback with an independent SDK boundary.
+#include "../native/Source/Bridge/DocumentTransition.cpp"
 #include "../native/Source/Bridge/BridgeVSFunctions.cpp"
 #include <cassert>
 #include <cstring>
@@ -46,7 +47,7 @@ int main()
     assert(kFunctions[1].fParams[0].fType == 25);
     assert(kFunctions[1].fParams[1].fType == 5 && kFunctions[1].fParams[2].fType == 5);
     assert(kFunctions[1].fParams[3].fType == 3 && !kFunctions[1].fParams[4].fName);
-    assert(!kFunctions[6].fName);
+    assert(!kFunctions[9].fName);
 
     ResetModel();
     CBridgeVSRoutines routines;
@@ -54,7 +55,7 @@ int main()
     auto table = Arguments(&arc);
     assert(Dispatch(routines, table, 0) == 1);
     assert(modelArgumentReads == 0 && modelSDK.typeReads == 0 && modelSDK.setterCalls == 0);
-    for (Sint32 selector : {6, 19, std::numeric_limits<Sint32>::max()})
+    for (Sint32 selector : {9, 19, std::numeric_limits<Sint32>::max()})
         assert(Dispatch(routines, table, selector) == -5);
     assert(modelArgumentReads == 0 && modelSDK.setterCalls == 0);
     VWPluginLibraryArgTable missing(nullptr);

@@ -113,7 +113,7 @@ def _bbox(h):
 OBJ_TYPES = {
     2:'line',3:'rect',4:'oval',5:'polyline',6:'bezier',8:'arc',
     9:'freehand',11:'text',12:'symbol',15:'group',21:'polygon',
-    25:'extrude',26:'sweep',28:'sphere',34:'wall',68:'plugin_obj',
+    25:'extrude',26:'sweep',28:'sphere',34:'wall',68:'wall',
     86:'space',89:'viewport',91:'nurbs',94:'worksheet'
 }
 
@@ -163,6 +163,173 @@ def _restore(prev):
 def ping(p):
     return {'status': 'ok', 'message': 'VW MCP Bridge running'}
 
+
+def _bridge_document_transition(p, lease, digest, base):
+    """Stage once in Python; C++ executes only after the menu returns."""
+    import ntpath
+    dispatched = False
+
+    def fail(message, code='VWX_DOCUMENT_TRANSITION_INVALID'):
+        return {'status': 'error', 'error': message, 'code': code, 'dispatched': dispatched}
+
+    def read(suffix):
+        path = os.path.join(base, 'bridge.maintenance.' + digest + '.transition.' + suffix + '.json')
+        if os.path.islink(path) or os.path.getsize(path) > 262144:
+            raise ValueError('Invalid transition evidence file')
+        with open(path, encoding='utf-8') as stream:
+            return json.load(stream)
+
+    def serialized(value):
+        payload = json.dumps(value, ensure_ascii=False, allow_nan=False)
+        if len(payload.encode('utf-8')) > 262144:
+            raise ValueError('Transition evidence exceeds the supported 262144-byte limit')
+        return payload
+
+    def write(suffix, value):
+        path = os.path.join(base, 'bridge.maintenance.' + digest + '.transition.' + suffix + '.json')
+        payload = serialized(value)
+        with open(path, 'x', encoding='utf-8') as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+
+    def normalized(path):
+        if type(path) is not str or not path or '\x00' in path or not ntpath.isabs(path):
+            raise ValueError('Exact absolute drawing paths are required')
+        return ntpath.normcase(ntpath.normpath(path))
+
+    try:
+        action = p['action']
+        if type(lease.get('host_process_id')) is not int or lease['host_process_id'] != os.getpid():
+            return fail('The original maintenance host is required')
+        revision = getattr(vs, 'VWXDocRevision', None)
+        stage = getattr(vs, 'VWXDocStage', None)
+        status = getattr(vs, 'VWXDocStatus', None)
+        if not all(callable(helper) for helper in (revision, stage, status)):
+            return fail('Install the private native document helper first', 'VWX_DOCUMENT_TRANSITION_UNSUPPORTED')
+        abi = revision()
+        if type(abi) is not int or abi != 1:
+            return fail('Document helper ABI or native context is unavailable', 'VWX_DOCUMENT_TRANSITION_UNSUPPORTED')
+        intent = read('intent')
+        if (type(intent) is not dict
+                or set(intent) != {'schema_version', 'request_id', 'process_id', 'source_path', 'target_path'}
+                or type(intent['schema_version']) is not int or intent['schema_version'] != 1
+                or type(intent['process_id']) is not int or intent['process_id'] != os.getpid()
+                or intent['request_id'] != digest
+                or intent['source_path'] != normalized(intent['source_path'])
+                or intent['target_path'] != normalized(intent['target_path'])
+                or intent['source_path'] == intent['target_path']
+                or any(ntpath.splitext(intent[key])[1] != '.vwx' for key in ('source_path', 'target_path'))):
+            return fail('The server has not durably published this exact transition intent')
+        if any(p.get(parameter) and normalized(p[parameter]) != intent[key]
+               for parameter, key in (('expected_path', 'source_path'), ('target_path', 'target_path'))):
+            return fail('Transition paths differ from the published intent')
+        inventory = _native_document_inventory()
+        if inventory.get('status') != 'ok':
+            return inventory
+        documents = inventory['open_documents']
+        if action == 'transition':
+            if not p.get('expected_path') or not p.get('target_path'):
+                return fail('Source and target paths are required for staging')
+            source = [doc for doc in documents if not doc['in_memory_only']
+                      and normalized(doc['path']) == intent['source_path']]
+            if (len(source) != 1 or not source[0]['active']
+                    or any(doc['in_memory_only'] for doc in documents)):
+                return fail('The exact saved source must be active, with no unsaved drawings')
+            target_open = any(normalized(doc['path']) == intent['target_path'] for doc in documents)
+            if len(documents) >= 256 and not target_open:
+                return fail('Opening the target would exceed the native 256-document inventory limit',
+                            'VWX_DOCUMENT_TRANSITION_CAPACITY')
+            # The eventual confirmation must fit the same read bound too.
+            # Reserve the longest possible nonnegative SDK Sint32 reference.
+            serialized({'schema_version': 1, 'intent': intent, 'outcome': 'completed',
+                        'source_file_ref': source[0]['file_ref'], 'target_file_ref': 2147483647})
+            # Separate from the publication intent: consumes the native attempt
+            # before entering the private callback, even if its response is lost.
+            write('dispatch', {'schema_version': 1, 'intent': intent, 'before': documents})
+            dispatched = True
+            result = stage(p['expected_path'], p['target_path'], digest)
+            if type(result) is not int or result != 1:
+                return dict(fail('Native helper did not accept the transition; inspect without replay',
+                                 'VWX_DOCUMENT_TRANSITION_STAGE'),
+                            native_status=result if type(result) is int else None)
+            return {'status': 'ok', 'action': action, 'phase': 'staged', 'completed': False,
+                    'request_id': digest, 'process_id': os.getpid(), 'dispatched': True,
+                    'source_path': intent['source_path'], 'target_path': intent['target_path']}
+        raw = status()
+        if type(raw) is not str:
+            return fail('Malformed native transition result')
+        result = json.loads(raw)
+        if (type(result) is not dict or type(result.get('schema_version')) is not int
+                or result['schema_version'] != 1 or type(result.get('process_id')) is not int
+                or result['process_id'] != os.getpid() or result.get('request_id') != digest
+                or normalized(result.get('source_path')) != intent['source_path']
+                or normalized(result.get('target_path')) != intent['target_path']
+                or result.get('phase') not in {'staged', 'executing', 'completed', 'failed', 'uncertain'}
+                or type(result.get('code')) is not int
+                or any(type(result.get(key)) is not bool for key in
+                       ('dispatched', 'save_confirmed', 'transition_dispatched'))
+                or any(type(result.get(key)) is not int for key in ('source_ref', 'target_ref'))):
+            return fail('Native transition result does not match the consumed request',
+                        'VWX_DOCUMENT_TRANSITION_RESULT')
+        response = {'status': 'ok', 'action': action, 'transition': result, 'inventory': inventory,
+                    'confirmed': False}
+        if action == 'transition_status':
+            return response
+        if (result['phase'] != 'completed' or result['code'] != 1
+                or any(result[key] is not True for key in ('dispatched', 'save_confirmed', 'transition_dispatched'))):
+            return dict(fail('Transition did not confirm completion; keep the lease and inspect',
+                             'VWX_DOCUMENT_TRANSITION_PENDING'), transition=result, inventory=inventory)
+        dispatch = read('dispatch')
+        if (type(dispatch) is not dict or set(dispatch) != {'schema_version', 'intent', 'before'}
+                or type(dispatch.get('schema_version')) is not int or dispatch['schema_version'] != 1
+                or json.dumps(dispatch.get('intent'), sort_keys=True, allow_nan=False)
+                    != json.dumps(intent, sort_keys=True, allow_nan=False)
+                or type(dispatch.get('before')) is not list):
+            return fail('Original native-dispatch evidence is missing or malformed')
+
+        def identities(rows):
+            values = {}
+            refs = set()
+            for doc in rows:
+                if (type(doc) is not dict or type(doc.get('file_ref')) is not int or doc['file_ref'] < 0
+                        or type(doc.get('active')) is not bool or doc.get('in_memory_only') is not False):
+                    raise ValueError('Malformed saved-document identity')
+                path = normalized(doc.get('path'))
+                if path in values or doc['file_ref'] in refs:
+                    raise ValueError('Duplicate saved-document identity')
+                values[path] = doc
+                refs.add(doc['file_ref'])
+            if sum(doc['active'] for doc in rows) != 1:
+                raise ValueError('Exactly one active drawing is required')
+            return values
+
+        before, after = identities(dispatch['before']), identities(documents)
+        source_path, target_path = intent['source_path'], intent['target_path']
+        if (source_path not in before or not before[source_path]['active']
+                or set(after) != set(before) | {target_path}
+                or any(after[path]['file_ref'] != doc['file_ref'] for path, doc in before.items())
+                or not after[target_path]['active'] or after[source_path]['active']
+                or result['source_ref'] != after[source_path]['file_ref']
+                or result['target_ref'] != after[target_path]['file_ref']):
+            return fail('The fresh inventory does not confirm the target and preservation of every original drawing',
+                        'VWX_DOCUMENT_TRANSITION_IDENTITY')
+        receipt = {'schema_version': 1, 'intent': intent, 'outcome': 'completed',
+                   'source_file_ref': after[source_path]['file_ref'], 'target_file_ref': after[target_path]['file_ref']}
+        try:
+            write('confirmed', receipt)
+        except FileExistsError:
+            if read('confirmed') != receipt:
+                return fail('An incompatible transition confirmation already exists')
+        return dict(response, confirmed=True)
+    except FileExistsError:
+        return fail('Native transition intent has already been consumed; never replay',
+                    'VWX_DOCUMENT_TRANSITION_CONSUMED')
+    except Exception as error:
+        return fail(str(error), 'VWX_DOCUMENT_TRANSITION_UNCONFIRMED' if dispatched
+                    else 'VWX_DOCUMENT_TRANSITION_INVALID')
+
+
 def bridge_maintenance(p):
     """Lease-guarded native maintenance; durable intents prevent mutation replay."""
     import hashlib, hmac, ntpath
@@ -175,10 +342,10 @@ def bridge_maintenance(p):
             stream.flush()
             os.fsync(stream.fileno())
     try:
-        if type(p) is not dict or set(p) - {'action', 'token', 'expected_path'}:
+        if type(p) is not dict or set(p) - {'action', 'token', 'expected_path', 'target_path'}:
             return fail('Invalid maintenance envelope')
         action, token = p.get('action'), p.get('token')
-        if action not in {'status', 'save', 'quit'} or type(token) is not str or not re.fullmatch(r'[0-9a-f]{64}', token):
+        if action not in {'status', 'save', 'quit', 'transition', 'transition_status', 'transition_confirm'} or type(token) is not str or not re.fullmatch(r'[0-9a-f]{64}', token):
             return fail('Maintenance action and lease token are required')
         base = os.path.dirname(os.path.abspath(__file__))
         with open(os.path.join(base, 'bridge.maintenance.json'), encoding='utf-8') as stream:
@@ -188,6 +355,8 @@ def bridge_maintenance(p):
                 or type(lease.get('token_sha256')) is not str
                 or not hmac.compare_digest(lease['token_sha256'], digest)):
             return fail('Maintenance lease is not owned', 'VWX_MAINTENANCE_LEASE')
+        if action.startswith('transition'):
+            return _bridge_document_transition(p, lease, digest, base)
         revision, snapshot = getattr(vs, 'VWXMaintRevision', None), getattr(vs, 'VWXMaintSnapshot', None)
         if not callable(revision) or not callable(snapshot):
             return fail('Install the native maintenance helper first', 'VWX_MAINTENANCE_UNSUPPORTED')
@@ -209,7 +378,12 @@ def bridge_maintenance(p):
                or type(doc.get('in_memory_only')) is not bool for doc in inventory['open_documents']):
             return fail('Native document inventory contains malformed rows', 'VWX_MAINTENANCE_RESULT')
         if action == 'status':
-            return dict(inventory, helper_revision=abi)
+            result = dict(inventory, helper_revision=abi)
+            document_revision = getattr(vs, 'VWXDocRevision', None)
+            if callable(document_revision):
+                measured = document_revision()
+                result['document_transition_revision'] = measured if type(measured) is int else None
+            return result
         path = p.get('expected_path')
         if (type(path) is not str or not path or '\x00' in path or not ntpath.isabs(path)
                 or ntpath.splitext(path)[1].lower() != '.vwx'):
@@ -341,9 +515,9 @@ def set_document_preferences(p):
 # which file you are in and nothing about the others. Confirmed against the
 # 2027 SDK index, not assumed.
 #
-# What does know is Windows: every open document is a window in this very
-# process, and this code runs inside it. So the list comes from the window
-# manager and the switch is a posted MDI message.
+# list_documents uses the private native SDK inventory below. The legacy
+# window helpers remain only for switch_document, whose interactive fallback
+# is blocked in background mode. Window titles are not document identities.
 #
 # Posted, not sent. We are on VW's main thread; a SendMessage would re-enter
 # VW's UI while a script is still running. PostMessage queues the switch and
@@ -509,36 +683,96 @@ def _grundname(s):
     return _entstern(s).strip().lower()
 
 
+def _native_document_inventory():
+    """Validate one read-only SDK snapshot; never infer identity from UI text."""
+    import ntpath
+
+    def invalid(message):
+        return {'status': 'error', 'code': 'VWX_DOCUMENT_INVENTORY_INVALID', 'error': message}
+
+    def unique_object(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError('Duplicate native inventory field')
+            value[key] = item
+        return value
+
+    try:
+        revision = getattr(vs, 'VWXMaintRevision', None)
+        snapshot = getattr(vs, 'VWXMaintSnapshot', None)
+        if not callable(revision) or not callable(snapshot):
+            return {'status': 'error', 'code': 'VWX_DOCUMENT_INVENTORY_UNAVAILABLE',
+                    'error': 'The native SDK document inventory helper is required'}
+        abi = revision()
+        if type(abi) is not int or abi != 1:
+            return {'status': 'error', 'code': 'VWX_DOCUMENT_INVENTORY_UNAVAILABLE',
+                    'error': 'Native document inventory ABI or UI context is unavailable'}
+        raw = snapshot()
+        if type(raw) is not str:
+            return invalid('Native document inventory must be JSON text')
+        inventory = json.loads(raw, object_pairs_hook=unique_object)
+        if (type(inventory) is not dict or inventory.get('status') != 'ok'
+                or type(inventory.get('process_id')) is not int
+                or inventory['process_id'] <= 0 or inventory['process_id'] != os.getpid()
+                or type(inventory.get('count')) is not int
+                or not 0 <= inventory['count'] <= 256
+                or type(inventory.get('open_documents')) is not list
+                or inventory['count'] != len(inventory['open_documents'])):
+            return invalid('Native document inventory identity or count failed validation')
+        documents, references, saved_paths = [], set(), set()
+        for row in inventory['open_documents']:
+            if (type(row) is not dict or type(row.get('path')) is not str
+                    or type(row.get('file_ref')) is not int or not 0 <= row['file_ref'] <= 2147483647
+                    or type(row.get('active')) is not bool or type(row.get('in_memory_only')) is not bool):
+                return invalid('Native document inventory contains a malformed row')
+            path, file_ref = row['path'], row['file_ref']
+            if file_ref in references:
+                return invalid('Native document inventory repeats an open-file reference')
+            references.add(file_ref)
+            # GetFileFullPath supplies absolute paths. An unsaved document can
+            # instead have no file identifier; retain that fact without naming it.
+            if path:
+                drive, tail = ntpath.splitdrive(ntpath.normpath(path))
+                drive_letter = len(drive) == 2 and drive[0] in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' and drive[1] == ':'
+                unc_share = drive.startswith('\\\\') and not drive.startswith(('\\\\?\\', '\\\\.\\'))
+                if (not (drive_letter or unc_share) or not ntpath.isabs(path) or not ntpath.basename(tail)
+                        or not tail.startswith(('\\', '/'))
+                        or any(ord(c) < 32 or 0xd800 <= ord(c) <= 0xdfff or c in '\"<>|?*' for c in path)
+                        or ':' in tail
+                        or any(part.endswith(('.', ' ')) for part in tail.split('\\') if part)):
+                    return invalid('Native document inventory contains an invalid full path')
+            elif not row['in_memory_only']:
+                return invalid('A saved native document has no full path')
+            if not row['in_memory_only']:
+                key = ntpath.normcase(ntpath.normpath(path))
+                if key in saved_paths:
+                    return invalid('Native document inventory repeats a saved path')
+                saved_paths.add(key)
+            documents.append({key: row[key] for key in ('path', 'file_ref', 'active', 'in_memory_only')})
+        if sum(doc['active'] for doc in documents) != (1 if documents else 0):
+            return invalid('Native document inventory must identify exactly one active open document')
+        return {'status': 'ok', 'process_id': inventory['process_id'], 'count': len(documents),
+                'open_documents': documents, 'helper_revision': abi, 'source': 'native-sdk-open-files'}
+    except Exception:
+        return invalid('Native document inventory could not be read or parsed')
+
+
 def list_documents(p):
-    """Every open Vectorworks document, and which one commands land in."""
-    aktiv = _safe(vs.GetFName, '') or ''
-    fenster, _client, diagnose = _dokumentfenster()
-    aktiv_hwnd = diagnose.get('aktiv_hwnd')
-
-    for f in fenster:
-        per_name = bool(f['datei']) and _grundname(f['datei']) == _grundname(aktiv)
-        if aktiv_hwnd is not None:
-            per_hwnd = (f['hwnd'] == aktiv_hwnd)
-            f['aktiv'] = per_hwnd
-            if per_name != per_hwnd:
-                # Namensvergleich und Fenster-Z-Reihenfolge widersprechen sich
-                # — typischer Ausloeser: zwei offene Dateien mit demselben
-                # Basisnamen aus verschiedenen Ordnern. Sichtbar machen statt
-                # stillschweigend eines der beiden Signale zu bevorzugen.
-                f['aktiv_widerspruch'] = True
-        else:
-            f['aktiv'] = per_name
-
-    if not fenster:
-        # Lieber das eine bekannte Dokument melden als eine leere Liste, die
-        # aussieht, als waere nichts offen.
-        return {'status': 'ok', 'aktiv': aktiv, 'anzahl': 1 if aktiv else 0,
-                'dokumente': ([{'datei': aktiv, 'aktiv': True, 'hwnd': None}] if aktiv else []),
-                'hinweis': 'Fenster nicht auffindbar — nur das aktive Dokument ist bekannt.',
-                'diagnose': diagnose}
-
-    return {'status': 'ok', 'aktiv': aktiv, 'anzahl': len(fenster),
-            'dokumente': fenster, 'diagnose': diagnose}
+    """Exact SDK open-file identities, with legacy German result aliases."""
+    import ntpath
+    inventory = _native_document_inventory()
+    if inventory['status'] != 'ok':
+        return inventory
+    documents = inventory['open_documents']
+    active = next((doc for doc in documents if doc['active']), None)
+    return dict(inventory,
+                active_path=active['path'] if active else '',
+                active_file_ref=active['file_ref'] if active else None,
+                aktiv=ntpath.basename(active['path']) if active else '',
+                anzahl=len(documents),
+                dokumente=[dict(doc, datei=ntpath.basename(doc['path']), aktiv=doc['active'])
+                           for doc in documents])
 
 
 def switch_document(p):
@@ -2798,31 +3032,111 @@ def _wall_trace(step):
         pass
 
 def create_wall(p):
-    # v11 rewrite: documented wall APIs only. The old version pushed magic
-    # prefs (vs.SetPrefReal(85), vs.SetPref(68)) before vs.Wall and killed
-    # VW hard. Now: SetWallWidth (documented default-width setter) -> Wall ->
-    # per-wall SetWallThickness/SetWallHeights on the unstyled wall.
-    prev = _with_layer_class(p)
+    """Create a native wall with instance dimensions and layer-relative heights.
+
+    Preserve inherited components/materials, scaling component widths to the
+    requested thickness. Inspect actual geometry in a separate later job.
+    """
+    import math
+    response = {'object_id': None, 'mutation_dispatched': False, 'geometry_verified': False}
+    phase = 'validate'
+    context_applied = False
     try:
-        height = p.get('height', 2500)
-        thick  = p.get('thickness', 200)
-        _wall_trace('begin h=%s t=%s' % (height, thick))
-        _safe(lambda: vs.SetWallWidth(thick))          # document default width
-        _wall_trace('SetWallWidth ok')
-        vs.Wall((p.get('x1',0), p.get('y1',0)),
-                (p.get('x2',1000), p.get('y2',0)))
-        _wall_trace('Wall ok')
+        start = tuple(_finite_document_number(p.get(key, 0), key) for key in ('x1', 'y1'))
+        end = (_finite_document_number(p.get('x2', 1000), 'x2'),
+               _finite_document_number(p.get('y2', 0), 'y2'))
+        height = _finite_document_number(p.get('height', 2500), 'height')
+        thick = _finite_document_number(p.get('thickness', 200), 'thickness')
+        if height <= 0 or thick <= 0 or start == end:
+            raise ValueError('Wall height/thickness must be positive and endpoints must differ')
+        phase = 'context'
+        prev = _with_layer_class(p)
+        context_applied = True
+        before = vs.LNewObj()
+        before_id = _oid(before)
+        phase = 'Wall'
+        _wall_trace('create requested height=%s thickness=%s' % (height, thick))
+        response['mutation_dispatched'] = True
+        vs.Wall(start, end)
         h = vs.LNewObj()
-        _wall_trace('LNewObj ok h=%s' % bool(h))
-        if h:
-            _safe(lambda: vs.SetWallThickness(h, thick))
-            _wall_trace('SetWallThickness ok')
-            _safe(lambda: vs.SetWallHeights(h, height, height))
-            _wall_trace('SetWallHeights ok')
-        _wall_trace('done')
-        return {'status': 'ok', 'object_id': _oid(h)}
+        phase = 'new_wall_identity'
+        if not h or h == before or vs.GetTypeN(h) != 68:
+            raise ValueError('Wall did not expose a new native wall')
+        oid = _oid(h)
+        if not oid or oid == before_id:
+            raise ValueError('Wall did not expose a new object UUID')
+        response['object_id'] = oid
+        h = _new_wall_handle(oid)
+        phase = 'GetWallStyle'
+        style = vs.GetWallStyle(h)
+        if type(style) is not str:
+            raise ValueError('GetWallStyle returned an invalid style name')
+        if style:
+            phase = 'ConvertToUnstyledWall'
+            if vs.ConvertToUnstyledWall(h) is not True:
+                raise ValueError('Could not unstyle the newly created wall')
+            h = _new_wall_handle(oid)
+            if vs.GetWallStyle(h) != '':
+                raise ValueError('New wall still has a style after conversion')
+        phase = 'GetNumberOfComponents'
+        count = vs.GetNumberOfComponents(h)
+        if (not isinstance(count, (list, tuple)) or len(count) != 2
+                or count[0] is not True or type(count[1]) is not int
+                or not 1 <= count[1] <= 32767):
+            raise ValueError('Wall needs at least one valid inherited component; zero-component creation is unverified')
+        widths = []
+        for index in range(1, count[1] + 1):
+            phase = 'GetComponentWidth[%d]' % index
+            raw = vs.GetComponentWidth(h, index)
+            if not isinstance(raw, (list, tuple)) or len(raw) != 2 or raw[0] is not True:
+                raise ValueError('Could not read inherited component width')
+            width = _finite_document_number(raw[1], 'component width')
+            if width < 0:
+                raise ValueError('Inherited component width is negative')
+            widths.append(width)
+        total = _finite_document_number(math.fsum(widths), 'total component thickness')
+        if total <= 0:
+            raise ValueError('Inherited component widths must have a positive total')
+        targets = [width / total * thick for width in widths]
+        if any(width > 0 and target <= 0 for width, target in zip(widths, targets)):
+            raise ValueError('Requested thickness underflows an inherited component width')
+        for index, target in enumerate(targets, 1):
+            phase = 'SetComponentWidth[%d]' % index
+            h = _new_wall_handle(oid)
+            if vs.SetComponentWidth(h, index, target) is not True:
+                raise ValueError('Native component width setter did not succeed')
+            phase = 'GetComponentWidth[%d] readback' % index
+            actual = vs.GetComponentWidth(h, index)
+            if not isinstance(actual, (list, tuple)) or len(actual) != 2 or actual[0] is not True:
+                raise ValueError('Component width readback failed')
+            value = _finite_document_number(actual[1], 'component width readback')
+            if (value < 0 or (target > 0 and value <= 0)
+                    or not math.isclose(value, target, rel_tol=1e-9, abs_tol=1e-9)):
+                raise ValueError('Component width readback differs from the requested width')
+        phase = 'SetWallOverallHeights'
+        h = _new_wall_handle(oid)
+        if vs.SetWallOverallHeights(h, 0, 0, '', 0.0, 0, 0, '', height) is not True:
+            raise ValueError('Native wall height binding setter did not succeed')
+        phase = 'ResetObject'
+        vs.ResetObject(_new_wall_handle(oid))
+        _wall_trace('parameters accepted; later geometry verification required')
+        return dict(response, status='ok', component_count=count[1],
+                    component_widths=targets, parameters_accepted=True,
+                    height_reference='layer Z', verification_required='get_walls in a later job')
+    except Exception as e:
+        _wall_trace('failed at %s: %s' % (phase, e))
+        return dict(response, error=str(e), code='VWX_WALL_CREATION_FAILED', phase=phase)
     finally:
-        _restore(prev)
+        if context_applied:
+            _restore(prev)
+
+
+def _new_wall_handle(oid):
+    """Re-resolve only the freshly created UUID before each instance mutation."""
+    h = _h(oid)
+    if not h or vs.GetTypeN(h) != 68 or _oid(h) != oid:
+        raise ValueError('New wall UUID no longer resolves to the same native wall')
+    return h
 
 def create_space(p):
     prev = _with_layer_class(p)
@@ -2857,8 +3171,34 @@ def get_walls(p):
     out = []
     for h in hs:
         s = _summary(h)
-        s['height']    = _safe(lambda: vs.GetObjectVariableReal(h, 173))
-        s['thickness'] = _safe(lambda: vs.GetWallThickness(h))
+        # Selector 173 is slab/roof/floor/column thickness, not wall height.
+        s.update(height=None, start_height=None, end_height=None, thickness=None)
+        try:
+            levels = vs.GetWallHeight(h)
+            if not isinstance(levels, (list, tuple)) or len(levels) != 4:
+                raise ValueError('GetWallHeight returned an invalid result')
+            start_top, start_bottom, end_top, end_bottom = [
+                _finite_document_number(value, 'wall elevation') for value in levels]
+            s['height_levels'] = dict(start_top=start_top, start_bottom=start_bottom,
+                                      end_top=end_top, end_bottom=end_bottom)
+            s['start_height'] = _finite_document_number(start_top - start_bottom, 'start height')
+            s['end_height'] = _finite_document_number(end_top - end_bottom, 'end height')
+            # A sloped wall has no single height; preserve both endpoint values.
+            if s['start_height'] == s['end_height']:
+                s['height'] = s['start_height']
+        except Exception as e:
+            s['height_error'] = str(e)
+        try:
+            thickness = vs.GetWallThickness(h)
+            if (not isinstance(thickness, (list, tuple)) or len(thickness) != 2
+                    or thickness[0] is not True):
+                raise ValueError('GetWallThickness did not return a valid thickness')
+            width = _finite_document_number(thickness[1], 'wall thickness')
+            if width < 0:
+                raise ValueError('GetWallThickness returned a negative thickness')
+            s['thickness'] = width
+        except Exception as e:
+            s['thickness_error'] = str(e)
         out.append(s)
     return {'walls': out, 'count': len(out)}
 
@@ -2984,18 +3324,12 @@ def update_site_model(p):
 def get_terrain_elevation(p):
     """Get terrain elevation at a point (x, y) in document units, from the
     site model on the active layer (same DTM6_GetZatXY call as get_z_at_xy)."""
-    dtm_h = _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer'}
-    x = float(p.get('x', 0)); y = float(p.get('y', 0))
-    tin_type = int(p.get('tin_type', 2))
-    try:
-        ok, z = vs.DTM6_GetZatXY(dtm_h, x, y, tin_type)
-        if not ok:
-            return {'error': f'Point ({x}, {y}) is outside the site model'}
-        return {'elevation': z}
-    except Exception as e:
-        return {'error': str(e)}
+    result = get_z_at_xy(p)
+    if 'error' in result:
+        return result
+    if not result['ok']:
+        return {'error': 'Point is outside the site model or no TIN is available'}
+    return {'elevation': result['z']}
 
 
 # ── Viewports ───────────────────────────────────────────────────────────────
@@ -3900,10 +4234,32 @@ def set_dim_note(p):
 
 # ── Site Model (DTM6_*) ──────────────────────────────────────────────────────
 
+def _finite_document_number(value, label):
+    import math
+    if type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError(label + ' must be a finite number')
+    return float(value)
+
+
+def _dtm_on_layer(layer):
+    """Discover a unique layer-local DTM without the SDK's model-picker path."""
+    if not layer or vs.GetTypeN(layer) != 31:
+        raise ValueError('Layer not found')
+    models = []
+    def collect(h):
+        # Do not use DTM6_GetDTMObject: its ambiguous-model branch may prompt.
+        if vs.GetLayer(h) == layer and vs.DTM6_IsDTM6Object(h) is True:
+            if len(models) < 2:
+                models.append(h)
+    vs.ForEachObject(collect, 'T=PLUGINOBJ')
+    if len(models) > 1:
+        raise ValueError('Multiple site models on this layer; pass an exact site_model_id')
+    return models[0] if models else None
+
+
 def _active_dtm():
     try:
-        lay = vs.ActLayer()
-        return vs.DTM6_GetDTMObject(lay, True)
+        return _dtm_on_layer(vs.ActLayer())
     except Exception:
         return None
 
@@ -3967,15 +4323,24 @@ def rise_to_surface(p):
 def get_z_at_xy(p):
     """Z elevation at a planar (x, y) on the site model.
     tin_type: 0 existing / 1 proposed / 2 current (default)."""
-    dtm_oid = p.get('site_model_id')
-    dtm_h = _h(dtm_oid) if dtm_oid else _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer (pass site_model_id)'}
-    x = float(p.get('x', 0)); y = float(p.get('y', 0))
-    tin_type = int(p.get('tin_type', 2))
     try:
-        ok, z = vs.DTM6_GetZatXY(dtm_h, x, y, tin_type)
-        return {'ok': bool(ok), 'z': z if ok else None}
+        x = _finite_document_number(p.get('x', 0), 'x')
+        y = _finite_document_number(p.get('y', 0), 'y')
+        tin_type = p.get('tin_type', 2)
+        if type(tin_type) is not int or tin_type not in (0, 1, 2):
+            raise ValueError('tin_type must be 0 (existing), 1 (proposed), or 2 (current)')
+        dtm_oid = p.get('site_model_id')
+        dtm_h = _h(dtm_oid) if dtm_oid else _dtm_on_layer(vs.ActLayer())
+        if not dtm_h or vs.DTM6_IsDTM6Object(dtm_h) is not True:
+            raise ValueError('No valid site model found (pass an exact site_model_id)')
+        if vs.DTM6_IsObjectReady(dtm_h) is not True:
+            raise ValueError('Site model is not ready; inspect again in a later job')
+        result = vs.DTM6_GetZatXY(dtm_h, tin_type, x, y)
+        if (not isinstance(result, (list, tuple)) or len(result) != 2
+                or type(result[0]) is not bool):
+            raise ValueError('DTM6_GetZatXY returned an invalid result')
+        ok, z = result
+        return {'ok': ok, 'z': _finite_document_number(z, 'terrain elevation') if ok else None}
     except Exception as e:
         return {'error': str(e)}
 
@@ -3983,7 +4348,7 @@ def site_model_on_layer(p):
     layer = p.get('layer')
     try:
         lay_h = vs.GetLayerByName(layer) if layer else vs.ActLayer()
-        dtm = vs.DTM6_GetDTMObject(lay_h, True)
+        dtm = _dtm_on_layer(lay_h)
         return {'object_id': _oid(dtm) if dtm else None}
     except Exception as e:
         return {'error': str(e)}
@@ -4413,33 +4778,58 @@ def set_component_class(p):    return _set_component_attr(p, 'SetComponentClass'
 def set_component_width(p):    return _set_component_attr(p, 'SetComponentWidth')
 def set_component_function(p): return _set_component_attr(p, 'SetComponentFunction')
 
-def set_component_material(p):
-    h = _h(p.get('object_id'))
-    if not h: return {'error': 'Object not found'}
-    idx = int(p.get('index', 1))
-    mname = p.get('material_name')
-    if not mname: return {'error': 'material_name required'}
+def _set_component_resource(p, resource_kind):
+    """Validate named LONGINT resource refs; read parameters before regeneration."""
+    dispatched = False
     try:
-        mh = vs.GetObject(mname)
-        if not mh: return {'error': 'material not found'}
-        vs.SetComponentMaterial(h, idx, mh)
+        h = _h(p.get('object_id'))
+        if not h:
+            raise ValueError('Object not found')
+        # The SDK documents walls, slabs/roof faces, roofs and their styles.
+        # Generic PIOs (including Landscape Area/Hardscape) are not this domain.
+        if vs.GetTypeN(h) not in (16, 68, 71, 83):
+            raise ValueError('Component resource setter requires a wall, slab, roof or architectural style')
+        idx = p.get('index', 1)
+        if type(idx) is not int or not 1 <= idx <= 32767:
+            raise ValueError('index must be a positive INTEGER component index')
+        count = vs.GetNumberOfComponents(h)
+        if (not isinstance(count, (tuple, list)) or len(count) != 2
+                or count[0] is not True or type(count[1]) is not int
+                or not idx <= count[1] <= 32767):
+            raise ValueError('Component index is unavailable on this object')
+        name = p.get(resource_kind + '_name')
+        if not isinstance(name, str) or not name:
+            raise ValueError(resource_kind + '_name required')
+        resource = _name_obj(name)
+        expected_type = 19 if resource_kind == 'material' else 97
+        if not resource or vs.GetTypeN(resource) != expected_type:
+            raise ValueError(resource_kind + ' resource not found or wrong type')
+        ref = vs.Name2Index(name)
+        if type(ref) is not int or not 0 < ref <= 2147483647 or vs.Index2Name(ref) != name:
+            raise ValueError(resource_kind + ' resource reference is invalid')
+        dispatched = True
+        accepted = (vs.SetComponentMaterial(h, idx, ref) if resource_kind == 'material'
+                    else vs.SetComponentTexture(h, idx, ref))
+        if accepted is not True:
+            raise ValueError('Native component resource setter did not succeed')
+        actual = (vs.GetComponentMaterial(h, idx) if resource_kind == 'material'
+                  else vs.GetComponentTexture(h, idx))
+        if (not isinstance(actual, (tuple, list)) or len(actual) != 2
+                or actual[0] is not True or type(actual[1]) is not int or actual[1] != ref):
+            raise ValueError('Component resource parameter readback did not match')
         vs.ResetObject(h)
-        return {'status': 'ok'}
-    except Exception as e: return {'error': str(e)}
+        return {'status': 'ok', 'resource_index': ref,
+                'parameter_verified': True, 'geometry_verified': False}
+    except Exception as e:
+        return {'error': str(e), 'mutation_dispatched': dispatched}
+
+
+def set_component_material(p):
+    return _set_component_resource(p, 'material')
+
 
 def set_component_texture(p):
-    h = _h(p.get('object_id'))
-    if not h: return {'error': 'Object not found'}
-    idx = int(p.get('index', 1))
-    tname = p.get('texture_name')
-    if not tname: return {'error': 'texture_name required'}
-    try:
-        th = vs.GetObject(tname)
-        if not th: return {'error': 'texture not found'}
-        vs.SetComponentTexture(h, idx, th)
-        vs.ResetObject(h)
-        return {'status': 'ok'}
-    except Exception as e: return {'error': str(e)}
+    return _set_component_resource(p, 'texture')
 
 
 # ── Viewport Class / Layer Overrides ─────────────────────────────────────────

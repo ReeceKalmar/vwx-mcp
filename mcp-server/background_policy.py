@@ -115,6 +115,15 @@ def check(command, params=None, *, sdk_catalog=None, depth=0):
         if not isinstance(name, str) or name not in entries:
             return _error(command, 'Unknown SDK contract; background requirements cannot be checked.')
         entry = entries[name]
+        if name == 'DTM6_GetDTMObject':
+            arguments = params.get('arguments')
+            if not isinstance(arguments, dict) or arguments.get('bPickUpModel') is not False:
+                result = _error(command, 'DTM6_GetDTMObject may open the site-model picker; '
+                                'bPickUpModel must be explicitly false for background execution.')
+                result['alternative'] = ('Use site_model_on_layer for unambiguous layer-local discovery, '
+                                         'or query a previously verified site_model_id. '
+                                         'The SDK call requires arguments.bPickUpModel=false.')
+                return result
         if (name == 'CreateCustomObjectN' and isinstance(params.get('arguments'), dict)
                 and params['arguments'].get('showPref') is False):
             return None

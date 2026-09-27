@@ -3,6 +3,7 @@
 #include "VwxBridgePalette.h"
 #include "PumpScheduleState.h"
 #include "AtomicStatusFile.h"
+#include "DocumentTransition.h"
 
 
 #include <cstdio>
@@ -379,6 +380,10 @@ static LRESULT CALLBACK MenuBrokerWindowProc(HWND wnd, UINT message, WPARAM toke
     gHasMenuReturn = false;
     gTriggerState = "sdk_named_menu_invoking";
     try {
+        if (!DocumentTransition::BeginMenu(gHostUiThread, static_cast<std::uint64_t>(token))) {
+            reject("document_transition_broker_context_changed");
+            return 0;
+        }
         // SDK 3200 APIBase.Legacy.Defs.h:6639 documents external menu-file
         // names, chunkIndex=0 and recursive invocation. The installed file is
         // "VWX Bridge Start.vsm". The host creates its Python menu context;
@@ -389,8 +394,15 @@ static LRESULT CALLBACK MenuBrokerWindowProc(HWND wnd, UINT message, WPARAM toke
         gHasMenuReturn = true;
         ++gMenuReturns;
         gTriggerState = "sdk_named_menu_returned_waiting_for_completion";
+        const auto completed = ReadRunnerStamp(pluginDir, "pump.complete.stamp");
+        // Staged C++ work runs only after Python's outer invocation returned
+        // and its completion stamp changed. It never invokes another runner.
+        // The delivery guard remains active throughout native save/transition.
+        DocumentTransition::EndMenu(static_cast<std::uint64_t>(token),
+            completed != 0 && completed != gSchedule.stampBefore);
     }
     catch (...) {
+        DocumentTransition::EndMenu(static_cast<std::uint64_t>(token), false);
         // Do not unwind through Win32 or replay an uncertain native call.
         ++gTriggerFailures;
         gTriggerState = "sdk_named_menu_exception_uncertain";

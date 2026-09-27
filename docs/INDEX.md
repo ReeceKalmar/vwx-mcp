@@ -41,8 +41,9 @@ The small evidence records cover [arcs](ARC_REPAIR_2027.json),
 [solid Boolean workflows](BOOLEAN_WORKFLOW_2027.json),
 [background save](BACKGROUND_SAVE_2027.json),
 [background delivery](BACKGROUND_DELIVERY_2027.json),
-[first maintenance cycle](MAINTENANCE_2027.json), and
-[English palette/atomic-status maintenance](MAINTENANCE_ENGLISH_ATOMIC_2027.json).
+[first maintenance cycle](MAINTENANCE_2027.json),
+[English palette/atomic-status maintenance](MAINTENANCE_ENGLISH_ATOMIC_2027.json),
+and [guarded document transitions](DOCUMENT_TRANSITION_2027.json).
 They retain their original build/source identities. Do not relabel old evidence
 as a measurement of a new revision.
 

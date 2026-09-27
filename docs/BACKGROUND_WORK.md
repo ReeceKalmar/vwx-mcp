@@ -27,6 +27,31 @@ workflows return `VWX_BACKGROUND_INTERACTION_REQUIRED` with `dispatched=false`.
 its fallback can restore a window or change focus. Read-only document discovery
 does not reserve the document or provide an isolated session.
 
+`DTM6_GetDTMObject` is allowed only with the exact SDK argument
+`bPickUpModel=false`; true, omitted, non-Boolean or deferred-reference values
+are rejected before publication. This applies to `sdk_call`, its generated
+`sdk_DTM6_GetDTMObject` tool, and every nested sequence/batch member. A later
+picker request blocks the entire batch, including preceding mutations. Prefer
+`site_model_on_layer`, which discovers one layer-local Site Model and rejects
+ambiguity without invoking the picker, or a previously verified Site Model UUID.
+
+`list_documents` requires the private native inventory helper (ABI 1) and reads
+the SDK open-file list, including exact full paths, file references and the
+active flag. Its English `open_documents` rows and legacy `dokumente` aliases
+describe the same validated snapshot. Legacy `datei` retains the entire basename,
+including hyphens and Unicode; window titles, watermarks and window handles are
+not used. Unsaved documents can have an empty path and are explicitly marked
+`in_memory_only`. Missing helpers, malformed rows or ambiguous native identity
+return an error, with no window-title fallback. A file reference is local to the
+current open-file session, not a persistent document UUID.
+
+The separate [guarded document transition](MAINTENANCE_2027.md#guarded-document-transitions)
+uses the maintenance lease and private native document helper. It saves the source,
+opens or switches to an exact existing saved target after Python returns, and
+requires a later independent confirmation. It leaves original files open and
+does not isolate agents or create a new drawing. The legacy `switch_document`
+tool remains blocked.
+
 Only explicitly attended work should restart the server with
 `VWX_BACKGROUND_MODE=0`; SDK type/context guards still apply. Do not bypass the
 user's background preference through direct queue files or controlled-script
@@ -84,6 +109,14 @@ but a concurrent Windows read can briefly fail. The shared diagnostic reader
 retries `PermissionError` four times with at most 30 ms delay. Parsing,
 freshness, identity and schema still fail closed; diagnostic reads do not retry
 or replay jobs. The two status files are not an atomic pair.
+
+The delivery readiness check also compares scheduler runner/completion values
+to the actual stamp-file timestamps in Windows FILETIME units. Fresh idle
+telemetry can precede acknowledgment of a newly completed job; that mismatch
+returns `SETTLING` until the timer reports the real stamps. Fresh active work
+also settles. Any unexplained queue entry (including working/temp files or
+directories) or outstanding publication record blocks an otherwise idle host.
+Readiness checks preserve these records and never clear or replay them.
 
 | Field/state | Interpretation |
 |---|---|

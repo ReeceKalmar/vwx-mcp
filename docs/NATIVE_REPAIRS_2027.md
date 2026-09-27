@@ -16,6 +16,39 @@ uncertain attempt; 401 APIs have confirmed native results, 399 have native
 passes, and 2,697 remain unconfirmed. The 70 compatibility passes across eight
 APIs and seven adapter rejection checks remain separate.
 
+## Wall creation: inherited components and ignored setter failures
+
+The [wall workflow record](WALL_CREATION_2027.json) preserves a separate
+2026-09-27 disposable-file investigation. In a drawing measured in inches,
+`create_wall` requested height 3 and thickness 0.5 but reported success while
+later native getters returned height 120 and thickness 6. The wall was unstyled
+with one inherited component. `Wall` adopts document defaults, and the SDK
+explicitly excludes component walls from `SetWallThickness`'s contract. The
+wrapper ignored setter failures. A separate `SetWallHeights` diagnostic returned
+`SDK_RESULT` (non-Boolean result, dispatched); its raw native value was not
+captured and must not be called `None` or success. Later heights remained 120.
+`DeleteAllComponents` returned false. Neither failed diagnostic was retried,
+and the planned component insertion was not dispatched.
+
+The corrected constructor changes only its newly created type-68 UUID. It
+preserves inherited components/materials and scales component widths to the
+requested total using `SetComponentWidth`, requiring exact native success and
+parameter readback. It uses `SetWallOverallHeights` with bottom/top bound to
+layer Z at offsets 0/height, then resets. It does not change global wall defaults
+or use the failed height/deletion routes. A partial failure returns its UUID,
+phase and dispatch state; it never deletes or recreates the wall automatically.
+Creation reports `geometry_verified=false` and requires a later inspection job.
+
+After the atomic Python-source deployment under a maintenance lease, a fresh
+unstyled, one-component wall returned the requested 3-inch height and 0.5-inch
+thickness within `1e-8` in a separate `get_walls` job. The active document and
+complete open-document inventory remained unchanged. Native evidence is limited
+to that case: styled and multiple-component branches have offline tests only;
+zero-component creation is rejected, and save/reopen persistence was not tested.
+Eighteen wall tests and the 918-test offline suite passed (one skip). The linked
+record pins deployment/source hashes and preserves the earlier failures; this
+operational observation has not increased the SDK fixture coverage totals above.
+
 ## Confirmed causes and bounded repairs
 
 - **Opacity flags:** four combinations of `SetOpacityByClassN` were compared

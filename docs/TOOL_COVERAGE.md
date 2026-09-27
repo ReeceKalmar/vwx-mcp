@@ -1,16 +1,16 @@
 # Vectorworks 2027 API coverage
 
 All **3,098 SDK Python function names have generated adapters and named MCP
-tools**. The handwritten workflows separately use **463 distinct SDK functions
-(14.95%)**. Generated binding coverage is not native semantic verification.
+tools**. The handwritten workflows separately use **464 distinct SDK functions
+(14.98%)**. Generated binding coverage is not native semantic verification.
 
 | Measure | Count | Meaning |
 |---|---:|---|
 | SDK Python functions | 3,098 | Top-level functions in official SDK 3200 / build 882699 `vs.py` |
 | Generated direct SDK bindings | 3,098 | Each `sdk_Name` declares a `vs.Name` binding; runtime compatibility paths are separate |
 | Missing generated bindings | 0 | Every indexed function has an adapter |
-| Handwritten SDK function use | 463 | Distinct calls from reachable handwritten commands/helpers |
-| APIs without a handwritten workflow | 2,635 | Still exposed through generated adapters |
+| Handwritten SDK function use | 464 | Distinct calls from reachable handwritten commands/helpers |
+| APIs without a handwritten workflow | 2,634 | Still exposed through generated adapters |
 | Fake-host baseline dispatched | 2,882 | Runtime adapters reached an injected fake native callable in ordinary menu context |
 | Local compatibility baseline | 1 | ASCII `UprString` executes Python uppercasing without calling native `vs.UprString` |
 | Fake-host baseline rejected | 215 | Context/representation prerequisites rejected before native dispatch |
@@ -123,16 +123,16 @@ imports the real `vs` module or opens a host connection.
 
 ## Test and verification limits
 
-The final publication run passed **821 tests in 91.918 seconds**, with one Windows
-symlink test skipped (see [publication details](PUBLICATION_2027.md)), including
-all **75,701** current
+The document-transition and wall-repair checkpoint passed **924 tests in
+105.137 seconds**, with one Windows symlink test skipped (see
+[testing details](TESTING_2027.md)), including all **75,701** current
 adapter-contract cases. These include independent fixture models,
 adversarial response and provenance checks, and strict evidence-import tests.
 Generated-wrapper/report freshness, static API arity and wrapper/tag consistency
 checks also passed. Offline success does not clear the native
 failures or establish native results for pending APIs.
-The earlier 781- and 793-test checkpoints remain historical; publication checks
-used normal temporary-file access without weakening assertions.
+The earlier 781-, 793- and 821-test checkpoints remain historical; tests use
+normal temporary-file access without weakening assertions.
 
 Verified [maintenance cycles](MAINTENANCE_2027.md),
 [background delivery](BACKGROUND_DELIVERY_2027.json), and

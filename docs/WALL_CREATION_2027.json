@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "scope": "Sanitized disposable native wall workflow investigation and repair",
+  "recorded_date": "2026-09-27",
+  "host": {
+    "vectorworks_year": 2027,
+    "platform": "Windows",
+    "app_build": 882075,
+    "sdk_version": 3200,
+    "sdk_build": 882699
+  },
+  "units": {
+    "linear": "inches",
+    "units_per_inch": 1.0,
+    "area_display": "square feet"
+  },
+  "execution": {
+    "route": "ordinary typed MCP, background mode, separate menu jobs",
+    "drawing": "disposable test drawing; customer identities omitted",
+    "creation_replayed": false,
+    "geometry_inspection_in_separate_job": true,
+    "full_document_inventory_preserved": true,
+    "save_reopen_verified": false,
+    "independent_foreground_measurement": false
+  },
+  "historical_failures": [
+    {
+      "operation": "create_wall",
+      "commands_sha256": "9e5c09725f1f2b1fbb24e633a1f790cdd93619282e996071305a49e3bfe95547",
+      "requested": {"start": [30.0, 40.0], "end": [40.0, 40.0], "height": 3.0, "thickness": 0.5},
+      "creation_reported_status": "ok",
+      "subsequent_native_readback": {"type": 68, "start_height": 120.0, "end_height": 120.0, "thickness": 5.999999999999999},
+      "diagnosed_context": {"wall_style": "", "component_count": 1},
+      "finding": "The wrapper ignored setter failures and incorrectly reported completion. Wall inherited document defaults; the thickness setter contract excludes walls with components."
+    },
+    {
+      "operation": "SetWallHeights",
+      "requested_heights": [3.0, 3.0],
+      "response": {"code": "SDK_RESULT", "error": "result did not return a boolean", "dispatched": true},
+      "raw_native_result_captured": false,
+      "raw_native_result": "unknown; do not infer None, false or success",
+      "later_heights": [120.0, 0.0, 120.0, 0.0],
+      "retry_performed": false
+    },
+    {
+      "operation": "DeleteAllComponents",
+      "response_status": "ok",
+      "native_result": false,
+      "semantic_success": false,
+      "subsequent_insert_executed": false,
+      "retry_performed": false
+    }
+  ],
+  "verified_alternative_operations": [
+    {
+      "operation": "SetComponentWidth",
+      "arguments_without_handle": {"componentIndex": 1, "width": 0.5},
+      "native_result": true,
+      "reset_then_later_GetWallThickness": [true, 0.5000000000000001]
+    },
+    {
+      "operation": "SetWallOverallHeights",
+      "arguments_without_handle": {
+        "botBoundType": 0, "botBoundStory": 0, "botLayerLevelType": "", "botOffset": 0.0,
+        "topBoundType": 0, "topBoundStory": 0, "topLayerLevelType": "", "topOffset": 3.0
+      },
+      "native_result": true,
+      "reset_then_later_GetWallHeight": [2.999999999999993, 0.0, 2.999999999999993, 0.0]
+    }
+  ],
+  "deployment": {
+    "method": "atomic commands.py replacement under an owned maintenance lease",
+    "status": "passed",
+    "lease_retained": false,
+    "native_binary_replaced_for_wall_repair": false,
+    "commands_sha256": "28a4c4f1dbe8ca7d30bdabcedbd20fea06cc51103335e76bf74c0b0149b47e8a",
+    "native_library_sha256": "0291e0b8ee1b0bdd033b90dfb6745999a0c8208c15f8adfb1571992d868506cf",
+    "native_resources_sha256": "ab795ef6049454e4aa499b9624e788bc43091708eceada14890d1c7d58595ee2"
+  },
+  "repaired_creation": {
+    "status": "passed",
+    "request_utc": "2026-09-27T09:02:00.193156+00:00",
+    "requested": {"start": [50.0, 40.0], "end": [60.0, 40.0], "height": 3.0, "thickness": 0.5},
+    "creation_response_without_uuid": {
+      "status": "ok", "mutation_dispatched": true, "geometry_verified": false,
+      "component_count": 1, "component_widths": [0.5], "parameters_accepted": true,
+      "height_reference": "layer Z", "verification_required": "get_walls in a later job"
+    },
+    "later_readback_utc": "2026-09-27T09:02:00.590041+00:00",
+    "later_native_readback": {
+      "fresh_uuid_matched_once": true,
+      "type": 68,
+      "type_name": "wall",
+      "start_height": 2.999999999999993,
+      "end_height": 2.999999999999993,
+      "thickness": 0.5000000000000001,
+      "height_levels": {"start_top": 2.999999999999993, "start_bottom": 0.0, "end_top": 2.999999999999993, "end_bottom": 0.0},
+      "measured_plan_bounds": {"x1": 50.0, "y1": 40.25, "x2": 60.0, "y2": 39.75000000000001, "width": 10.0, "height": 0.4999999999999929}
+    },
+    "height_and_thickness_assertion_absolute_tolerance": 1e-8
+  },
+  "current_contract": [
+    "Validate finite positive dimensions and distinct endpoints before creation.",
+    "Own only a freshly created type-68 UUID; re-resolve it before instance mutations.",
+    "Leave global wall defaults unchanged. Unstyle only the new instance when necessary and verify its resulting style name.",
+    "Require at least one inherited component, finite nonnegative widths and a positive total. Preserve components/materials and scale widths proportionally to requested thickness.",
+    "Require exact native true and matching component-width parameter readbacks. Bind bottom/top to layer Z at offsets 0/height, then reset.",
+    "Do not use SetWallWidth, SetWallHeights, SetWallThickness, DeleteAllComponents or InsertNewComponentN in this constructor.",
+    "Return partial UUID, failing phase and dispatch state on failure; never automatically retry creation or delete the partial object.",
+    "Creation success reports accepted parameters with geometry unverified. Inspect actual dimensions in a later job."
+  ],
+  "verification_limits": {
+    "native_confirmed": "Unstyled, single-component wall creation with the stated inch dimensions and separate-job dimensional readback",
+    "offline_only": ["inherited styled-wall conversion", "multiple-component proportional resizing", "zero-width component preservation", "adversarial failure paths"],
+    "unverified": ["save/reopen persistence", "arbitrary units and drawing defaults", "wall joins/openings", "retaining-wall site interaction", "zero-component creation"],
+    "official_sdk_fixture_credit": "This operational evidence has not been imported into LIVE_SDK_2027.json or used to increase published SDK native-pass totals. It does not repair or credit the SetWallHeights binding."
+  },
+  "offline_validation": {
+    "wall_tests": 18,
+    "suite_tests_run": 918,
+    "suite_skipped": 1,
+    "suite_status": "OK",
+    "suite_seconds": 111.037
+  },
+  "local_provenance": [
+    {"path": ".audit/incident-002-wall-native/result.json", "sha256": "52174621e0c67fa0f0b10f8de384595862b3219c10a25b093e5b15d852d9475f"},
+    {"path": ".audit/incident-002-wall-native/journal.jsonl", "sha256": "628122e8424066514680664570feefbbe5b62df7a6d57305479c896cdb7bd5bb"},
+    {"path": ".audit/incident-002-wall-readback.json", "sha256": "b66fa9e69559aba843cb44cb45628aa50163b9593bfb0d007a35487c86894631"},
+    {"path": ".audit/incident-002-wall-diagnostics.jsonl", "sha256": "0769d1875fd303540a0e188a06b589ba43c86d8884dcdc5f14c029609f9f5fe1"},
+    {"path": ".audit/incident-002-wall-alternatives.jsonl", "sha256": "f94ea50e05404cd11f464e342278b3ea5820c2ec6c95bfe05436599d29561425"},
+    {"path": ".audit/incident-002-wall-component-normalization.jsonl", "sha256": "714b90c27a95242d40f5b9c24a34f605e07af4334f024e11a46d193f0cacc70a"},
+    {"path": ".audit/incident-002-wall-hotdeploy/result.json", "sha256": "fc52a44d7327582a75cf51bab78f8062190d45052a0052740ed6093532db140f"},
+    {"path": ".audit/incident-002-wall-native-fixed/result.json", "sha256": "3a6d31ddf6853001abcf64183845902d6bc74b2fae4c02f03760fd8f672dccd1"},
+    {"path": ".audit/incident-002-wall-native-fixed/journal.jsonl", "sha256": "29225564a92e89cd0044a5a24d81fcd3b02e557331197ab079a7cb13a7a4f579"},
+    {"path": ".audit/incident-002-final-tests.log", "sha256": "c38a23d718bf1709f74849540e424703ea17f7113274509471a5d17c9c5040a8"}
+  ],
+  "provenance_note": "Raw local artifacts are not bundled. Customer paths, UUIDs and maintenance credentials are omitted from this public summary."
+}

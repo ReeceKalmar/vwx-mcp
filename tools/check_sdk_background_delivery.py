@@ -17,6 +17,7 @@ import math
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import time
 
@@ -61,8 +62,19 @@ def _finite(value):
     return type(value) in (int, float) and math.isfinite(value)
 
 
+def _stamp_filetime(path):
+    """Match native FILETIME (100 ns since 1601), without reading/writing a job."""
+    try:
+        metadata = path.stat()
+    except FileNotFoundError:
+        return 0
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ValueError('Runner stamp is not a regular file: ' + path.name)
+    return metadata.st_mtime_ns // 100 + 116444736000000000
+
+
 def read_readiness(plugin_dir, *, now=None, max_age=8):
-    """Fresh v4 scheduler and empty queue; reads never alter IPC files."""
+    """Fresh v4 acknowledgment of actual runner stamps; never alter IPC files."""
     now = time.time() if now is None else now
     if not _finite(now) or not _finite(max_age) or max_age < 0:
         raise ValueError('Finite clock and nonnegative age limit required')
@@ -78,10 +90,32 @@ def read_readiness(plugin_dir, *, now=None, max_age=8):
             raise ValueError('Stale, paused or malformed heartbeat')
         validate_scheduler(scheduler)
         jobs = ipc / 'jobs'
-        if not jobs.is_dir() or any(jobs.glob('*.json')):
-            raise ValueError('Queue is missing or contains a job; do not retry or clear it')
+        if not jobs.is_dir():
+            raise ValueError('Queue directory is missing; do not recreate or clear it')
+        queue_occupied = any(jobs.iterdir())
+        publications = Path(plugin_dir) / 'bridge.publications'
+        publication_pending = False
+        if publications.exists():
+            if not publications.is_dir():
+                raise ValueError('Publication record directory is not a directory')
+            publication_pending = any(publications.iterdir())
+        actual_runner = _stamp_filetime(ipc / 'pump.stamp')
+        actual_completion = _stamp_filetime(ipc / 'pump.complete.stamp')
         if _busy(scheduler):
-            return {'ready': False, 'code': 'SETTLING', 'scheduler': scheduler}
+            return {'ready': False, 'code': 'SETTLING', 'scheduler': scheduler,
+                    'error': 'An invocation, queued job or acknowledgment is still pending'}
+        if scheduler['posts'] > 0 and (not actual_runner or not actual_completion
+                                      or not scheduler['runner_stamp'] or not scheduler['completion_stamp']):
+            raise ValueError('Completed invocations require both runner stamps and their native acknowledgments')
+        if (scheduler['runner_stamp'] != actual_runner
+                or scheduler['completion_stamp'] != actual_completion
+                or actual_runner > actual_completion):
+            return {'ready': False, 'code': 'SETTLING', 'scheduler': scheduler,
+                    'error': 'Scheduler has not acknowledged the actual runner/completion stamps'}
+        if queue_occupied:
+            raise ValueError('Queue contains a job, orphan working file or incomplete publication; do not clear it')
+        if publication_pending:
+            raise ValueError('A publication is outstanding or has an uncertain outcome; do not clear it')
         return {'ready': True, 'scheduler': scheduler}
     except (OSError, ValueError, TypeError) as error:
         return {'ready': False, 'code': 'NOT_READY', 'error': str(error), 'scheduler': scheduler}

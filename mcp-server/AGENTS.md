@@ -20,6 +20,9 @@ in `vwx-plugin`, not in the server process.
   publication markers outside IPC. Never expire/steal an unknown lease or clear
   consumed uncertain work. Reject nested maintenance. Validate twelve lowercase
   hexadecimal CID characters before any result-path read or removal.
+  Document transition intent is durable **before publication**; release also
+  validates dispatch/confirmation identity and fresh idle state. A staged native
+  result is not completion. Keep save/quit separate from a consumed transition.
 - `diagnostic_io.py`: four reads/30 ms maximum delay only for `PermissionError`
   on diagnostic snapshots. Never apply it to jobs, results or lease records.
 

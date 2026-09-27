@@ -73,8 +73,9 @@ its calls. An uncertain result must not trigger automatic mutation replay.
 
 ## Verification and limitations
 
-The publication check ran **821 offline tests** successfully, with one Windows
-symlink test skipped. The recorded native baseline passed all **57 default
+The document-transition and wall-repair checkpoint passed **924 offline tests**,
+with one Windows symlink test skipped; see [testing](docs/TESTING_2027.md).
+The recorded native baseline passed all **57 default
 live fixture families / 2,303 unique jobs** across resumed batches. The
 [default-suite audit](docs/LIVE_DEFAULT_SUITE_2027.json) retains interruptions
 and repeated attempts. Cleanup validation is recorded in

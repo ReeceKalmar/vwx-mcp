@@ -103,6 +103,82 @@ class BackgroundPolicyTests(unittest.TestCase):
         for unsafe in (True, 0, 'false', None):
             self.assertIsNotNone(POLICY.check('sdk_CreateCustomObjectN', {'arguments': {'showPref': unsafe}}))
 
+    def test_dtm_picker_flag_requires_exact_explicit_false_across_sdk_routes(self):
+        name = 'DTM6_GetDTMObject'
+        invalid_arguments = [None, [], False, {}, {'bPickUpmodel': False}]
+        invalid_arguments += [{'hLayer': 'layer', 'bPickUpModel': value}
+                              for value in (True, 0, 1, 'false', 'False', None, [], {},
+                                            {'$ref': 'earlier.result'})]
+        for command in ('sdk_call', 'sdk_' + name):
+            for arguments in invalid_arguments:
+                with self.subTest(command=command, arguments=arguments):
+                    response = POLICY.check(command, {'name': name, 'arguments': arguments,
+                                                       'options': {'force': True}})
+                    self.assertEqual(response['code'], 'VWX_BACKGROUND_INTERACTION_REQUIRED')
+                    self.assertFalse(response['dispatched'])
+                    self.assertIn('bPickUpModel', response['error'])
+            self.assertIsNotNone(POLICY.check(command, {'name': name}))
+            self.assertIsNone(POLICY.check(command, {'name': name, 'arguments': {
+                'hLayer': 'layer', 'bPickUpModel': False}}))
+        # This semantic guard must hold even though the source category itself
+        # does not mark every branch of the SDK function interactive.
+        contract = POLICY.catalog()[name]
+        self.assertFalse(contract.get('context', {}).get('interactive'))
+
+    def test_dtm_picker_sequence_rejects_whole_nested_batch_before_connection(self):
+        tree = ast.parse((ROOT / 'mcp-server/vwx_mcp_server.py').read_text(encoding='utf-8'))
+        names = {'cmd', 'sdk_call', 'sdk_sequence', 'vwx', 'vwx_batch'}
+        nodes = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+        for node in nodes:
+            node.decorator_list = []
+            node.returns = None
+            for argument in node.args.args:
+                argument.annotation = None
+        connection = SimpleNamespace(send_command=Mock(return_value={'status': 'ok'}))
+        connect = Mock(return_value=connection)
+        namespace = {'json': json, 'VWX_BACKGROUND_MODE': True,
+                     'check_background_operation': POLICY.check, 'get_vwx_connection': connect}
+        exec(compile(ast.Module(body=nodes, type_ignores=[]), '<dtm-sdk-routes>', 'exec'), namespace)
+        # Use the generated tool's actual callable factory; all named SDK tools
+        # call the same cmd preflight as handwritten sdk_call/sdk_sequence.
+        generated = ast.parse((ROOT / 'mcp-server/sdk_tools.py').read_text(encoding='utf-8'))
+        factory = next(node for node in ast.walk(generated)
+                       if isinstance(node, ast.FunctionDef) and node.name == 'make_call')
+        generated_namespace = {'send_command': namespace['cmd']}
+        exec(compile(ast.Module(body=[factory], type_ignores=[]), '<generated-sdk-factory>', 'exec'),
+             generated_namespace)
+        named_tool = generated_namespace['make_call']('sdk_DTM6_GetDTMObject')
+        for unsafe in (True, None, 0, 'false', {'$ref': 'prior.result'}):
+            arguments = {'hLayer': 'layer', 'bPickUpModel': unsafe}
+            sequence = [{'name': 'Rect', 'arguments': {'p1': [0, 0], 'p2': [10, 8]}},
+                        {'name': 'DTM6_GetDTMObject', 'arguments': arguments,
+                         'options': {'force': True}}]
+            nested = [{'command': 'draw_rectangle'}, {'command': '_batch', 'params': {'calls': [
+                {'command': 'sdk_sequence', 'params': {'calls': sequence}}]}}]
+            requests = [
+                lambda: named_tool(arguments, {'force': True}),
+                lambda: namespace['sdk_call'](None, 'DTM6_GetDTMObject', arguments, {'force': True}),
+                lambda: namespace['sdk_sequence'](None, sequence),
+                lambda: namespace['vwx'](None, 'sdk_DTM6_GetDTMObject', {'arguments': arguments}),
+                lambda: namespace['vwx_batch'](None, nested),
+            ]
+            for request in requests:
+                response = json.loads(request())
+                self.assertEqual(response['code'], 'VWX_BACKGROUND_INTERACTION_REQUIRED')
+                self.assertFalse(response['dispatched'])
+        connect.assert_not_called()
+        connection.send_command.assert_not_called()
+        safe_arguments = {'hLayer': 'layer', 'bPickUpModel': False}
+        self.assertEqual(json.loads(named_tool(safe_arguments))['status'], 'ok')
+        connection.send_command.assert_called_once_with('sdk_DTM6_GetDTMObject',
+                                                        {'arguments': safe_arguments, 'options': {}})
+        connection.send_command.reset_mock()
+        safe_sequence = [{'name': 'Rect', 'arguments': {'p1': [0, 0], 'p2': [10, 8]}},
+                         {'name': 'DTM6_GetDTMObject', 'arguments': safe_arguments}]
+        self.assertEqual(json.loads(namespace['sdk_sequence'](None, safe_sequence))['status'], 'ok')
+        connection.send_command.assert_called_once_with('sdk_sequence',
+                                                        {'calls': safe_sequence, 'options': {}})
+
     def test_document_switch_is_blocked_for_names_handles_and_force(self):
         for params in ({}, {'name': 'Other.vwx'}, {'hwnd': 123456},
                        {'name': 'Other.vwx', 'force': True},

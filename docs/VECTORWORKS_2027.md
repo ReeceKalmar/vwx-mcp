@@ -8,8 +8,10 @@ documentation; subsystem `AGENTS.md` files identify the implementation boundarie
 
 ## Verified status
 
-The publication checkpoint ran **821 offline tests** successfully, with one
-Windows symlink test skipped; see [validation details](PUBLICATION_2027.md).
+The document-transition and wall-repair checkpoint passed **924 offline tests**
+with one Windows symlink test skipped; see [testing](TESTING_2027.md).
+The earlier 821-test publication checkpoint remains in
+[publication validation](PUBLICATION_2027.md).
 The native baseline passed the complete default selection:
 **57 routine families / 2,303 unique fixture jobs**.
 [LIVE_DEFAULT_SUITE_2027.json](LIVE_DEFAULT_SUITE_2027.json) independently checks
@@ -19,7 +21,7 @@ repetitions are not extra unique coverage. Eight semantic diagnostic families an
 thirteen characterization families are outside the default selection.
 
 All **3,098 SDK Python names** have generated adapters. Handwritten workflows use
-463 SDK functions; the default MCP inventory is 287 handwritten plus 3,098 SDK
+464 SDK functions; the default MCP inventory is 287 handwritten plus 3,098 SDK
 tools. Current evidence confirms native results for **401 APIs**, with native
 passes for 399; **2,697 remain unconfirmed**. The 5,756 native passing cases,
 26 preserved failures, one uncertain attempt, 70 compatibility passes across
@@ -27,17 +29,22 @@ eight APIs and seven separate adapter checks are different evidence categories.
 See [TOOL_COVERAGE.md](TOOL_COVERAGE.md) for generated counts and limitations.
 No API is claimed to have every input, lifecycle or native semantic edge tested.
 
-The installed Windows scheduler is `sdk-named-menu-broker-ack-v4`. The English
-palette and atomic diagnostic publisher were deployed through the
+The installed Windows scheduler is `sdk-named-menu-broker-ack-v4`. The latest
+recorded native deployment adds SDK-backed document inventory and guarded
+document transitions; see [transition evidence](DOCUMENT_TRANSITION_2027.json).
+It retains the English palette and atomic diagnostic publisher from the
 [second verified maintenance cycle](MAINTENANCE_ENGLISH_ATOMIC_2027.json).
 Native library SHA-256:
-`71d91b0f1dc709d4c829f8205f5b6158b9c34d5dc9c4a5510330c2422c49b3a1`.
+`0291e0b8ee1b0bdd033b90dfb6745999a0c8208c15f8adfb1571992d868506cf`.
 Resource archive SHA-256:
-`6e7ab97da0f0484bc7bef869c513a98f9df064d2d3c0590d43e04d5207957601`.
+`ab795ef6049454e4aa499b9624e788bc43091708eceada14890d1c7d58595ee2`.
 These identify the recorded deployment, not a promise that a different
 installation has the same files. Check actual source/deployment hashes before
 live work. [Maintenance](MAINTENANCE_2027.md) and
 [native investigations](NATIVE_REPAIRS_2027.md) retain earlier deployment history.
+The separately deployed [wall repair](WALL_CREATION_2027.json) verifies one
+unstyled native Wall's requested dimensions in a disposable drawing. It does
+not establish every styled/component configuration or add SDK coverage credit.
 
 ## Execution contract
 
@@ -64,7 +71,10 @@ live work. [Maintenance](MAINTENANCE_2027.md) and
 - Clients share the active drawing. Guards and mutations are separate jobs, so
   the queue is not per-agent isolation. Coordinate document ownership and
   serialize workflows on different files; background mode blocks document
-  switching whose fallback can change application focus.
+  switching whose fallback can change application focus. The separate lease-owned
+  `bridge_maintenance` transition stages an SDK save/open/switch after menu return
+  and requires independent inventory confirmation before release; see
+  [guarded transitions](MAINTENANCE_2027.md#guarded-document-transitions).
 
 ## SDK and object discipline
 

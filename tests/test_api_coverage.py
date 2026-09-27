@@ -16,16 +16,18 @@ class CoverageAnalysisTests(unittest.TestCase):
         source = '''const SFunctionDef kFunctions[] = {
             { "VWXMaintSave", "VWX Bridge", "save" },
             { "VWXBridgeSetArc", "VWX Bridge", "arc" },
+            { "VWXDocStage", "VWX Bridge", "stage" },
             {}
         };
         { "VWXMaintTypo", "outside the declaration table" }
         '''
-        self.assertEqual(COVERAGE.declared_bridge_extensions(source), {'VWXMaintSave', 'VWXBridgeSetArc'})
+        self.assertEqual(COVERAGE.declared_bridge_extensions(source), {'VWXMaintSave', 'VWXBridgeSetArc', 'VWXDocStage'})
         self.assertEqual(COVERAGE.declared_bridge_extensions('getattr(vs, "VWXMaintSave")'), set())
         report = COVERAGE.build_report(ROOT)
         self.assertEqual(report['counts']['sdk_indexed_functions'], 3098)
         self.assertEqual(report['private_bridge_extension_functions_invoked'],
-                         ['VWXMaintQuit', 'VWXMaintRevision', 'VWXMaintSave', 'VWXMaintSnapshot'])
+                         ['VWXDocRevision', 'VWXDocStage', 'VWXDocStatus',
+                          'VWXMaintQuit', 'VWXMaintRevision', 'VWXMaintSave', 'VWXMaintSnapshot'])
         self.assertFalse(set(report['private_bridge_extension_functions_invoked']) & set(report['handwritten_sdk_functions']))
         self.assertEqual(report['unknown_invoked_sdk_names'], [])
 

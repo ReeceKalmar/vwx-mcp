@@ -26,6 +26,19 @@ the sole expected saved ordinary drawing before normal quit; it never discards
 changes, bypasses a prompt or force-kills the process. Private bridge functions
 are not additions to the official Python SDK API inventory.
 
+`DocumentTransition.cpp` and `DocumentTransitionPolicy.h` implement a separate
+private ABI: `VWXDocRevision`, `VWXDocStage`, `VWXDocStatus`. Stage records exact
+saved source/target paths only inside one armed broker invocation. After that
+menu returns with a changed outer completion stamp, the broker saves the source
+and calls either SDK `SwitchToOpenFile` or `OpenDocumentPath(..., false)` once.
+It keeps all original documents open and sends no focus/input events. SDK false
+returns, exceptions and changed readbacks after save remain uncertain; no retry
+or alternative open path follows. Server/host Python owns the durable lease and
+intent, and must independently verify the final inventory before releasing it.
+Process-local `completed` status alone is insufficient. Existing save/quit
+maintenance still requires exactly one document. A model pass and SDK build do
+not prove live switching safety, absence of native dialogs or preserved focus.
+
 `VwxBridge.vwr/html` and `Strings` contain the English palette resources. Keep
 the public Python menu name `VWX Bridge Start` exact. UI status callbacks do not
 execute the pump. Resources and binary must be deployed together only after

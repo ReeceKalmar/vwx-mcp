@@ -533,22 +533,29 @@ def vtool(fn=None, **kwargs):
 # ═══════════════════════════════════════════════════════════════════
 
 @vtool
-def bridge_maintenance(ctx: Context, action: str, token: str = '', expected_path: str = '') -> str:
-    """Coordinate a reviewed restart with an exclusive cooperative lease.
+def bridge_maintenance(ctx: Context, action: str, token: str = '', expected_path: str = '', target_path: str = '') -> str:
+    """Coordinate a reviewed restart or document transition with an exclusive lease.
 
     Generate and securely journal a 64-character lowercase hexadecimal token
     before acquire. Local actions: acquire, release, lease_status. Host actions:
-    status, save, quit; these require the owning token and run as separate typed
-    jobs. Save/quit require the reviewed document path. Leases never expire or
+    status, save, quit, transition, transition_status, transition_confirm.
+    Transition stages a deferred save and open/switch using exact expected_path
+    and target_path, leaving the source open. It needs the separate private
+    document helper; a staged result is not completion. Independently confirm
+    the terminal native result and inventory before releasing the lease.
+    Save/quit require the reviewed document path. Leases never expire or
     steal another owner's work; uncertain results must not be replayed.
     """
     try:
-        if action not in {'acquire', 'release', 'lease_status', 'status', 'save', 'quit'}:
+        if action not in ({'acquire', 'release', 'lease_status'} | bridge_lease.NATIVE_ACTIONS):
             raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Unknown maintenance action')
         if VWX_TRANSPORT != 'file':
             raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Maintenance requires the supported file transport')
         if action in bridge_lease.NATIVE_ACTIONS:
-            return cmd('bridge_maintenance', {'action': action, 'token': token, 'expected_path': expected_path})
+            params = {'action': action, 'token': token, 'expected_path': expected_path}
+            if target_path or action.startswith('transition'):
+                params['target_path'] = target_path
+            return cmd('bridge_maintenance', params)
         base = _plugin_dir()
         if base is None:
             raise bridge_lease.MaintenanceError('VWX_MAINTENANCE_STATE', 'Bridge installation not found')
@@ -582,11 +589,11 @@ def save_document_as(ctx: Context, path: str, expected_current_path: Optional[st
 
 @vtool
 def list_documents(ctx: Context) -> str:
-    """List every open Vectorworks document and which one commands land in.
+    """List exact SDK open-file paths, references and the active document.
 
-    VectorScript cannot see past the active document — there is no
-    GetDocumentCount and no NextDocument. This reads the window list of the
-    Vectorworks process instead, so it works with several files open at once.
+    Requires native inventory helper ABI 1. Unsaved documents may have an
+    empty path; use file_ref within this snapshot. No window titles or handles
+    are inferred. This read does not reserve a document for a later mutation.
     """
     return cmd("list_documents")
 
@@ -1162,7 +1169,13 @@ def export_ifc(ctx: Context, path: str) -> str:
 @vtool
 def create_wall(ctx: Context, x1: float, y1: float, x2: float, y2: float,
                 height: float, thickness: float, layer: str = None) -> str:
-    """Create an architectural wall. Returns object id."""
+    """Create a native wall with height above layer Z and the requested thickness.
+
+    Unstyle only the new instance and preserve its inherited components/materials,
+    resizing component widths proportionally. Success means parameters accepted;
+    verify dimensions with get_walls in a later job. Partial failure retains the
+    created UUID and failure phase; never blindly recreate it.
+    """
     p = {"x1": x1, "y1": y1, "x2": x2, "y2": y2, "height": height, "thickness": thickness}
     if layer: p["layer"] = layer
     return cmd("create_wall", p)

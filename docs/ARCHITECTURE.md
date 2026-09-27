@@ -50,6 +50,12 @@ There is no active watchdog, notification-context Python executor or TCP bridge.
    The native broker stays active until the synchronous SDK menu call returns;
    nested timers cannot acknowledge it early. A changed completion stamp then
    releases the outstanding trigger. The SDK return code alone never does.
+6. A lease-owned document transition stages a private C++ request during that
+   menu job. After the menu returns and its outer completion stamp changes, the
+   broker saves the guarded source and performs one native open/switch while its
+   delivery guard remains active. A later typed request independently confirms
+   the target and preserved original inventory. Durable intent/dispatch/confirmation
+   records prevent early lease release and uncertain mutation replay.
 
 The entry stamp is not a completion acknowledgment. A two-second acknowledgment
 timeout records a diagnostic and keeps the trigger held; it never reposts

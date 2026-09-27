@@ -11,6 +11,14 @@ maintenance races, fixture/oracle models, evidence import and report freshness.
 the Windows status-file harness exercises real temporary-file concurrency.
 They need the configured MSVC toolchain and may skip elsewhere; report skips.
 
+For document ownership and transitions, read `test_document_inventory.py`,
+`test_document_transition.py`, `test_document_transition_adversarial.py` and
+the compiled `native_document_transition.cpp` harness. They cover full SDK
+inventory identities, deferred broker boundaries, durable no-replay evidence,
+and refusal before staging when evidence or inventory capacity would overflow.
+`test_plain_wall_creation.py` models constructor failures; the separate live
+[wall evidence](../docs/WALL_CREATION_2027.json) bounds what was measured in Vectorworks.
+
 Use independent expected geometry/data. Include no-op setters, wrong-object or
 aliased copies, incorrect index shifts and later preservation readbacks where
 relevant. Do not mirror production logic as an oracle or change a valid expected

@@ -1,4 +1,5 @@
 // Actual production dispatch against a stateful, independent document model.
+#include "../native/Source/Bridge/DocumentTransition.cpp"
 #include "../native/Source/Bridge/BridgeVSFunctions.cpp"
 #include <cassert>
 #include <iostream>

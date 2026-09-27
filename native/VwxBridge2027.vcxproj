@@ -96,6 +96,7 @@ set VWR_7ZCMD=$(VWSDK2027)\SDKLib\ToolsWin\BuildVWR\7z
     </ClCompile>
     <ClCompile Include="Source\Bridge\VwxBridgePalette.cpp" />
     <ClCompile Include="Source\Bridge\BridgeVSFunctions.cpp" />
+    <ClCompile Include="Source\Bridge\DocumentTransition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Prefix\CommonPrefix.h" />
@@ -104,6 +105,8 @@ set VWR_7ZCMD=$(VWSDK2027)\SDKLib\ToolsWin\BuildVWR\7z
     <ClInclude Include="Source\Bridge\BridgeVSFunctions.h" />
     <ClInclude Include="Source\Bridge\ArcAnglesPolicy.h" />
     <ClInclude Include="Source\Bridge\MaintenancePolicy.h" />
+    <ClInclude Include="Source\Bridge\DocumentTransition.h" />
+    <ClInclude Include="Source\Bridge\DocumentTransitionPolicy.h" />
     <ClInclude Include="Source\Bridge\AtomicStatusFile.h" />
     <ClInclude Include="Source\Bridge\PumpScheduleState.h" />
   </ItemGroup>

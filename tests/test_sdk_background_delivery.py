@@ -3,6 +3,7 @@ import asyncio
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -307,7 +308,14 @@ class BackgroundDeliveryTests(unittest.TestCase):
             ipc = Path(parent) / 'ipc'
             (ipc / 'jobs').mkdir(parents=True)
             path = ipc / 'native.scheduler.json'
-            path.write_text(json.dumps(scheduler()), encoding='utf-8')
+            # Independently specified Unix 1000-second mtime maps to this
+            # Windows FILETIME; no production conversion is used as an oracle.
+            for name in ('pump.stamp', 'pump.complete.stamp'):
+                stamp = ipc / name
+                stamp.write_text('completed', encoding='utf-8')
+                os.utime(stamp, ns=(1000000000000, 1000000000000))
+            path.write_text(json.dumps(scheduler(runner_stamp=116444746000000000,
+                                                completion_stamp=116444746000000000)), encoding='utf-8')
             (ipc / 'native.alive').write_text('1000 0', encoding='utf-8')
             before = path.read_bytes()
             self.assertTrue(CHECK.read_readiness(parent, now=1001)['ready'])
@@ -317,6 +325,137 @@ class BackgroundDeliveryTests(unittest.TestCase):
             self.assertFalse(CHECK.read_readiness(parent, now=1001)['ready'])
             self.assertTrue((ipc / 'jobs/leftover.json').exists())
             self.assertEqual(path.read_bytes(), before)
+
+    def test_physical_readiness_rejects_old_idle_snapshot_until_new_stamps_acknowledged(self):
+        with tempfile.TemporaryDirectory() as parent:
+            base, ipc, state = self.physical_readiness_fixture(parent)
+            before = (ipc / 'native.scheduler.json').read_bytes()
+            # The menu has entered and returned after the last timer snapshot.
+            # Old counters still look perfectly idle and the heartbeat is fresh.
+            for name in ('pump.stamp', 'pump.complete.stamp'):
+                os.utime(ipc / name, ns=(1001000000000, 1001000000000))
+            result = CHECK.read_readiness(base, now=1001)
+            self.assertFalse(result['ready'])
+            self.assertEqual(result['code'], 'SETTLING')
+            self.assertIn('actual runner/completion', result['error'])
+            self.assertEqual((ipc / 'native.scheduler.json').read_bytes(), before)
+            self.assertEqual((ipc / 'pump.stamp').stat().st_mtime_ns, 1001000000000)
+            state.update(runner_stamp=116444746010000000, completion_stamp=116444746010000000,
+                         posts=9, background_posts=7, runner_completions_observed=9,
+                         menu_invocations=9, menu_returns=9)
+            (ipc / 'native.scheduler.json').write_text(json.dumps(state), encoding='utf-8')
+            self.assertTrue(CHECK.read_readiness(base, now=1001)['ready'])
+
+    def physical_readiness_fixture(self, parent, **changes):
+        base = Path(parent)
+        ipc = base / 'ipc'
+        (ipc / 'jobs').mkdir(parents=True)
+        for name in ('pump.stamp', 'pump.complete.stamp'):
+            stamp = ipc / name
+            stamp.write_text('completed', encoding='utf-8')
+            os.utime(stamp, ns=(1000000000000, 1000000000000))
+        state = scheduler(runner_stamp=116444746000000000, completion_stamp=116444746000000000)
+        state.update(changes)
+        (ipc / 'native.scheduler.json').write_text(json.dumps(state), encoding='utf-8')
+        (ipc / 'native.alive').write_text('1000 0', encoding='utf-8')
+        return base, ipc, state
+
+    def test_physical_readiness_compares_both_stamp_files_at_100ns_precision(self):
+        for filename in ('pump.stamp', 'pump.complete.stamp'):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as parent:
+                base, ipc, _ = self.physical_readiness_fixture(parent)
+                os.utime(ipc / filename, ns=(1000000000100, 1000000000100))
+                result = CHECK.read_readiness(base, now=1001)
+                self.assertEqual(result['code'], 'SETTLING')
+                self.assertFalse(result['ready'])
+
+    def test_physical_readiness_missing_completed_run_stamp_is_not_recreated(self):
+        for filename in ('pump.stamp', 'pump.complete.stamp'):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as parent:
+                base, ipc, _ = self.physical_readiness_fixture(parent)
+                path = ipc / filename
+                path.unlink()
+                result = CHECK.read_readiness(base, now=1001)
+                self.assertFalse(result['ready'])
+                self.assertEqual(result['code'], 'NOT_READY')
+                self.assertFalse(path.exists())
+
+    def test_physical_readiness_idle_orphans_of_every_extension_are_preserved(self):
+        for filename in ('orphan.json', 'orphan.json.working', 'partial.tmp', 'unknown', 'subdirectory'):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as parent:
+                base, ipc, _ = self.physical_readiness_fixture(parent)
+                orphan = ipc / 'jobs' / filename
+                if filename == 'subdirectory':
+                    orphan.mkdir()
+                else:
+                    orphan.write_bytes(b'preserve evidence')
+                result = CHECK.read_readiness(base, now=1001)
+                self.assertEqual(result['code'], 'NOT_READY')
+                self.assertIn('Queue contains', result['error'])
+                self.assertTrue(orphan.exists())
+                if orphan.is_file():
+                    self.assertEqual(orphan.read_bytes(), b'preserve evidence')
+
+    def test_physical_readiness_idle_publications_are_not_treated_as_completed(self):
+        for entry_kind in ('json', 'temp', 'directory', 'invalid_parent'):
+            with self.subTest(entry_kind=entry_kind), tempfile.TemporaryDirectory() as parent:
+                base, _, _ = self.physical_readiness_fixture(parent)
+                folder = base / 'bridge.publications'
+                if entry_kind == 'invalid_parent':
+                    folder.write_bytes(b'uncertain')
+                    entry = folder
+                else:
+                    folder.mkdir()
+                    entry = folder / ('intent.' + entry_kind)
+                    if entry_kind == 'directory':
+                        entry.mkdir()
+                    else:
+                        entry.write_bytes(b'uncertain')
+                result = CHECK.read_readiness(base, now=1001)
+                self.assertEqual(result['code'], 'NOT_READY')
+                self.assertTrue(entry.exists())
+
+    def test_physical_readiness_fresh_active_job_settles_with_queue_and_publication_intact(self):
+        with tempfile.TemporaryDirectory() as parent:
+            base, ipc, _ = self.physical_readiness_fixture(parent, pending=True,
+                posts=9, background_posts=7, queued_jobs=1, broker_message_pending=True)
+            job = ipc / 'jobs/active.json'
+            job.write_bytes(b'pending job')
+            publications = base / 'bridge.publications'
+            publications.mkdir()
+            marker = publications / 'active.json'
+            marker.write_bytes(b'publication intent')
+            result = CHECK.read_readiness(base, now=1001)
+            self.assertFalse(result['ready'])
+            self.assertEqual(result['code'], 'SETTLING')
+            self.assertEqual(job.read_bytes(), b'pending job')
+            self.assertEqual(marker.read_bytes(), b'publication intent')
+
+    def test_physical_readiness_rejects_stamp_directory_and_missing_queue(self):
+        for invalid in ('stamp_directory', 'missing_queue'):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as parent:
+                base, ipc, _ = self.physical_readiness_fixture(parent)
+                if invalid == 'stamp_directory':
+                    (ipc / 'pump.stamp').unlink()
+                    (ipc / 'pump.stamp').mkdir()
+                else:
+                    (ipc / 'jobs').rmdir()
+                self.assertEqual(CHECK.read_readiness(base, now=1001)['code'], 'NOT_READY')
+                self.assertEqual((ipc / 'jobs').exists(), invalid != 'missing_queue')
+
+    def test_physical_readiness_initial_host_allows_zero_missing_stamps_and_empty_publications(self):
+        with tempfile.TemporaryDirectory() as parent:
+            base, ipc, _ = self.physical_readiness_fixture(parent)
+            state = scheduler(posts=0, foreground_posts=0, background_posts=0,
+                              runner_completions_observed=0, menu_invocations=0, menu_returns=0,
+                              runner_stamp=0, completion_stamp=0, menu_return_available=False)
+            state.pop('last_menu_return')
+            (ipc / 'pump.stamp').unlink()
+            (ipc / 'pump.complete.stamp').unlink()
+            (base / 'bridge.publications').mkdir()
+            (ipc / 'native.scheduler.json').write_text(json.dumps(state), encoding='utf-8')
+            self.assertTrue(CHECK.read_readiness(base, now=1001)['ready'])
+            self.assertFalse((ipc / 'pump.stamp').exists())
 
     def test_all_deployment_files_are_measured_from_correct_locations(self):
         with tempfile.TemporaryDirectory() as parent:

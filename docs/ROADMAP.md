@@ -18,9 +18,13 @@ test and native semantic fixture are different results.
    tool events and modal dialogs are not ordinary JSON menu calls.
 5. Extend compatibility verification beyond Windows app build 882075. Keep
    unknown-build behavior intact for repairs guarded to the measured build.
+6. Establish guarded blank-document creation, initial save and owned-document
+   closing before claiming an unattended multi-project lifecycle. Existing-file
+   transitions are verified separately; controlled restart still requires one
+   saved drawing. Unexpected-crash recovery is not yet a verified workflow.
 
-The Windows SDK menu broker, controlled maintenance restarts and English palette
-are implemented. A macOS native bridge and per-agent document sessions are not
+The Windows SDK menu broker, controlled maintenance restarts, guarded existing-file
+transitions and English palette are implemented. A macOS native bridge and per-agent document sessions are not
 supported. Coordinate ownership of the shared active document.
 
 Older upstream instructions remain available in

@@ -36,7 +36,7 @@ def declared_bridge_extensions(source):
     table = re.search(r'const\s+SFunctionDef\s+kFunctions\[\]\s*=\s*\{(.*?)\n\s*\};', source, re.S)
     if table is None:
         return set()
-    return set(re.findall(r'^\s*\{\s*"(VWX(?:Bridge|Maint)[A-Za-z0-9_]*)"\s*,', table.group(1), re.M))
+    return set(re.findall(r'^\s*\{\s*"(VWX(?:Bridge|Maint|Doc)[A-Za-z0-9_]*)"\s*,', table.group(1), re.M))
 
 
 def local_nodes(body):

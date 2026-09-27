@@ -14,12 +14,19 @@ Read [VECTORWORKS_2027.md](VECTORWORKS_2027.md) and
 The plan generator prints its own current case, assertion, and API counts;
 these are fixture availability counts, not native passes.
 
-The final publication run passed **821 tests in 91.918 seconds** after the Windows
-short-path fixes, including the compiled native harnesses. One test requiring
-Windows symlink-creation privileges was skipped; separate reparse-path checks
-passed. The local log is `.audit/publication-shortpath-unittest.log` (not published).
-See [publication validation](PUBLICATION_2027.md) for the companion checks. The
-earlier 793-test run predates the cleanup tests and remains historical.
+The document-transition and wall-repair checkpoint passed **924 tests in
+105.137 seconds**, including compiled native harnesses, strict inventory and
+transition guards, delivery-stamp races, terrain/component contracts and wall
+construction failure paths. One Windows symlink-privilege test was skipped;
+separate reparse-path checks passed. The local log is
+`.audit/incident-002-guard-final-tests.log` (not published). It adds six evidence-size
+and document-capacity regressions to the earlier 918-test repair checkpoint.
+The earlier 821-test publication run remains in
+[publication validation](PUBLICATION_2027.md).
+
+Separate live evidence records [guarded document transitions](DOCUMENT_TRANSITION_2027.json)
+and the [native wall dimension repair](WALL_CREATION_2027.json). These operational
+checks preserve their earlier failures and do not increase the SDK API totals.
 
 The [default-suite audit](LIVE_DEFAULT_SUITE_2027.json) records **57 routine
 families and 2,303 unique fixture jobs**, all passed across batches A, B and C.
