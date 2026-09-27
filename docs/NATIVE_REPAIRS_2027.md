@@ -49,6 +49,31 @@ Eighteen wall tests and the 918-test offline suite passed (one skip). The linked
 record pins deployment/source hashes and preserves the earlier failures; this
 operational observation has not increased the SDK fixture coverage totals above.
 
+## Wall screen bounds and model geometry
+
+A separate 2026-09-27 read-only reconciliation found an existing straight
+Wall with accepted parameters and an all-zero `GetBBox`. Its native
+`GetSegPt1/2` endpoints, `Get3DInfo` spans and `Get3DCntr` center matched
+independently calculated geometry in a feet-based drawing. The SDK defines
+`GetBBox` as a projection on the screen plane and describes wall bounds as a
+derived attribute. Treating its zero result as proof of absent model geometry
+was therefore an invalid verification rule in this case.
+
+Use endpoint/path-type checks and independent 3D size/center expectations in
+later jobs, alongside wall levels, thickness and layer elevation. The measured
+`Get3DInfo` outputs were Y/X/Z spans, despite their `height/width/depth` names.
+This does not establish the same interpretation for every object type or
+transform. The exact native cause of the zero screen box remains unresolved;
+no reset, recreation, view change or geometry mutation was needed to reconcile
+the Wall. Its intended final layer/elevation and save/reopen persistence were
+not established by this check.
+
+The private reconciliation retained seventeen typed read jobs and one local
+lease-status action, with exact per-job scheduler deltas, four unchanged open
+file identities and all eleven source/deployment hashes unchanged. It adds no
+SDK fixture coverage credit. Client drawings, coordinates and raw journals
+remain outside the published repository.
+
 ## Confirmed causes and bounded repairs
 
 - **Opacity flags:** four combinations of `SetOpacityByClassN` were compared

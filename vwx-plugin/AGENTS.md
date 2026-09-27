@@ -45,6 +45,14 @@ job without replaying its preceding mutation.
 `get_walls` returns top/bottom endpoint levels, `start_height`, `end_height` and
 numeric `thickness`; `height` is null for unequal endpoint heights. Per-field
 errors remain explicit. Selector 173 is not a wall-height contract.
+Its `bounds` field comes from `GetBBox`, which projects onto the screen plane;
+it is not a model-space geometry oracle. A reconciled native Wall returned all
+zero screen bounds while its endpoints, 3D spans and center matched the request.
+For a straight Wall, check `GetWallPathType`, `GetSegPt1/2`, `Get3DInfo` and
+`Get3DCntr` in later jobs against independent expected geometry. In that measured
+case, `Get3DInfo` returned Y/X/Z spans (`height`, `width`, `depth`); `depth` was
+the vertical span. Keep layer elevation, view and intended placement explicit.
+Do not recreate or reset an object merely because its screen bounds are zero.
 
 `create_wall` owns only its newly created type-68 UUID. It leaves document wall
 defaults alone, removes an inherited style only from that new instance, and
@@ -55,7 +63,8 @@ Height uses `SetWallOverallHeights` with bottom/top bound to layer Z at offsets
 0/height. It avoids the failed `SetWallHeights` binding and does not delete or
 insert components. Failures retain the partial object's UUID and failing phase;
 never retry the creation automatically. Success means accepted parameters, with
-`geometry_verified=false`; call `get_walls` in a later job. The unstyled
+`geometry_verified=false`; call `get_walls` in a later job for parameter
+readbacks and use the independent geometry checks above. The unstyled
 single-component constructor passed a separate native dimensional readback in
 an inch-based disposable drawing; styled and multiple-component branches have
 offline tests only. [Wall repair evidence](../docs/WALL_CREATION_2027.json) pins

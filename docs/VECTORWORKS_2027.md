@@ -65,6 +65,10 @@ not establish every styled/component configuration or add SDK coverage credit.
   requests. A `vwx_batch` or `sdk_sequence` remains one job; it provides neither
   a regeneration boundary nor rollback. A completed menu invocation does not
   prove every deferred native object has regenerated.
+- `GetBBox` and handwritten `bounds` are screen-plane projections, not world
+  extents. A zero screen box alone does not prove missing geometry. Validate a
+  native Wall using its endpoints and independent 3D spans/center, together with
+  parameter readbacks and layer placement; see [Wall findings](NATIVE_REPAIRS_2027.md#wall-screen-bounds-and-model-geometry).
 - A claimed job is consumed before dispatch and never automatically replayed.
   Inspect uncertain results and the actual document before any new mutation.
   Never forge completion stamps, clear an unknown lease or auto-dismiss dialogs.
