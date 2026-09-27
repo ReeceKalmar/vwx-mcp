@@ -49,6 +49,42 @@ geometry, regeneration or its geometry getters. Persistent join behavior still
 needs separate tests. None of these observations certifies arbitrary wall
 assemblies, component joins, curved Walls or save/reopen persistence.
 
+A separate fresh pair used explicit native end-cap offsets without `JoinWalls`.
+Both Walls passed later identity, axes, component, height, 3D-span and center
+checks. Their complete `WallFootPrint` boundaries were closed four-corner
+polylines without holes. Independent offset-line intersections matched all
+vertices within the declared 1.2e-6-inch tolerance; the pair shared one complete
+miter edge, with zero measured overlap and union difference below the declared
+area tolerance. Both source Walls and the other 18 Walls were preserved.
+This establishes physical assembly of editable native Walls for this case.
+A false `GetEntityMatrix` result was retained, not interpreted as an identity
+matrix; returned polyline XY was checked against parentage and the independent
+geometry.
+
+Two fresh perpendicular neighbors subsequently joined the original pair's
+opposite ends through the corrected handwritten `join_walls` wrapper, using
+explicit pick points, mode 2 and `capped=false`. Each native join ran exactly
+once, without corrective cap setters or additional resets. The complete
+four-Wall baseline passed before the first join; the first join's complete
+footprint checks passed before the second was dispatched.
+
+Both original near-miter cap arrays survived unchanged. After each join, all
+four Walls retained the expected identity, axes, component, height, cap flags,
+independent 3D spans and centers. Their complete closed, hole-free four-corner
+footprints matched the independent polygons, including the shared edges and
+four-Wall union. The final maximum vertex error was 1.861e-11 inches against
+the fixed 1.2e-6-inch tolerance. Pairwise overlap was 1.175e-12 square inches and
+union difference 2.350e-9 square inches, both below the fixed 0.000144-square-inch
+tolerance. All 22 Wall identities and bounds were checked across each join,
+preserving the recorded identities and Top/Plan bounds of the 18 controls.
+
+This verifies survival of the physical near seam after those two perpendicular
+opposite-end joins; it does not create a persistent native join at that seam.
+The evidence combines complete returned-XY footprints with native 3D spans,
+centers and heights, not a full triangulated-volume proof. Whole production
+rings, arbitrary neighbor angles or styles, feet-based drawings, high elevations,
+later edits and save/reopen persistence remain separate verification scopes.
+
 ## Roof Face
 
 The measured native Roof Face is type 71 with public selector 172 equal to 1.
@@ -167,6 +203,15 @@ with no skips, including an independent review and rerun. It also accepted the
 previously captured six native roof boundary polygons, independently reproducing
 their volume, centroid, extents and closed edge incidence. This offline
 reassessment makes no new native calls or combined full-suite rerun claim.
+
+[Hosted CI for `bad5ce3`](https://github.com/ReeceKalmar/vwx-mcp/actions/runs/36315101072)
+subsequently passed on both platforms, discovering 1,002 tests per job:
+997 passed and five skipped on Windows; 991 passed and eleven skipped on Linux.
+The Windows status-file harness was skipped because the configured MSVC 14.42
+compiler was unavailable; Linux skipped it because it requires Windows/MSVC.
+Hosted success therefore does not resolve or validate the locally blocked
+status-file harness. Static contracts, repository hygiene, report freshness and
+offline native-plan generation also passed in both jobs.
 
 ## Provenance and delivery
 
