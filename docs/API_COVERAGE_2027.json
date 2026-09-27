@@ -26,8 +26,8 @@
     "Uncertain native attempts and compatibility replacement outputs remain separate from confirmed native results; neither earns native API pass coverage."
   ],
   "source_sha256": {
-    "vwx-plugin/commands.py": "45401f3f4933ec2067afaefced4a8995e96dc13c69d218b8c19b443f790225cb",
-    "mcp-server/vwx_mcp_server.py": "5b2a22cfa7dd157e25ab8e64422802ad06a5d3735ac1b331713cd1e9be446bc1",
+    "vwx-plugin/commands.py": "c16029f7a69f71c75b9ea92a3b76ba077d6c87c912397fa665094bc22e092d31",
+    "mcp-server/vwx_mcp_server.py": "3246f6f363b197128ca0f898c64a1116fb57427991da0af010259127e8bb047c",
     "vwx-plugin/BridgeStart_MenuCommand.py": "afca843c51775d77be4ddd12e144239e558611d3dee8c179c16d92ea97e781cc",
     "vwx-plugin/vwx_pump.py": "4dc2c5b18e9a1e4e841f35595b6d01c92e9b44dafd0b25372ada9be881d1a0eb",
     "vwx-plugin/vs_index.json": "0ceaf7142be3ce1ad2b1920ffc433c4d8964410b12bdeaa8bfcea68e3563a548",
@@ -44,9 +44,9 @@
   },
   "counts": {
     "sdk_indexed_functions": 3098,
-    "handwritten_sdk_functions": 464,
-    "handwritten_sdk_percent": 14.98,
-    "sdk_functions_without_handwritten_workflow": 2634,
+    "handwritten_sdk_functions": 465,
+    "handwritten_sdk_percent": 15.01,
+    "sdk_functions_without_handwritten_workflow": 2633,
     "generated_sdk_adapters": 3098,
     "generated_adapter_percent": 100.0,
     "sdk_functions_without_generated_adapter": 0,
@@ -78,8 +78,8 @@
     "live_adapter_edge_cases": 7,
     "live_adapter_edge_cases_passed": 7,
     "private_explicit_dispatcher_targets": 1,
-    "raw_direct_sdk_calls_in_commands": 883,
-    "reachable_sdk_invocation_sites_in_commands": 891,
+    "raw_direct_sdk_calls_in_commands": 887,
+    "reachable_sdk_invocation_sites_in_commands": 895,
     "private_bridge_extension_functions_invoked": 7,
     "framework_sdk_functions": 1,
     "framework_only_sdk_functions": 0,
@@ -1527,6 +1527,7 @@
     "GetWSSubrowCellValue",
     "GetWSSubrowCount",
     "GetWallHeight",
+    "GetWallPathType",
     "GetWallStyle",
     "GetWallThickness",
     "HAreaN",
@@ -2952,7 +2953,6 @@
     "GetWallInsertLoc",
     "GetWallInsertLocOff",
     "GetWallOverallHeights",
-    "GetWallPathType",
     "GetWallPeak",
     "GetWallPerpOffOfData",
     "GetWallPrefStyle",
@@ -52108,7 +52108,7 @@
     "Objects - Solids": 9,
     "Objects - Symbols": 7,
     "Objects - Text": 15,
-    "Objects - Walls": 8,
+    "Objects - Walls": 9,
     "Selection": 3,
     "SiteModel Interface Library": 7,
     "Textures": 9,
@@ -52122,7 +52122,7 @@
     "AcquireExportPDFSettingsAndLocation": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3451,
+        "line": 3538,
         "column": 11,
         "function": "export_pdf",
         "kind": "direct",
@@ -52134,7 +52134,7 @@
     "ActLayer": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4262,
+        "line": 4349,
         "column": 29,
         "function": "_active_dtm",
         "kind": "direct",
@@ -52174,7 +52174,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2119,
+        "line": 2206,
         "column": 62,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -52184,7 +52184,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3618,
+        "line": 3705,
         "column": 8,
         "function": "get_georeferencing",
         "kind": "direct",
@@ -52194,7 +52194,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2133,
+        "line": 2220,
         "column": 62,
         "function": "get_projection",
         "kind": "direct",
@@ -52204,7 +52204,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4333,
+        "line": 4420,
         "column": 58,
         "function": "get_z_at_xy",
         "kind": "direct",
@@ -52214,7 +52214,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3528,
+        "line": 3615,
         "column": 51,
         "function": "import_dwg",
         "kind": "direct",
@@ -52224,7 +52224,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3558,
+        "line": 3645,
         "column": 51,
         "function": "import_image",
         "kind": "direct",
@@ -52254,7 +52254,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4350,
+        "line": 4437,
         "column": 55,
         "function": "site_model_on_layer",
         "kind": "direct",
@@ -52290,7 +52290,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3891,
+        "line": 3978,
         "column": 12,
         "function": "draw_regular_polygon",
         "kind": "direct",
@@ -52300,7 +52300,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3870,
+        "line": 3957,
         "column": 12,
         "function": "draw_rounded_rect",
         "kind": "direct",
@@ -52334,7 +52334,7 @@
     "AddSolid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4460,
+        "line": 4547,
         "column": 14,
         "function": "_solid_op",
         "kind": "resolved_alias",
@@ -52346,7 +52346,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2617,
+        "line": 2704,
         "column": 17,
         "function": "boolean_operation",
         "kind": "resolved_alias",
@@ -52372,7 +52372,7 @@
     "AddSymToWall": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1791,
+        "line": 1878,
         "column": 4,
         "function": "add_symbol_to_wall",
         "kind": "direct",
@@ -52384,7 +52384,7 @@
     "AddVectorFillLayer": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6580,
+        "line": 6677,
         "column": 12,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -52396,7 +52396,7 @@
     "AngularDim": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4126,
+        "line": 4213,
         "column": 12,
         "function": "create_angular_dimension",
         "kind": "direct",
@@ -52432,7 +52432,7 @@
     "AssociateLinearDimension": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4205,
+        "line": 4292,
         "column": 8,
         "function": "associate_linear_dim",
         "kind": "direct",
@@ -52442,7 +52442,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4106,
+        "line": 4193,
         "column": 21,
         "function": "create_linear_dimension",
         "kind": "direct",
@@ -52454,7 +52454,7 @@
     "BeginFolder": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5661,
+        "line": 5758,
         "column": 24,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -52466,7 +52466,7 @@
     "BeginFolderN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5661,
+        "line": 5758,
         "column": 50,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -52476,7 +52476,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5662,
+        "line": 5759,
         "column": 24,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -52498,7 +52498,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3889,
+        "line": 3976,
         "column": 8,
         "function": "draw_regular_polygon",
         "kind": "direct",
@@ -52508,7 +52508,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3867,
+        "line": 3954,
         "column": 8,
         "function": "draw_rounded_rect",
         "kind": "direct",
@@ -52530,7 +52530,7 @@
     "BeginSym": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6910,
+        "line": 7007,
         "column": 8,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -52540,7 +52540,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2745,
+        "line": 2832,
         "column": 8,
         "function": "create_symbol_from_objects",
         "kind": "direct",
@@ -52552,7 +52552,7 @@
     "BeginVectorFillN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6577,
+        "line": 6674,
         "column": 23,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -52564,7 +52564,7 @@
     "BuildResourceList": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7235,
+        "line": 7332,
         "column": 17,
         "function": "_res_names",
         "kind": "direct",
@@ -52574,7 +52574,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2669,
+        "line": 2756,
         "column": 21,
         "function": "_resource_names",
         "kind": "direct",
@@ -52586,7 +52586,7 @@
     "BuildResourceListN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7233,
+        "line": 7330,
         "column": 17,
         "function": "_res_names",
         "kind": "direct",
@@ -52598,7 +52598,7 @@
     "Centroid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4590,
+        "line": 4677,
         "column": 14,
         "function": "polygon_centroid",
         "kind": "direct",
@@ -52634,7 +52634,7 @@
     "CircularDim": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4154,
+        "line": 4241,
         "column": 12,
         "function": "create_circular_dimension",
         "kind": "direct",
@@ -52646,7 +52646,7 @@
     "ClassList": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6391,
+        "line": 6488,
         "column": 21,
         "function": "_enumerate_class_names",
         "kind": "direct",
@@ -52668,7 +52668,7 @@
     "ClassNum": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6389,
+        "line": 6486,
         "column": 12,
         "function": "_enumerate_class_names",
         "kind": "direct",
@@ -52690,7 +52690,7 @@
     "ClipPolygon": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4563,
+        "line": 4650,
         "column": 13,
         "function": "_poly_boolean",
         "kind": "resolved_alias",
@@ -52715,7 +52715,7 @@
     "ClosePDFDocument": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3454,
+        "line": 3541,
         "column": 16,
         "function": "export_pdf",
         "kind": "direct",
@@ -52737,7 +52737,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3888,
+        "line": 3975,
         "column": 8,
         "function": "draw_regular_polygon",
         "kind": "direct",
@@ -52747,7 +52747,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3866,
+        "line": 3953,
         "column": 8,
         "function": "draw_rounded_rect",
         "kind": "direct",
@@ -52759,7 +52759,7 @@
     "CnvrtToGenericSolid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4488,
+        "line": 4575,
         "column": 8,
         "function": "solid_to_generic",
         "kind": "direct",
@@ -52783,7 +52783,7 @@
     "CombinePolygons": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4578,
+        "line": 4665,
         "column": 17,
         "function": "combine_polygons",
         "kind": "direct",
@@ -52795,7 +52795,7 @@
     "ConvertToNURBS": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4628,
+        "line": 4715,
         "column": 13,
         "function": "convert_to_nurbs",
         "kind": "direct",
@@ -52807,7 +52807,7 @@
     "ConvertToPolygon": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1957,
+        "line": 2044,
         "column": 22,
         "function": "convert_to_polygon",
         "kind": "direct",
@@ -52819,7 +52819,7 @@
     "ConvertToPolyline": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1974,
+        "line": 2061,
         "column": 26,
         "function": "convert_to_polyline",
         "kind": "direct",
@@ -52831,7 +52831,7 @@
     "ConvertToUnstyledWall": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3076,
+        "line": 3163,
         "column": 15,
         "function": "create_wall",
         "kind": "direct",
@@ -52843,7 +52843,7 @@
     "Count": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1846,
+        "line": 1933,
         "column": 37,
         "function": "criteria_count",
         "kind": "direct",
@@ -52855,7 +52855,7 @@
     "CreateChainDimension": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4188,
+        "line": 4275,
         "column": 29,
         "function": "create_chain_dimension",
         "kind": "direct",
@@ -52879,7 +52879,7 @@
     "CreateCustomObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3947,
+        "line": 4034,
         "column": 16,
         "function": "create_pio",
         "kind": "direct",
@@ -52891,7 +52891,7 @@
     "CreateCustomObjectN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3945,
+        "line": 4032,
         "column": 16,
         "function": "create_pio",
         "kind": "direct",
@@ -52903,7 +52903,7 @@
     "CreateCustomObjectPath": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3973,
+        "line": 4060,
         "column": 16,
         "function": "create_pio_from_path",
         "kind": "direct",
@@ -52927,7 +52927,7 @@
     "CreateLight": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1813,
+        "line": 1900,
         "column": 8,
         "function": "create_light",
         "kind": "direct",
@@ -52951,7 +52951,7 @@
     "CreateMaterial": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4653,
+        "line": 4740,
         "column": 12,
         "function": "create_material",
         "kind": "direct",
@@ -52963,7 +52963,7 @@
     "CreateOffsetNurbsObjectHandle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2019,
+        "line": 2106,
         "column": 8,
         "function": "offset_nurbs",
         "kind": "direct",
@@ -52987,7 +52987,7 @@
     "CreateShaderRecord": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2501,
+        "line": 2588,
         "column": 18,
         "function": "create_texture",
         "kind": "direct",
@@ -52999,7 +52999,7 @@
     "CreateShell": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2002,
+        "line": 2089,
         "column": 8,
         "function": "create_shell",
         "kind": "direct",
@@ -53009,7 +53009,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4479,
+        "line": 4566,
         "column": 13,
         "function": "solid_shell",
         "kind": "direct",
@@ -53045,7 +53045,7 @@
     "CreateStaticHatch": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4419,
+        "line": 4506,
         "column": 16,
         "function": "create_static_hatch",
         "kind": "direct",
@@ -53057,7 +53057,7 @@
     "CreateStaticHatchFromObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4436,
+        "line": 4523,
         "column": 16,
         "function": "create_static_hatch_from_object",
         "kind": "direct",
@@ -53093,7 +53093,7 @@
     "CreateTexture": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2498,
+        "line": 2585,
         "column": 8,
         "function": "create_texture",
         "kind": "direct",
@@ -53105,7 +53105,7 @@
     "CreateVP": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3362,
+        "line": 3449,
         "column": 12,
         "function": "create_viewport",
         "kind": "direct",
@@ -53117,7 +53117,7 @@
     "CreateVPClOvrd": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4856,
+        "line": 4953,
         "column": 8,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -53129,7 +53129,7 @@
     "CreateVPLrOvrd": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4914,
+        "line": 5011,
         "column": 8,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -53141,7 +53141,7 @@
     "CreateWS": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2233,
+        "line": 2320,
         "column": 9,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -53151,7 +53151,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3412,
+        "line": 3499,
         "column": 12,
         "function": "create_worksheet",
         "kind": "direct",
@@ -53163,7 +53163,7 @@
     "CreateWSImage": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2248,
+        "line": 2335,
         "column": 14,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -53173,7 +53173,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2360,
+        "line": 2447,
         "column": 10,
         "function": "place_worksheet_on_drawing",
         "kind": "direct",
@@ -53185,7 +53185,7 @@
     "DSelectAll": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3145,
+        "line": 3232,
         "column": 8,
         "function": "create_space",
         "kind": "direct",
@@ -53215,7 +53215,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5483,
+        "line": 5580,
         "column": 4,
         "function": "marionette_recalc",
         "kind": "direct",
@@ -53225,7 +53225,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5486,
+        "line": 5583,
         "column": 4,
         "function": "marionette_recalc",
         "kind": "direct",
@@ -53257,7 +53257,7 @@
     "DSelectObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1860,
+        "line": 1947,
         "column": 4,
         "function": "deselect_by_criteria",
         "kind": "direct",
@@ -53269,7 +53269,7 @@
     "DTM6_ClearModelCache": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4367,
+        "line": 4454,
         "column": 8,
         "function": "clear_site_model_cache",
         "kind": "direct",
@@ -53281,7 +53281,7 @@
     "DTM6_GetZatXY": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4338,
+        "line": 4425,
         "column": 17,
         "function": "get_z_at_xy",
         "kind": "direct",
@@ -53293,7 +53293,7 @@
     "DTM6_IsDTM6Object": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4251,
+        "line": 4338,
         "column": 39,
         "function": "_dtm_on_layer.collect",
         "kind": "direct",
@@ -53303,7 +53303,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4334,
+        "line": 4421,
         "column": 24,
         "function": "get_z_at_xy",
         "kind": "direct",
@@ -53313,7 +53313,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4359,
+        "line": 4446,
         "column": 39,
         "function": "is_site_model",
         "kind": "direct",
@@ -53325,7 +53325,7 @@
     "DTM6_IsObjectReady": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4336,
+        "line": 4423,
         "column": 11,
         "function": "get_z_at_xy",
         "kind": "direct",
@@ -53337,7 +53337,7 @@
     "DTM6_RiseToSurface": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4317,
+        "line": 4404,
         "column": 13,
         "function": "rise_to_surface",
         "kind": "direct",
@@ -53349,7 +53349,7 @@
     "DTM6_SendToSurface": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4283,
+        "line": 4370,
         "column": 13,
         "function": "send_to_surface",
         "kind": "direct",
@@ -53361,7 +53361,7 @@
     "DT_AssociateWithObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4522,
+        "line": 4609,
         "column": 13,
         "function": "associate_data_tag",
         "kind": "direct",
@@ -53373,7 +53373,7 @@
     "DT_ResetAllDataTags": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7437,
+        "line": 7609,
         "column": 4,
         "function": "datatag_refresh_all",
         "kind": "direct",
@@ -53383,7 +53383,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4528,
+        "line": 4615,
         "column": 8,
         "function": "reset_all_data_tags",
         "kind": "direct",
@@ -53395,7 +53395,7 @@
     "DT_UpdateTaggedTags": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4536,
+        "line": 4623,
         "column": 8,
         "function": "update_tagged_tags",
         "kind": "direct",
@@ -53439,7 +53439,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2775,
+        "line": 2862,
         "column": 4,
         "function": "delete_symbol",
         "kind": "direct",
@@ -53449,7 +53449,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5678,
+        "line": 5775,
         "column": 12,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -53459,7 +53459,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5640,
+        "line": 5737,
         "column": 4,
         "function": "resource_delete",
         "kind": "direct",
@@ -53471,7 +53471,7 @@
     "DelRecord": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2929,
+        "line": 3016,
         "column": 8,
         "function": "detach_record",
         "kind": "direct",
@@ -53483,7 +53483,7 @@
     "DelVectorFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6568,
+        "line": 6665,
         "column": 12,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -53493,7 +53493,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6598,
+        "line": 6695,
         "column": 17,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -53503,7 +53503,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4447,
+        "line": 4534,
         "column": 8,
         "function": "delete_hatch_definition",
         "kind": "direct",
@@ -53515,7 +53515,7 @@
     "DelVertex": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2185,
+        "line": 2272,
         "column": 4,
         "function": "delete_poly_vertex",
         "kind": "direct",
@@ -53527,7 +53527,7 @@
     "DeleteAllComponents": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4759,
+        "line": 4846,
         "column": 8,
         "function": "delete_all_components",
         "kind": "direct",
@@ -53539,7 +53539,7 @@
     "DeleteComponent": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4750,
+        "line": 4837,
         "column": 8,
         "function": "delete_component",
         "kind": "direct",
@@ -53551,7 +53551,7 @@
     "DeleteWSRows": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1910,
+        "line": 1997,
         "column": 4,
         "function": "delete_worksheet_rows",
         "kind": "direct",
@@ -53563,7 +53563,7 @@
     "DoMenuTextByName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3149,
+        "line": 3236,
         "column": 8,
         "function": "create_space",
         "kind": "direct",
@@ -53583,7 +53583,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5227,
+        "line": 5324,
         "column": 4,
         "function": "run_menu_command",
         "kind": "direct",
@@ -53613,7 +53613,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3570,
+        "line": 3657,
         "column": 8,
         "function": "zoom_to_fit",
         "kind": "direct",
@@ -53623,7 +53623,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3579,
+        "line": 3666,
         "column": 18,
         "function": "zoom_to_selection",
         "kind": "direct",
@@ -53635,7 +53635,7 @@
     "EndFolder": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5665,
+        "line": 5762,
         "column": 19,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -53657,7 +53657,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3892,
+        "line": 3979,
         "column": 8,
         "function": "draw_regular_polygon",
         "kind": "direct",
@@ -53667,7 +53667,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3871,
+        "line": 3958,
         "column": 8,
         "function": "draw_rounded_rect",
         "kind": "direct",
@@ -53689,7 +53689,7 @@
     "EndSym": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6931,
+        "line": 7028,
         "column": 26,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -53699,7 +53699,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2758,
+        "line": 2845,
         "column": 26,
         "function": "create_symbol_from_objects",
         "kind": "direct",
@@ -53711,7 +53711,7 @@
     "EndVectorFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6589,
+        "line": 6686,
         "column": 16,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -53723,7 +53723,7 @@
     "Eval": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1873,
+        "line": 1960,
         "column": 37,
         "function": "eval_expression",
         "kind": "direct",
@@ -53735,7 +53735,7 @@
     "EvalStr": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1872,
+        "line": 1959,
         "column": 41,
         "function": "eval_expression",
         "kind": "direct",
@@ -53747,7 +53747,7 @@
     "ExportImageFile": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3501,
+        "line": 3588,
         "column": 12,
         "function": "export_image",
         "kind": "direct",
@@ -53759,7 +53759,7 @@
     "ExportPDFPages": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3453,
+        "line": 3540,
         "column": 16,
         "function": "export_pdf",
         "kind": "direct",
@@ -53771,7 +53771,7 @@
     "ExtendNurbsCurve": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2028,
+        "line": 2115,
         "column": 8,
         "function": "extend_nurbs_curve",
         "kind": "direct",
@@ -53795,7 +53795,7 @@
     "FActLayer": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3906,
+        "line": 3993,
         "column": 8,
         "function": "_layer_uuids",
         "kind": "direct",
@@ -53807,7 +53807,7 @@
     "FIn3D": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5262,
+        "line": 5359,
         "column": 9,
         "function": "_mrn_group",
         "kind": "direct",
@@ -53817,7 +53817,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5317,
+        "line": 5414,
         "column": 12,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -53827,7 +53827,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5273,
+        "line": 5370,
         "column": 9,
         "function": "_mrn_nodes",
         "kind": "direct",
@@ -53837,7 +53837,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5294,
+        "line": 5391,
         "column": 8,
         "function": "_mrn_ports",
         "kind": "direct",
@@ -53847,7 +53847,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5703,
+        "line": 5800,
         "column": 57,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -53857,7 +53857,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5712,
+        "line": 5809,
         "column": 18,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -53867,7 +53867,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5713,
+        "line": 5810,
         "column": 17,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -53879,7 +53879,7 @@
     "FInFolder": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5523,
+        "line": 5620,
         "column": 8,
         "function": "_res_walk",
         "kind": "direct",
@@ -53891,19 +53891,9 @@
     "FInGroup": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7292,
-        "column": 57,
-        "function": "_deep_count",
-        "kind": "direct",
-        "sdk_functions": [
-          "FInGroup"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 7288,
-        "column": 20,
-        "function": "_deep_count.walk",
+        "line": 7408,
+        "column": 59,
+        "function": "_resource_children",
         "kind": "direct",
         "sdk_functions": [
           "FInGroup"
@@ -53935,9 +53925,9 @@
     "FInSymDef": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7292,
-        "column": 12,
-        "function": "_deep_count",
+        "line": 7408,
+        "column": 16,
+        "function": "_resource_children",
         "kind": "direct",
         "sdk_functions": [
           "FInSymDef"
@@ -53945,19 +53935,9 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5703,
+        "line": 5800,
         "column": 8,
         "function": "marionette_style_clone",
-        "kind": "direct",
-        "sdk_functions": [
-          "FInSymDef"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 7309,
-        "column": 16,
-        "function": "resource_info",
         "kind": "direct",
         "sdk_functions": [
           "FInSymDef"
@@ -54001,7 +53981,7 @@
     "FSymDef": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5655,
+        "line": 5752,
         "column": 13,
         "function": "resource_create_folder.snap",
         "kind": "direct",
@@ -54011,7 +53991,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5545,
+        "line": 5642,
         "column": 13,
         "function": "resource_tree",
         "kind": "direct",
@@ -54023,7 +54003,7 @@
     "FillBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2574,
+        "line": 2661,
         "column": 29,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -54035,7 +54015,7 @@
     "FillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2573,
+        "line": 2660,
         "column": 29,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -54047,7 +54027,7 @@
     "FillPat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2578,
+        "line": 2665,
         "column": 42,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -54079,7 +54059,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4254,
+        "line": 4341,
         "column": 4,
         "function": "_dtm_on_layer",
         "kind": "direct",
@@ -54089,7 +54069,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2475,
+        "line": 2562,
         "column": 4,
         "function": "ifc_bulk_set_pset",
         "kind": "direct",
@@ -54099,7 +54079,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5634,
+        "line": 5731,
         "column": 26,
         "function": "resource_delete",
         "kind": "direct",
@@ -54111,19 +54091,9 @@
     "ForEachObjectInList": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7279,
+        "line": 7442,
         "column": 8,
-        "function": "_deep_count.walk",
-        "kind": "direct",
-        "sdk_functions": [
-          "ForEachObjectInList"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 7311,
-        "column": 12,
-        "function": "resource_info",
+        "function": "_resource_children",
         "kind": "direct",
         "sdk_functions": [
           "ForEachObjectInList"
@@ -54133,7 +54103,7 @@
     "GeogCoordToVWN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2099,
+        "line": 2186,
         "column": 8,
         "function": "geo_to_drawing",
         "kind": "direct",
@@ -54157,7 +54127,7 @@
     "GetAngleToNorth": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2126,
+        "line": 2213,
         "column": 44,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -54179,7 +54149,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3654,
+        "line": 3741,
         "column": 21,
         "function": "_bbox_pairs",
         "kind": "direct",
@@ -54189,7 +54159,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3670,
+        "line": 3757,
         "column": 19,
         "function": "align_objects",
         "kind": "direct",
@@ -54201,7 +54171,7 @@
     "GetCVis": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6464,
+        "line": 6561,
         "column": 33,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54233,7 +54203,7 @@
     "GetClFPat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6458,
+        "line": 6555,
         "column": 38,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54245,7 +54215,7 @@
     "GetClFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6453,
+        "line": 6550,
         "column": 23,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54257,7 +54227,7 @@
     "GetClLS": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6415,
+        "line": 6512,
         "column": 15,
         "function": "_get_class_line_style",
         "kind": "direct",
@@ -54269,7 +54239,7 @@
     "GetClLSN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6411,
+        "line": 6508,
         "column": 15,
         "function": "_get_class_line_style",
         "kind": "direct",
@@ -54281,7 +54251,7 @@
     "GetClLW": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6457,
+        "line": 6554,
         "column": 36,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54293,7 +54263,7 @@
     "GetClOpacity": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6460,
+        "line": 6557,
         "column": 33,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54305,7 +54275,7 @@
     "GetClPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6455,
+        "line": 6552,
         "column": 23,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54317,7 +54287,7 @@
     "GetClVectorFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6459,
+        "line": 6556,
         "column": 31,
         "function": "_read_class_appearance",
         "kind": "direct",
@@ -54349,7 +54319,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7403,
+        "line": 7575,
         "column": 69,
         "function": "pio_nesting_check",
         "kind": "direct",
@@ -54361,7 +54331,7 @@
     "GetComponentClass": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4720,
+        "line": 4807,
         "column": 42,
         "function": "list_components",
         "kind": "direct",
@@ -54373,7 +54343,7 @@
     "GetComponentFunction": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4721,
+        "line": 4808,
         "column": 42,
         "function": "list_components",
         "kind": "direct",
@@ -54385,7 +54355,7 @@
     "GetComponentMaterial": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4815,
+        "line": 4912,
         "column": 18,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -54407,7 +54377,7 @@
     "GetComponentName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4718,
+        "line": 4805,
         "column": 42,
         "function": "list_components",
         "kind": "direct",
@@ -54419,7 +54389,7 @@
     "GetComponentNetArea": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4722,
+        "line": 4809,
         "column": 44,
         "function": "list_components",
         "kind": "direct",
@@ -54431,7 +54401,7 @@
     "GetComponentNetVolume": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4723,
+        "line": 4810,
         "column": 44,
         "function": "list_components",
         "kind": "direct",
@@ -54443,7 +54413,7 @@
     "GetComponentTexture": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4816,
+        "line": 4913,
         "column": 23,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -54455,7 +54425,7 @@
     "GetComponentWidth": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3090,
+        "line": 3177,
         "column": 18,
         "function": "create_wall",
         "kind": "direct",
@@ -54465,7 +54435,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3109,
+        "line": 3196,
         "column": 21,
         "function": "create_wall",
         "kind": "direct",
@@ -54475,7 +54445,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4719,
+        "line": 4806,
         "column": 42,
         "function": "list_components",
         "kind": "direct",
@@ -54487,7 +54457,7 @@
     "GetCustomObjectPath": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4066,
+        "line": 4153,
         "column": 13,
         "function": "get_pio_path",
         "kind": "direct",
@@ -54499,7 +54469,7 @@
     "GetDimText": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4213,
+        "line": 4300,
         "column": 25,
         "function": "get_dim_text",
         "kind": "direct",
@@ -54525,7 +54495,7 @@
     "GetFPat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2837,
+        "line": 2924,
         "column": 38,
         "function": "get_appearance",
         "kind": "direct",
@@ -54549,7 +54519,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7373,
+        "line": 7545,
         "column": 48,
         "function": "resource_duplicate",
         "kind": "direct",
@@ -54571,7 +54541,7 @@
     "GetFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2832,
+        "line": 2919,
         "column": 23,
         "function": "get_appearance",
         "kind": "direct",
@@ -54593,7 +54563,7 @@
     "GetFldName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2898,
+        "line": 2985,
         "column": 35,
         "function": "get_object_records",
         "kind": "direct",
@@ -54603,7 +54573,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4000,
+        "line": 4087,
         "column": 38,
         "function": "get_pio_parameters",
         "kind": "direct",
@@ -54613,7 +54583,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3224,
+        "line": 3311,
         "column": 31,
         "function": "get_plants",
         "kind": "direct",
@@ -54625,7 +54595,7 @@
     "GetFontID": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2588,
+        "line": 2675,
         "column": 14,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -54635,7 +54605,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3729,
+        "line": 3816,
         "column": 17,
         "function": "set_text_style",
         "kind": "direct",
@@ -54645,7 +54615,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2307,
+        "line": 2394,
         "column": 10,
         "function": "set_worksheet_cell_text_format",
         "kind": "direct",
@@ -54657,7 +54627,7 @@
     "GetGISOriginN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2120,
+        "line": 2207,
         "column": 33,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -54669,7 +54639,7 @@
     "GetHole": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2204,
+        "line": 2291,
         "column": 31,
         "function": "get_poly_holes",
         "kind": "direct",
@@ -54731,7 +54701,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3528,
+        "line": 3615,
         "column": 39,
         "function": "import_dwg",
         "kind": "direct",
@@ -54741,7 +54711,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3558,
+        "line": 3645,
         "column": 39,
         "function": "import_image",
         "kind": "direct",
@@ -54751,7 +54721,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4942,
+        "line": 5039,
         "column": 35,
         "function": "list_vp_layer_overrides",
         "kind": "direct",
@@ -54815,7 +54785,7 @@
     "GetLW": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2838,
+        "line": 2925,
         "column": 37,
         "function": "get_appearance",
         "kind": "direct",
@@ -54837,7 +54807,7 @@
     "GetLayer": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4251,
+        "line": 4338,
         "column": 11,
         "function": "_dtm_on_layer.collect",
         "kind": "direct",
@@ -54859,7 +54829,7 @@
     "GetLayerByName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4912,
+        "line": 5009,
         "column": 18,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -54869,7 +54839,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3348,
+        "line": 3435,
         "column": 12,
         "function": "create_viewport",
         "kind": "direct",
@@ -54879,7 +54849,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3356,
+        "line": 3443,
         "column": 13,
         "function": "create_viewport",
         "kind": "direct",
@@ -54899,7 +54869,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2119,
+        "line": 2206,
         "column": 9,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -54909,7 +54879,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2042,
+        "line": 2129,
         "column": 8,
         "function": "get_layer_elevation",
         "kind": "direct",
@@ -54929,7 +54899,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2133,
+        "line": 2220,
         "column": 9,
         "function": "get_projection",
         "kind": "direct",
@@ -54959,7 +54929,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2035,
+        "line": 2122,
         "column": 8,
         "function": "set_layer_elevation",
         "kind": "direct",
@@ -54999,7 +54969,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4350,
+        "line": 4437,
         "column": 16,
         "function": "site_model_on_layer",
         "kind": "direct",
@@ -55011,7 +54981,7 @@
     "GetLayerElevation": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2044,
+        "line": 2131,
         "column": 8,
         "function": "get_layer_elevation",
         "kind": "direct",
@@ -55023,7 +54993,7 @@
     "GetLightInfo": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1834,
+        "line": 1921,
         "column": 8,
         "function": "get_light_info",
         "kind": "direct",
@@ -55035,7 +55005,7 @@
     "GetLocPt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5297,
+        "line": 5394,
         "column": 38,
         "function": "_mrn_ports",
         "kind": "direct",
@@ -55047,7 +55017,7 @@
     "GetMaterialArea": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4677,
+        "line": 4764,
         "column": 36,
         "function": "get_material_info",
         "kind": "direct",
@@ -55059,7 +55029,7 @@
     "GetMaterialVolume": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4678,
+        "line": 4765,
         "column": 36,
         "function": "get_material_info",
         "kind": "direct",
@@ -55081,7 +55051,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7266,
+        "line": 7363,
         "column": 25,
         "function": "_pio_name",
         "kind": "direct",
@@ -55091,7 +55061,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3818,
+        "line": 3905,
         "column": 23,
         "function": "_pio_record_name",
         "kind": "direct",
@@ -55101,9 +55071,19 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5526,
+        "line": 5623,
         "column": 13,
         "function": "_res_walk",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetName"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 4886,
+        "column": 35,
+        "function": "_set_component_resource",
         "kind": "direct",
         "sdk_functions": [
           "GetName"
@@ -55121,7 +55101,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3297,
+        "line": 3384,
         "column": 32,
         "function": "batch_update_plants",
         "kind": "direct",
@@ -55131,7 +55111,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2504,
+        "line": 2591,
         "column": 76,
         "function": "create_texture",
         "kind": "direct",
@@ -55141,7 +55121,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2895,
+        "line": 2982,
         "column": 23,
         "function": "get_object_records",
         "kind": "direct",
@@ -55151,7 +55131,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3996,
+        "line": 4083,
         "column": 33,
         "function": "get_pio_parameters",
         "kind": "direct",
@@ -55161,7 +55141,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3282,
+        "line": 3369,
         "column": 26,
         "function": "get_plant_database",
         "kind": "direct",
@@ -55171,7 +55151,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3216,
+        "line": 3303,
         "column": 33,
         "function": "get_plants",
         "kind": "direct",
@@ -55181,7 +55161,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2880,
+        "line": 2967,
         "column": 30,
         "function": "get_record_formats",
         "kind": "direct",
@@ -55191,7 +55171,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3314,
+        "line": 3401,
         "column": 35,
         "function": "get_site_model_info",
         "kind": "direct",
@@ -55201,7 +55181,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6723,
+        "line": 6820,
         "column": 38,
         "function": "get_symbol_type",
         "kind": "direct",
@@ -55211,7 +55191,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2687,
+        "line": 2774,
         "column": 47,
         "function": "get_symbols",
         "kind": "direct",
@@ -55221,7 +55201,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3629,
+        "line": 3716,
         "column": 42,
         "function": "get_textures",
         "kind": "direct",
@@ -55231,7 +55211,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3406,
+        "line": 3493,
         "column": 50,
         "function": "get_worksheets",
         "kind": "direct",
@@ -55241,7 +55221,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5614,
+        "line": 5711,
         "column": 21,
         "function": "resource_delete",
         "kind": "direct",
@@ -55251,7 +55231,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7348,
+        "line": 7520,
         "column": 11,
         "function": "resource_import",
         "kind": "direct",
@@ -55261,7 +55241,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7356,
+        "line": 7528,
         "column": 44,
         "function": "resource_import",
         "kind": "direct",
@@ -55271,7 +55251,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7306,
+        "line": 7480,
         "column": 35,
         "function": "resource_info",
         "kind": "direct",
@@ -55281,7 +55261,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5576,
+        "line": 5673,
         "column": 39,
         "function": "resource_rename",
         "kind": "direct",
@@ -55291,7 +55271,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5548,
+        "line": 5645,
         "column": 17,
         "function": "resource_tree",
         "kind": "direct",
@@ -55301,7 +55281,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4015,
+        "line": 4102,
         "column": 19,
         "function": "set_pio_parameter",
         "kind": "direct",
@@ -55311,7 +55291,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3261,
+        "line": 3348,
         "column": 24,
         "function": "update_plant",
         "kind": "direct",
@@ -55323,7 +55303,7 @@
     "GetNameFromResourceList": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7236,
+        "line": 7333,
         "column": 17,
         "function": "_res_names",
         "kind": "direct",
@@ -55333,7 +55313,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2674,
+        "line": 2761,
         "column": 27,
         "function": "_resource_names",
         "kind": "direct",
@@ -55345,7 +55325,7 @@
     "GetNumHoles": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2199,
+        "line": 2286,
         "column": 22,
         "function": "get_poly_holes",
         "kind": "direct",
@@ -55357,7 +55337,7 @@
     "GetNumberOfComponents": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4795,
+        "line": 4892,
         "column": 16,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -55367,7 +55347,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3082,
+        "line": 3169,
         "column": 16,
         "function": "create_wall",
         "kind": "direct",
@@ -55387,7 +55367,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4710,
+        "line": 4797,
         "column": 12,
         "function": "list_components",
         "kind": "direct",
@@ -55399,7 +55379,7 @@
     "GetObjBeginningMarker": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2856,
+        "line": 2943,
         "column": 22,
         "function": "set_marker",
         "kind": "resolved_alias",
@@ -55412,7 +55392,7 @@
     "GetObjEndMarker": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2856,
+        "line": 2943,
         "column": 22,
         "function": "set_marker",
         "kind": "resolved_alias",
@@ -55425,7 +55405,7 @@
     "GetObjMaterialHandle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4673,
+        "line": 4760,
         "column": 13,
         "function": "get_material_info",
         "kind": "direct",
@@ -55447,7 +55427,7 @@
     "GetObjMaterialName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4674,
+        "line": 4761,
         "column": 41,
         "function": "get_material_info",
         "kind": "direct",
@@ -55459,7 +55439,7 @@
     "GetObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7259,
+        "line": 7356,
         "column": 22,
         "function": "_name_obj",
         "kind": "direct",
@@ -55469,7 +55449,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1877,
+        "line": 1964,
         "column": 8,
         "function": "_ws",
         "kind": "direct",
@@ -55479,7 +55459,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4663,
+        "line": 4750,
         "column": 13,
         "function": "assign_material",
         "kind": "direct",
@@ -55489,7 +55469,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6947,
+        "line": 7044,
         "column": 30,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -55499,7 +55479,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6961,
+        "line": 7058,
         "column": 30,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -55509,7 +55489,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2948,
+        "line": 3035,
         "column": 33,
         "function": "create_record_format",
         "kind": "direct",
@@ -55519,7 +55499,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2231,
+        "line": 2318,
         "column": 10,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -55529,7 +55509,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2773,
+        "line": 2860,
         "column": 22,
         "function": "delete_symbol",
         "kind": "direct",
@@ -55539,7 +55519,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2875,
+        "line": 2962,
         "column": 26,
         "function": "get_record_formats",
         "kind": "direct",
@@ -55549,7 +55529,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6744,
+        "line": 6841,
         "column": 22,
         "function": "get_symbol_options",
         "kind": "direct",
@@ -55559,7 +55539,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2683,
+        "line": 2770,
         "column": 26,
         "function": "get_symbols",
         "kind": "direct",
@@ -55569,7 +55549,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2508,
+        "line": 2595,
         "column": 8,
         "function": "get_texture_info",
         "kind": "direct",
@@ -55579,7 +55559,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3418,
+        "line": 3505,
         "column": 23,
         "function": "get_worksheet_data",
         "kind": "direct",
@@ -55589,7 +55569,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5690,
+        "line": 5787,
         "column": 24,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -55599,7 +55579,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5693,
+        "line": 5790,
         "column": 21,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -55609,7 +55589,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5731,
+        "line": 5828,
         "column": 14,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -55619,7 +55599,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3440,
+        "line": 3527,
         "column": 23,
         "function": "recalculate_worksheet",
         "kind": "direct",
@@ -55629,7 +55609,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2781,
+        "line": 2868,
         "column": 22,
         "function": "rename_symbol",
         "kind": "direct",
@@ -55639,7 +55619,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5651,
+        "line": 5748,
         "column": 21,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -55649,7 +55629,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5674,
+        "line": 5771,
         "column": 26,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -55659,7 +55639,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5609,
+        "line": 5706,
         "column": 22,
         "function": "resource_delete",
         "kind": "direct",
@@ -55669,7 +55649,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5560,
+        "line": 5657,
         "column": 22,
         "function": "resource_move",
         "kind": "direct",
@@ -55679,7 +55659,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5561,
+        "line": 5658,
         "column": 24,
         "function": "resource_move",
         "kind": "direct",
@@ -55689,7 +55669,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5571,
+        "line": 5668,
         "column": 22,
         "function": "resource_rename",
         "kind": "direct",
@@ -55699,7 +55679,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5573,
+        "line": 5670,
         "column": 21,
         "function": "resource_rename",
         "kind": "direct",
@@ -55709,7 +55689,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5540,
+        "line": 5637,
         "column": 14,
         "function": "resource_tree",
         "kind": "direct",
@@ -55719,7 +55699,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4697,
+        "line": 4784,
         "column": 13,
         "function": "set_material_fill",
         "kind": "direct",
@@ -55729,7 +55709,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4687,
+        "line": 4774,
         "column": 13,
         "function": "set_material_texture",
         "kind": "direct",
@@ -55739,7 +55719,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4687,
+        "line": 4774,
         "column": 39,
         "function": "set_material_texture",
         "kind": "direct",
@@ -55749,7 +55729,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6787,
+        "line": 6884,
         "column": 22,
         "function": "set_symbol_options",
         "kind": "direct",
@@ -55759,7 +55739,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2515,
+        "line": 2602,
         "column": 8,
         "function": "set_texture_size",
         "kind": "direct",
@@ -55769,7 +55749,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3432,
+        "line": 3519,
         "column": 23,
         "function": "set_worksheet_cell",
         "kind": "direct",
@@ -55791,7 +55771,17 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5670,
+        "line": 1836,
+        "column": 21,
+        "function": "join_walls",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetObjectByUuid"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 5767,
         "column": 16,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -55803,27 +55793,7 @@
     "GetObjectUuid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7277,
-        "column": 27,
-        "function": "_deep_count.walk",
-        "kind": "direct",
-        "sdk_functions": [
-          "GetObjectUuid"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 7281,
-        "column": 31,
-        "function": "_deep_count.walk",
-        "kind": "direct",
-        "sdk_functions": [
-          "GetObjectUuid"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 3909,
+        "line": 3996,
         "column": 16,
         "function": "_layer_uuids",
         "kind": "direct",
@@ -55843,7 +55813,27 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5657,
+        "line": 7394,
+        "column": 18,
+        "function": "_resource_children.identity",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetObjectUuid"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 1845,
+        "column": 26,
+        "function": "join_walls",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetObjectUuid"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 5754,
         "column": 18,
         "function": "resource_create_folder.snap",
         "kind": "direct",
@@ -55853,7 +55843,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4291,
+        "line": 4378,
         "column": 24,
         "function": "send_to_surface",
         "kind": "direct",
@@ -55865,7 +55855,7 @@
     "GetObjectVariableBoolean": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3620,
+        "line": 3707,
         "column": 51,
         "function": "get_georeferencing",
         "kind": "direct",
@@ -55875,7 +55865,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3775,
+        "line": 3862,
         "column": 34,
         "function": "get_object_variable",
         "kind": "direct",
@@ -55897,7 +55887,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3349,
+        "line": 3436,
         "column": 48,
         "function": "create_viewport",
         "kind": "direct",
@@ -55907,7 +55897,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3357,
+        "line": 3444,
         "column": 46,
         "function": "create_viewport",
         "kind": "direct",
@@ -55957,7 +55947,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3774,
+        "line": 3861,
         "column": 34,
         "function": "get_object_variable",
         "kind": "direct",
@@ -55969,7 +55959,7 @@
     "GetObjectVariableReal": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3776,
+        "line": 3863,
         "column": 34,
         "function": "get_object_variable",
         "kind": "direct",
@@ -55979,7 +55969,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3162,
+        "line": 3249,
         "column": 39,
         "function": "get_spaces",
         "kind": "direct",
@@ -55989,7 +55979,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3163,
+        "line": 3250,
         "column": 39,
         "function": "get_spaces",
         "kind": "direct",
@@ -55999,7 +55989,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3342,
+        "line": 3429,
         "column": 35,
         "function": "get_viewports",
         "kind": "direct",
@@ -56011,7 +56001,7 @@
     "GetObjectVariableString": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3777,
+        "line": 3864,
         "column": 34,
         "function": "get_object_variable",
         "kind": "direct",
@@ -56023,7 +56013,7 @@
     "GetOpacity": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2839,
+        "line": 2926,
         "column": 37,
         "function": "get_appearance",
         "kind": "direct",
@@ -56045,7 +56035,7 @@
     "GetParametricRecord": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7266,
+        "line": 7363,
         "column": 36,
         "function": "_pio_name",
         "kind": "direct",
@@ -56055,7 +56045,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3817,
+        "line": 3904,
         "column": 24,
         "function": "_pio_record_name",
         "kind": "direct",
@@ -56065,7 +56055,17 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3296,
+        "line": 4882,
+        "column": 21,
+        "function": "_set_component_resource",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetParametricRecord"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 3383,
         "column": 33,
         "function": "batch_update_plants",
         "kind": "direct",
@@ -56075,7 +56075,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3994,
+        "line": 4081,
         "column": 16,
         "function": "get_pio_parameters",
         "kind": "direct",
@@ -56085,7 +56085,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3215,
+        "line": 3302,
         "column": 29,
         "function": "get_plants",
         "kind": "direct",
@@ -56095,7 +56095,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4014,
+        "line": 4101,
         "column": 16,
         "function": "set_pio_parameter",
         "kind": "direct",
@@ -56105,7 +56105,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3259,
+        "line": 3346,
         "column": 25,
         "function": "update_plant",
         "kind": "direct",
@@ -56117,9 +56117,9 @@
     "GetParent": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7281,
-        "column": 48,
-        "function": "_deep_count.walk",
+        "line": 7416,
+        "column": 38,
+        "function": "_resource_children.owned_id",
         "kind": "direct",
         "sdk_functions": [
           "GetParent"
@@ -56129,7 +56129,7 @@
     "GetPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2833,
+        "line": 2920,
         "column": 23,
         "function": "get_appearance",
         "kind": "direct",
@@ -56151,7 +56151,7 @@
     "GetPluginStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5740,
+        "line": 5837,
         "column": 51,
         "function": "get_object_style",
         "kind": "direct",
@@ -56161,7 +56161,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4027,
+        "line": 4114,
         "column": 15,
         "function": "get_pio_style",
         "kind": "direct",
@@ -56171,7 +56171,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5636,
+        "line": 5733,
         "column": 33,
         "function": "resource_delete",
         "kind": "direct",
@@ -56181,7 +56181,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5749,
+        "line": 5846,
         "column": 73,
         "function": "set_object_style",
         "kind": "direct",
@@ -56193,7 +56193,7 @@
     "GetPolyPt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2158,
+        "line": 2245,
         "column": 13,
         "function": "get_poly_vertices",
         "kind": "direct",
@@ -56205,7 +56205,7 @@
     "GetPolylineVertex": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5323,
+        "line": 5420,
         "column": 38,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56217,7 +56217,7 @@
     "GetProjectElevation": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2129,
+        "line": 2216,
         "column": 47,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -56229,7 +56229,7 @@
     "GetProjectionLocName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2121,
+        "line": 2208,
         "column": 25,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -56239,7 +56239,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2139,
+        "line": 2226,
         "column": 38,
         "function": "get_projection",
         "kind": "direct",
@@ -56251,7 +56251,7 @@
     "GetProjectionProj4": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2141,
+        "line": 2228,
         "column": 39,
         "function": "get_projection",
         "kind": "direct",
@@ -56263,7 +56263,7 @@
     "GetProjectionWKT": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2140,
+        "line": 2227,
         "column": 37,
         "function": "get_projection",
         "kind": "direct",
@@ -56275,7 +56275,7 @@
     "GetRField": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5259,
+        "line": 5356,
         "column": 25,
         "function": "_mrn_is_wrapper",
         "kind": "direct",
@@ -56285,7 +56285,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5282,
+        "line": 5379,
         "column": 24,
         "function": "_mrn_json",
         "kind": "direct",
@@ -56295,7 +56295,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5307,
+        "line": 5404,
         "column": 35,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56305,7 +56305,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5308,
+        "line": 5405,
         "column": 35,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56315,7 +56315,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5309,
+        "line": 5406,
         "column": 34,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56325,7 +56325,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5313,
+        "line": 5410,
         "column": 43,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56335,7 +56335,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5275,
+        "line": 5372,
         "column": 51,
         "function": "_mrn_nodes",
         "kind": "direct",
@@ -56345,7 +56345,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2899,
+        "line": 2986,
         "column": 43,
         "function": "get_object_records",
         "kind": "direct",
@@ -56355,7 +56355,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4001,
+        "line": 4088,
         "column": 44,
         "function": "get_pio_parameters",
         "kind": "direct",
@@ -56365,7 +56365,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3225,
+        "line": 3312,
         "column": 50,
         "function": "get_plants",
         "kind": "direct",
@@ -56375,7 +56375,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2908,
+        "line": 2995,
         "column": 22,
         "function": "get_record_field",
         "kind": "direct",
@@ -56385,7 +56385,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5385,
+        "line": 5482,
         "column": 47,
         "function": "marionette_get_network",
         "kind": "direct",
@@ -56395,7 +56395,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5393,
+        "line": 5490,
         "column": 25,
         "function": "marionette_get_node",
         "kind": "direct",
@@ -56405,7 +56405,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5396,
+        "line": 5493,
         "column": 38,
         "function": "marionette_get_node",
         "kind": "direct",
@@ -56415,7 +56415,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5488,
+        "line": 5585,
         "column": 44,
         "function": "marionette_recalc",
         "kind": "direct",
@@ -56425,7 +56425,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5464,
+        "line": 5561,
         "column": 25,
         "function": "marionette_set_node_code",
         "kind": "direct",
@@ -56435,7 +56435,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5445,
+        "line": 5542,
         "column": 25,
         "function": "marionette_set_wrapper_param",
         "kind": "direct",
@@ -56445,7 +56445,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5705,
+        "line": 5802,
         "column": 25,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56455,7 +56455,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5707,
+        "line": 5804,
         "column": 32,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56465,7 +56465,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5715,
+        "line": 5812,
         "column": 41,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56475,7 +56475,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5716,
+        "line": 5813,
         "column": 35,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56485,7 +56485,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5718,
+        "line": 5815,
         "column": 37,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56495,7 +56495,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5723,
+        "line": 5820,
         "column": 37,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56505,7 +56505,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7423,
+        "line": 7595,
         "column": 24,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -56515,7 +56515,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7423,
+        "line": 7595,
         "column": 64,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -56525,7 +56525,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7424,
+        "line": 7596,
         "column": 21,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -56537,7 +56537,7 @@
     "GetRecord": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2893,
+        "line": 2980,
         "column": 17,
         "function": "get_object_records",
         "kind": "direct",
@@ -56549,7 +56549,7 @@
     "GetSymDefSubType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7313,
+        "line": 7484,
         "column": 45,
         "function": "resource_info",
         "kind": "direct",
@@ -56561,7 +56561,7 @@
     "GetSymLoc": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5310,
+        "line": 5407,
         "column": 37,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56573,7 +56573,7 @@
     "GetSymbolOptionsN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6747,
+        "line": 6844,
         "column": 24,
         "function": "get_symbol_options",
         "kind": "direct",
@@ -56585,7 +56585,7 @@
     "GetSymbolType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6716,
+        "line": 6813,
         "column": 22,
         "function": "get_symbol_type",
         "kind": "direct",
@@ -56597,7 +56597,7 @@
     "GetTexMapRealN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2558,
+        "line": 2645,
         "column": 8,
         "function": "get_texture_mapping",
         "kind": "direct",
@@ -56609,7 +56609,7 @@
     "GetText": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1932,
+        "line": 2019,
         "column": 36,
         "function": "get_text",
         "kind": "direct",
@@ -56621,7 +56621,7 @@
     "GetTextLength": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1945,
+        "line": 2032,
         "column": 8,
         "function": "set_text_size_all",
         "kind": "direct",
@@ -56633,7 +56633,7 @@
     "GetTextureRefN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2539,
+        "line": 2626,
         "column": 10,
         "function": "get_object_texture",
         "kind": "direct",
@@ -56645,7 +56645,7 @@
     "GetTextureShader": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2511,
+        "line": 2598,
         "column": 36,
         "function": "get_texture_info",
         "kind": "direct",
@@ -56657,7 +56657,7 @@
     "GetTextureSize": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2510,
+        "line": 2597,
         "column": 50,
         "function": "get_texture_info",
         "kind": "direct",
@@ -56669,8 +56669,8 @@
     "GetTypeN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7292,
-        "column": 31,
+        "line": 7467,
+        "column": 45,
         "function": "_deep_count",
         "kind": "direct",
         "sdk_functions": [
@@ -56679,17 +56679,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7287,
-        "column": 15,
-        "function": "_deep_count.walk",
-        "kind": "direct",
-        "sdk_functions": [
-          "GetTypeN"
-        ]
-      },
-      {
-        "path": "vwx-plugin/commands.py",
-        "line": 4246,
+        "line": 4333,
         "column": 20,
         "function": "_dtm_on_layer",
         "kind": "direct",
@@ -56709,7 +56699,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5264,
+        "line": 5361,
         "column": 11,
         "function": "_mrn_group",
         "kind": "direct",
@@ -56719,7 +56709,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5319,
+        "line": 5416,
         "column": 15,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -56729,7 +56719,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5275,
+        "line": 5372,
         "column": 11,
         "function": "_mrn_nodes",
         "kind": "direct",
@@ -56739,7 +56729,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5296,
+        "line": 5393,
         "column": 11,
         "function": "_mrn_ports",
         "kind": "direct",
@@ -56749,7 +56739,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7260,
+        "line": 7357,
         "column": 34,
         "function": "_name_obj",
         "kind": "direct",
@@ -56759,7 +56749,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3137,
+        "line": 3224,
         "column": 16,
         "function": "_new_wall_handle",
         "kind": "direct",
@@ -56779,7 +56769,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5525,
+        "line": 5622,
         "column": 12,
         "function": "_res_walk",
         "kind": "direct",
@@ -56789,8 +56779,28 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4790,
-        "column": 11,
+        "line": 7404,
+        "column": 15,
+        "function": "_resource_children",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetTypeN"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 7391,
+        "column": 19,
+        "function": "_resource_children.identity",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetTypeN"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 4879,
+        "column": 21,
         "function": "_set_component_resource",
         "kind": "direct",
         "sdk_functions": [
@@ -56799,7 +56809,17 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4805,
+        "line": 4884,
+        "column": 30,
+        "function": "_set_component_resource",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetTypeN"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 4902,
         "column": 27,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -56829,7 +56849,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3639,
+        "line": 3726,
         "column": 21,
         "function": "apply_texture",
         "kind": "direct",
@@ -56839,7 +56859,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6962,
+        "line": 7059,
         "column": 38,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -56849,7 +56869,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3237,
+        "line": 3324,
         "column": 25,
         "function": "create_plant",
         "kind": "direct",
@@ -56859,7 +56879,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3245,
+        "line": 3332,
         "column": 39,
         "function": "create_plant",
         "kind": "direct",
@@ -56869,7 +56889,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3349,
+        "line": 3436,
         "column": 20,
         "function": "create_viewport",
         "kind": "direct",
@@ -56879,7 +56899,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3357,
+        "line": 3444,
         "column": 21,
         "function": "create_viewport",
         "kind": "direct",
@@ -56889,7 +56909,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3063,
+        "line": 3150,
         "column": 35,
         "function": "create_wall",
         "kind": "direct",
@@ -56899,7 +56919,17 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5691,
+        "line": 1839,
+        "column": 19,
+        "function": "join_walls",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetTypeN"
+        ]
+      },
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 5788,
         "column": 18,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56909,7 +56939,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5732,
+        "line": 5829,
         "column": 19,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -56919,7 +56949,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7414,
+        "line": 7586,
         "column": 21,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -56929,7 +56959,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5671,
+        "line": 5768,
         "column": 15,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -56939,7 +56969,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5675,
+        "line": 5772,
         "column": 31,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -56949,7 +56979,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5613,
+        "line": 5710,
         "column": 43,
         "function": "resource_delete",
         "kind": "direct",
@@ -56959,7 +56989,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7356,
+        "line": 7528,
         "column": 74,
         "function": "resource_import",
         "kind": "direct",
@@ -56969,7 +56999,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7357,
+        "line": 7529,
         "column": 51,
         "function": "resource_import",
         "kind": "direct",
@@ -56979,7 +57009,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7305,
+        "line": 7479,
         "column": 8,
         "function": "resource_info",
         "kind": "direct",
@@ -56989,7 +57019,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7312,
+        "line": 7483,
         "column": 47,
         "function": "resource_info",
         "kind": "direct",
@@ -56999,7 +57029,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7314,
+        "line": 7485,
         "column": 36,
         "function": "resource_info",
         "kind": "direct",
@@ -57009,7 +57039,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5563,
+        "line": 5660,
         "column": 18,
         "function": "resource_move",
         "kind": "direct",
@@ -57019,7 +57049,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5541,
+        "line": 5638,
         "column": 22,
         "function": "resource_tree",
         "kind": "direct",
@@ -57029,7 +57059,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5547,
+        "line": 5644,
         "column": 16,
         "function": "resource_tree",
         "kind": "direct",
@@ -57051,7 +57081,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2070,
+        "line": 2157,
         "column": 8,
         "function": "get_document_units",
         "kind": "direct",
@@ -57063,7 +57093,7 @@
     "GetVPClOvrdCount": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4896,
+        "line": 4993,
         "column": 12,
         "function": "list_vp_class_overrides",
         "kind": "direct",
@@ -57075,7 +57105,7 @@
     "GetVPClOvrdFillBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4839,
+        "line": 4936,
         "column": 36,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57087,7 +57117,7 @@
     "GetVPClOvrdFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4840,
+        "line": 4937,
         "column": 36,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57099,7 +57129,7 @@
     "GetVPClOvrdFillOpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4844,
+        "line": 4941,
         "column": 38,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57111,7 +57141,7 @@
     "GetVPClOvrdFillStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4841,
+        "line": 4938,
         "column": 36,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57123,7 +57153,7 @@
     "GetVPClOvrdName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4901,
+        "line": 4998,
         "column": 32,
         "function": "list_vp_class_overrides",
         "kind": "direct",
@@ -57135,7 +57165,7 @@
     "GetVPClOvrdPenBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4842,
+        "line": 4939,
         "column": 36,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57147,7 +57177,7 @@
     "GetVPClOvrdPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4843,
+        "line": 4940,
         "column": 36,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57159,7 +57189,7 @@
     "GetVPClOvrdPenOpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4845,
+        "line": 4942,
         "column": 38,
         "function": "_vp_cl_props",
         "kind": "direct",
@@ -57171,7 +57201,7 @@
     "GetVPLrOvrdCount": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4933,
+        "line": 5030,
         "column": 12,
         "function": "list_vp_layer_overrides",
         "kind": "direct",
@@ -57183,7 +57213,7 @@
     "GetVPLrOvrdFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4943,
+        "line": 5040,
         "column": 39,
         "function": "list_vp_layer_overrides",
         "kind": "direct",
@@ -57195,7 +57225,7 @@
     "GetVPLrOvrdHandle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4938,
+        "line": 5035,
         "column": 31,
         "function": "list_vp_layer_overrides",
         "kind": "direct",
@@ -57207,7 +57237,7 @@
     "GetVPLrOvrdPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4944,
+        "line": 5041,
         "column": 39,
         "function": "list_vp_layer_overrides",
         "kind": "direct",
@@ -57219,7 +57249,7 @@
     "GetVectorFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4408,
+        "line": 4495,
         "column": 31,
         "function": "get_hatch_on_object",
         "kind": "direct",
@@ -57243,7 +57273,7 @@
     "GetVertNum": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5320,
+        "line": 5417,
         "column": 35,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -57253,7 +57283,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2186,
+        "line": 2273,
         "column": 41,
         "function": "delete_poly_vertex",
         "kind": "direct",
@@ -57263,7 +57293,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2155,
+        "line": 2242,
         "column": 8,
         "function": "get_poly_vertices",
         "kind": "direct",
@@ -57273,7 +57303,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2179,
+        "line": 2266,
         "column": 41,
         "function": "insert_poly_vertex",
         "kind": "direct",
@@ -57285,7 +57315,7 @@
     "GetWSCellFormula": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2289,
+        "line": 2376,
         "column": 39,
         "function": "get_worksheet_cell_formula",
         "kind": "direct",
@@ -57297,7 +57327,7 @@
     "GetWSCellString": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1886,
+        "line": 1973,
         "column": 36,
         "function": "get_worksheet_cell",
         "kind": "direct",
@@ -57309,7 +57339,7 @@
     "GetWSCellValue": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1887,
+        "line": 1974,
         "column": 35,
         "function": "get_worksheet_cell",
         "kind": "direct",
@@ -57319,7 +57349,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3427,
+        "line": 3514,
         "column": 37,
         "function": "get_worksheet_data",
         "kind": "direct",
@@ -57331,7 +57361,7 @@
     "GetWSImage": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2358,
+        "line": 2445,
         "column": 29,
         "function": "place_worksheet_on_drawing",
         "kind": "direct",
@@ -57343,7 +57373,7 @@
     "GetWSRowColumnCount": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1893,
+        "line": 1980,
         "column": 8,
         "function": "get_worksheet_size",
         "kind": "direct",
@@ -57355,7 +57385,7 @@
     "GetWSSubrowCellString": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2282,
+        "line": 2369,
         "column": 20,
         "function": "get_worksheet_subrow_cell",
         "kind": "direct",
@@ -57367,7 +57397,7 @@
     "GetWSSubrowCellValue": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2283,
+        "line": 2370,
         "column": 35,
         "function": "get_worksheet_subrow_cell",
         "kind": "direct",
@@ -57379,7 +57409,7 @@
     "GetWSSubrowCount": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2243,
+        "line": 2330,
         "column": 24,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -57389,7 +57419,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2272,
+        "line": 2359,
         "column": 10,
         "function": "get_worksheet_subrow_count",
         "kind": "direct",
@@ -57399,7 +57429,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2262,
+        "line": 2349,
         "column": 24,
         "function": "set_worksheet_database_row",
         "kind": "direct",
@@ -57411,7 +57441,7 @@
     "GetWallHeight": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3177,
+        "line": 3264,
         "column": 21,
         "function": "get_walls",
         "kind": "direct",
@@ -57420,10 +57450,22 @@
         ]
       }
     ],
+    "GetWallPathType": [
+      {
+        "path": "vwx-plugin/commands.py",
+        "line": 1842,
+        "column": 24,
+        "function": "join_walls",
+        "kind": "direct",
+        "sdk_functions": [
+          "GetWallPathType"
+        ]
+      }
+    ],
     "GetWallStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3071,
+        "line": 3158,
         "column": 16,
         "function": "create_wall",
         "kind": "direct",
@@ -57433,7 +57475,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3079,
+        "line": 3166,
         "column": 15,
         "function": "create_wall",
         "kind": "direct",
@@ -57443,7 +57485,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1807,
+        "line": 1894,
         "column": 37,
         "function": "get_wall_style",
         "kind": "direct",
@@ -57455,7 +57497,7 @@
     "GetWallThickness": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3192,
+        "line": 3279,
         "column": 24,
         "function": "get_walls",
         "kind": "direct",
@@ -57467,7 +57509,7 @@
     "HAreaN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2064,
+        "line": 2151,
         "column": 50,
         "function": "get_object_metrics",
         "kind": "direct",
@@ -57479,7 +57521,7 @@
     "HDuplicate": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6913,
+        "line": 7010,
         "column": 34,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -57489,7 +57531,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6919,
+        "line": 7016,
         "column": 34,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -57499,7 +57541,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2748,
+        "line": 2835,
         "column": 34,
         "function": "create_symbol_from_objects",
         "kind": "direct",
@@ -57519,7 +57561,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5495,
+        "line": 5592,
         "column": 8,
         "function": "marionette_duplicate",
         "kind": "direct",
@@ -57529,7 +57571,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5695,
+        "line": 5792,
         "column": 8,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -57573,7 +57615,7 @@
     "HMove": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3691,
+        "line": 3778,
         "column": 12,
         "function": "align_objects",
         "kind": "direct",
@@ -57583,7 +57625,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3367,
+        "line": 3454,
         "column": 8,
         "function": "create_viewport",
         "kind": "direct",
@@ -57593,7 +57635,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3714,
+        "line": 3801,
         "column": 24,
         "function": "distribute_objects",
         "kind": "direct",
@@ -57603,7 +57645,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3715,
+        "line": 3802,
         "column": 24,
         "function": "distribute_objects",
         "kind": "direct",
@@ -57625,7 +57667,7 @@
     "HMoveBackward": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1987,
+        "line": 2074,
         "column": 36,
         "function": "set_stacking_order",
         "kind": "direct",
@@ -57637,7 +57679,7 @@
     "HMoveForward": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1986,
+        "line": 2073,
         "column": 34,
         "function": "set_stacking_order",
         "kind": "direct",
@@ -57649,7 +57691,7 @@
     "HPerim": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2065,
+        "line": 2152,
         "column": 39,
         "function": "get_object_metrics",
         "kind": "direct",
@@ -57659,7 +57701,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4603,
+        "line": 4690,
         "column": 30,
         "function": "polygon_perimeter",
         "kind": "direct",
@@ -57683,7 +57725,7 @@
     "HScale2D": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2701,
+        "line": 2788,
         "column": 12,
         "function": "place_symbol",
         "kind": "direct",
@@ -57705,7 +57747,7 @@
     "HasPlugin": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4057,
+        "line": 4144,
         "column": 31,
         "function": "has_plugin",
         "kind": "direct",
@@ -57729,7 +57771,7 @@
     "IFC_AttachPset": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2399,
+        "line": 2486,
         "column": 9,
         "function": "ifc_attach_pset",
         "kind": "direct",
@@ -57739,7 +57781,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2484,
+        "line": 2571,
         "column": 16,
         "function": "ifc_bulk_set_pset",
         "kind": "direct",
@@ -57749,7 +57791,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3006,
+        "line": 3093,
         "column": 12,
         "function": "set_ifc_property",
         "kind": "direct",
@@ -57761,7 +57803,7 @@
     "IFC_ClearAllPsets": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2410,
+        "line": 2497,
         "column": 13,
         "function": "ifc_remove_pset",
         "kind": "direct",
@@ -57773,7 +57815,7 @@
     "IFC_ClearPset": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2408,
+        "line": 2495,
         "column": 13,
         "function": "ifc_remove_pset",
         "kind": "direct",
@@ -57785,7 +57827,7 @@
     "IFC_DMAddEntry": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6107,
+        "line": 6204,
         "column": 9,
         "function": "ifc_dm_add_entry",
         "kind": "direct",
@@ -57797,7 +57839,7 @@
     "IFC_DMAddField": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6118,
+        "line": 6215,
         "column": 9,
         "function": "ifc_dm_add_field",
         "kind": "direct",
@@ -57809,7 +57851,7 @@
     "IFC_DMAddPSetFld": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6151,
+        "line": 6248,
         "column": 9,
         "function": "ifc_dm_add_pset_field",
         "kind": "direct",
@@ -57821,7 +57863,7 @@
     "IFC_DMAddPSetInEntry": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6137,
+        "line": 6234,
         "column": 9,
         "function": "ifc_dm_add_pset",
         "kind": "direct",
@@ -57833,7 +57875,7 @@
     "IFC_DMDelPSetFromEnt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6321,
+        "line": 6418,
         "column": 9,
         "function": "ifc_dm_delete_pset",
         "kind": "direct",
@@ -57845,7 +57887,7 @@
     "IFC_DMDeleteEntry": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6306,
+        "line": 6403,
         "column": 9,
         "function": "ifc_dm_delete_entry",
         "kind": "direct",
@@ -57857,7 +57899,7 @@
     "IFC_DMDeleteField": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6313,
+        "line": 6410,
         "column": 9,
         "function": "ifc_dm_delete_field",
         "kind": "direct",
@@ -57869,7 +57911,7 @@
     "IFC_DMDeletePSetFld": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6331,
+        "line": 6428,
         "column": 9,
         "function": "ifc_dm_delete_pset_field",
         "kind": "direct",
@@ -57881,7 +57923,7 @@
     "IFC_DMEnableEntry": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6169,
+        "line": 6266,
         "column": 9,
         "function": "ifc_dm_enable_entry",
         "kind": "direct",
@@ -57893,7 +57935,7 @@
     "IFC_DMEnableObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6161,
+        "line": 6258,
         "column": 9,
         "function": "ifc_dm_enable_object",
         "kind": "direct",
@@ -57905,7 +57947,7 @@
     "IFC_DMEnablePSet": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6177,
+        "line": 6274,
         "column": 9,
         "function": "ifc_dm_enable_pset",
         "kind": "direct",
@@ -57917,7 +57959,7 @@
     "IFC_DMGetEntPSetsCnt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5999,
+        "line": 6096,
         "column": 32,
         "function": "_dm_dump_entry_psets",
         "kind": "direct",
@@ -57929,7 +57971,7 @@
     "IFC_DMGetEntriesCnt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6043,
+        "line": 6140,
         "column": 38,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -57941,7 +57983,7 @@
     "IFC_DMGetEntryName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6046,
+        "line": 6143,
         "column": 63,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -57953,7 +57995,7 @@
     "IFC_DMGetEntryType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6052,
+        "line": 6149,
         "column": 38,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -57965,7 +58007,7 @@
     "IFC_DMGetFieldMap": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6027,
+        "line": 6124,
         "column": 46,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -57977,7 +58019,7 @@
     "IFC_DMGetFieldName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6022,
+        "line": 6119,
         "column": 45,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -57989,7 +58031,7 @@
     "IFC_DMGetFieldType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6028,
+        "line": 6125,
         "column": 46,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -58001,7 +58043,7 @@
     "IFC_DMGetFieldsCount": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6021,
+        "line": 6118,
         "column": 32,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -58013,7 +58055,7 @@
     "IFC_DMGetObjCategory": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6042,
+        "line": 6139,
         "column": 37,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -58025,7 +58067,7 @@
     "IFC_DMGetObjCond": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6037,
+        "line": 6134,
         "column": 33,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -58037,7 +58079,7 @@
     "IFC_DMGetObjNameAt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6087,
+        "line": 6184,
         "column": 57,
         "function": "ifc_dm_dump",
         "kind": "direct",
@@ -58047,7 +58089,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5977,
+        "line": 6074,
         "column": 45,
         "function": "ifc_dm_list_objects",
         "kind": "direct",
@@ -58059,7 +58101,7 @@
     "IFC_DMGetObjectsCnt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6086,
+        "line": 6183,
         "column": 36,
         "function": "ifc_dm_dump",
         "kind": "direct",
@@ -58069,7 +58111,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5976,
+        "line": 6073,
         "column": 32,
         "function": "ifc_dm_list_objects",
         "kind": "direct",
@@ -58081,7 +58123,7 @@
     "IFC_DMGetPSetCond": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6010,
+        "line": 6107,
         "column": 37,
         "function": "_dm_dump_entry_psets",
         "kind": "direct",
@@ -58093,7 +58135,7 @@
     "IFC_DMGetPSetFldMap": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5990,
+        "line": 6087,
         "column": 46,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58105,7 +58147,7 @@
     "IFC_DMGetPSetFldName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5985,
+        "line": 6082,
         "column": 45,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58117,7 +58159,7 @@
     "IFC_DMGetPSetFldType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5991,
+        "line": 6088,
         "column": 46,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58129,7 +58171,7 @@
     "IFC_DMGetPSetFldsCnt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5984,
+        "line": 6081,
         "column": 32,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58141,7 +58183,7 @@
     "IFC_DMGetPSetName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6000,
+        "line": 6097,
         "column": 45,
         "function": "_dm_dump_entry_psets",
         "kind": "direct",
@@ -58153,7 +58195,7 @@
     "IFC_DMIsEntryEnabled": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6056,
+        "line": 6153,
         "column": 42,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -58165,7 +58207,7 @@
     "IFC_DMIsFieldEmpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6031,
+        "line": 6128,
         "column": 43,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -58177,7 +58219,7 @@
     "IFC_DMIsFieldEnabled": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6029,
+        "line": 6126,
         "column": 43,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -58189,7 +58231,7 @@
     "IFC_DMIsFieldOpt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6030,
+        "line": 6127,
         "column": 43,
         "function": "_dm_dump_entry_fields",
         "kind": "direct",
@@ -58201,7 +58243,7 @@
     "IFC_DMIsObjEnabled": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6036,
+        "line": 6133,
         "column": 33,
         "function": "_dm_dump_object",
         "kind": "direct",
@@ -58213,7 +58255,7 @@
     "IFC_DMIsPSetEnabled": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6013,
+        "line": 6110,
         "column": 42,
         "function": "_dm_dump_entry_psets",
         "kind": "direct",
@@ -58225,7 +58267,7 @@
     "IFC_DMIsPSetFldEmpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5994,
+        "line": 6091,
         "column": 43,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58237,7 +58279,7 @@
     "IFC_DMIsPSetFldEnbl": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5992,
+        "line": 6089,
         "column": 43,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58249,7 +58291,7 @@
     "IFC_DMIsPSetFldOpt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5993,
+        "line": 6090,
         "column": 43,
         "function": "_dm_dump_pset_fields",
         "kind": "direct",
@@ -58261,7 +58303,7 @@
     "IFC_DMLoadSettings": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6296,
+        "line": 6393,
         "column": 9,
         "function": "ifc_dm_load",
         "kind": "direct",
@@ -58273,7 +58315,7 @@
     "IFC_DMResToCOBieDef": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6365,
+        "line": 6462,
         "column": 9,
         "function": "ifc_dm_reset_to_cobie_default",
         "kind": "direct",
@@ -58285,7 +58327,7 @@
     "IFC_DMResetToDef": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6354,
+        "line": 6451,
         "column": 9,
         "function": "ifc_dm_reset_to_default",
         "kind": "direct",
@@ -58297,7 +58339,7 @@
     "IFC_DMSaveSettings": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6277,
+        "line": 6374,
         "column": 9,
         "function": "ifc_dm_save",
         "kind": "direct",
@@ -58309,7 +58351,7 @@
     "IFC_DMSetEntryType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6188,
+        "line": 6285,
         "column": 9,
         "function": "ifc_dm_set_entry_type",
         "kind": "direct",
@@ -58321,7 +58363,7 @@
     "IFC_DMSetFieldEmpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6227,
+        "line": 6324,
         "column": 32,
         "function": "ifc_dm_set_field_flags",
         "kind": "direct",
@@ -58333,7 +58375,7 @@
     "IFC_DMSetFieldEnable": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6223,
+        "line": 6320,
         "column": 34,
         "function": "ifc_dm_set_field_flags",
         "kind": "direct",
@@ -58345,7 +58387,7 @@
     "IFC_DMSetFieldMap": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6211,
+        "line": 6308,
         "column": 13,
         "function": "ifc_dm_set_field_map",
         "kind": "direct",
@@ -58357,7 +58399,7 @@
     "IFC_DMSetFieldOpt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6225,
+        "line": 6322,
         "column": 35,
         "function": "ifc_dm_set_field_flags",
         "kind": "direct",
@@ -58369,7 +58411,7 @@
     "IFC_DMSetFieldType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6229,
+        "line": 6326,
         "column": 31,
         "function": "ifc_dm_set_field_flags",
         "kind": "direct",
@@ -58381,7 +58423,7 @@
     "IFC_DMSetObjectCond": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6196,
+        "line": 6293,
         "column": 9,
         "function": "ifc_dm_set_object_condition",
         "kind": "direct",
@@ -58393,7 +58435,7 @@
     "IFC_DMSetPSetFldEmpt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6248,
+        "line": 6345,
         "column": 32,
         "function": "ifc_dm_set_pset_field_flags",
         "kind": "direct",
@@ -58405,7 +58447,7 @@
     "IFC_DMSetPSetFldEnbl": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6244,
+        "line": 6341,
         "column": 34,
         "function": "ifc_dm_set_pset_field_flags",
         "kind": "direct",
@@ -58417,7 +58459,7 @@
     "IFC_DMSetPSetFldMap": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6209,
+        "line": 6306,
         "column": 13,
         "function": "ifc_dm_set_field_map",
         "kind": "direct",
@@ -58429,7 +58471,7 @@
     "IFC_DMSetPSetFldOpt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6246,
+        "line": 6343,
         "column": 35,
         "function": "ifc_dm_set_pset_field_flags",
         "kind": "direct",
@@ -58441,7 +58483,7 @@
     "IFC_DMSetPSetFldType": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6250,
+        "line": 6347,
         "column": 31,
         "function": "ifc_dm_set_pset_field_flags",
         "kind": "direct",
@@ -58453,7 +58495,7 @@
     "IFC_DefPsetAddMember": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2440,
+        "line": 2527,
         "column": 15,
         "function": "ifc_define_pset",
         "kind": "direct",
@@ -58465,7 +58507,7 @@
     "IFC_DefPsetBegin": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2436,
+        "line": 2523,
         "column": 11,
         "function": "ifc_define_pset",
         "kind": "direct",
@@ -58477,7 +58519,7 @@
     "IFC_DefPsetEnd": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2443,
+        "line": 2530,
         "column": 32,
         "function": "ifc_define_pset",
         "kind": "direct",
@@ -58489,7 +58531,7 @@
     "IFC_DefPsetImport": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5847,
+        "line": 5944,
         "column": 28,
         "function": "ifc_import_pset_defs",
         "kind": "resolved_alias",
@@ -58502,7 +58544,7 @@
     "IFC_DefPsetImport2": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5847,
+        "line": 5944,
         "column": 28,
         "function": "ifc_import_pset_defs",
         "kind": "resolved_alias",
@@ -58515,7 +58557,7 @@
     "IFC_ExportNoUI": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3015,
+        "line": 3102,
         "column": 13,
         "function": "export_ifc",
         "kind": "direct",
@@ -58527,7 +58569,7 @@
     "IFC_GetEntityProp": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2451,
+        "line": 2538,
         "column": 22,
         "function": "ifc_get_entity_prop",
         "kind": "direct",
@@ -58539,7 +58581,7 @@
     "IFC_GetIFCEntity": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2968,
+        "line": 3055,
         "column": 21,
         "function": "get_ifc_entity",
         "kind": "direct",
@@ -58549,7 +58591,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2989,
+        "line": 3076,
         "column": 21,
         "function": "get_ifc_properties",
         "kind": "direct",
@@ -58561,7 +58603,7 @@
     "IFC_GetNumPsets2": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2371,
+        "line": 2458,
         "column": 22,
         "function": "ifc_list_psets",
         "kind": "direct",
@@ -58573,7 +58615,7 @@
     "IFC_GetPsetInfoAt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2376,
+        "line": 2463,
         "column": 33,
         "function": "ifc_list_psets",
         "kind": "direct",
@@ -58585,7 +58627,7 @@
     "IFC_GetPsetProp": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2388,
+        "line": 2475,
         "column": 22,
         "function": "ifc_get_pset_prop",
         "kind": "direct",
@@ -58597,7 +58639,7 @@
     "IFC_IsPsetCustom": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5842,
+        "line": 5939,
         "column": 50,
         "function": "ifc_import_pset_defs._snapshot",
         "kind": "direct",
@@ -58607,7 +58649,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5783,
+        "line": 5880,
         "column": 46,
         "function": "ifc_pset_defined",
         "kind": "direct",
@@ -58619,7 +58661,7 @@
     "IFC_IsPsetDefined": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2433,
+        "line": 2520,
         "column": 43,
         "function": "ifc_define_pset",
         "kind": "direct",
@@ -58629,7 +58671,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5841,
+        "line": 5938,
         "column": 50,
         "function": "ifc_import_pset_defs._snapshot",
         "kind": "direct",
@@ -58639,7 +58681,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5782,
+        "line": 5879,
         "column": 46,
         "function": "ifc_pset_defined",
         "kind": "direct",
@@ -58651,7 +58693,7 @@
     "IFC_SetEntityProp": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2461,
+        "line": 2548,
         "column": 9,
         "function": "ifc_set_entity_prop",
         "kind": "direct",
@@ -58663,7 +58705,7 @@
     "IFC_SetIFCEntity": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2480,
+        "line": 2567,
         "column": 16,
         "function": "ifc_bulk_set_pset",
         "kind": "direct",
@@ -58673,7 +58715,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2977,
+        "line": 3064,
         "column": 13,
         "function": "set_ifc_entity",
         "kind": "direct",
@@ -58685,7 +58727,7 @@
     "IFC_SetPsetProp": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2483,
+        "line": 2570,
         "column": 19,
         "function": "ifc_bulk_set_pset",
         "kind": "direct",
@@ -58695,7 +58737,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2485,
+        "line": 2572,
         "column": 19,
         "function": "ifc_bulk_set_pset",
         "kind": "direct",
@@ -58705,7 +58747,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3003,
+        "line": 3090,
         "column": 13,
         "function": "set_ifc_property",
         "kind": "direct",
@@ -58715,7 +58757,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3007,
+        "line": 3094,
         "column": 17,
         "function": "set_ifc_property",
         "kind": "direct",
@@ -58727,7 +58769,7 @@
     "ImportDXFDWGFile": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3526,
+        "line": 3613,
         "column": 15,
         "function": "import_dwg",
         "kind": "direct",
@@ -58739,7 +58781,7 @@
     "ImportImageFile": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3556,
+        "line": 3643,
         "column": 8,
         "function": "import_image",
         "kind": "direct",
@@ -58751,7 +58793,7 @@
     "ImportResToCurFileN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7326,
+        "line": 7498,
         "column": 8,
         "function": "_import_one",
         "kind": "direct",
@@ -58763,7 +58805,7 @@
     "Index2Name": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4808,
+        "line": 4905,
         "column": 64,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -58773,7 +58815,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2541,
+        "line": 2628,
         "column": 11,
         "function": "get_object_texture",
         "kind": "direct",
@@ -58785,7 +58827,7 @@
     "InsertNewComponentN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4738,
+        "line": 4825,
         "column": 13,
         "function": "insert_component",
         "kind": "direct",
@@ -58797,7 +58839,7 @@
     "InsertVertex": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2176,
+        "line": 2263,
         "column": 4,
         "function": "insert_poly_vertex",
         "kind": "direct",
@@ -58809,7 +58851,7 @@
     "InsertWSColumns": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1917,
+        "line": 2004,
         "column": 4,
         "function": "insert_worksheet_columns",
         "kind": "direct",
@@ -58821,7 +58863,7 @@
     "InsertWSRows": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1903,
+        "line": 1990,
         "column": 4,
         "function": "insert_worksheet_rows",
         "kind": "direct",
@@ -58833,7 +58875,7 @@
     "IntersectSolid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4460,
+        "line": 4547,
         "column": 14,
         "function": "_solid_op",
         "kind": "resolved_alias",
@@ -58845,7 +58887,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2617,
+        "line": 2704,
         "column": 17,
         "function": "boolean_operation",
         "kind": "resolved_alias",
@@ -58871,7 +58913,7 @@
     "IsGeoreferenced": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2127,
+        "line": 2214,
         "column": 51,
         "function": "get_georeference_info",
         "kind": "direct",
@@ -58883,7 +58925,7 @@
     "IsMaterialSimple": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4679,
+        "line": 4766,
         "column": 39,
         "function": "get_material_info",
         "kind": "direct",
@@ -58895,7 +58937,7 @@
     "IsPolyClosed": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2162,
+        "line": 2249,
         "column": 41,
         "function": "get_poly_vertices",
         "kind": "direct",
@@ -58905,7 +58947,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2193,
+        "line": 2280,
         "column": 43,
         "function": "set_poly_closed",
         "kind": "direct",
@@ -58917,7 +58959,7 @@
     "IsWSDatabaseRow": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2270,
+        "line": 2357,
         "column": 25,
         "function": "get_worksheet_subrow_count",
         "kind": "direct",
@@ -58929,8 +58971,8 @@
     "JoinWalls": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1782,
-        "column": 9,
+        "line": 1856,
+        "column": 19,
         "function": "join_walls",
         "kind": "direct",
         "sdk_functions": [
@@ -58951,7 +58993,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1794,
+        "line": 1881,
         "column": 46,
         "function": "add_symbol_to_wall",
         "kind": "direct",
@@ -58971,7 +59013,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4178,
+        "line": 4265,
         "column": 25,
         "function": "create_chain_dimension",
         "kind": "direct",
@@ -58981,7 +59023,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4180,
+        "line": 4267,
         "column": 22,
         "function": "create_chain_dimension",
         "kind": "direct",
@@ -58991,7 +59033,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4096,
+        "line": 4183,
         "column": 12,
         "function": "create_linear_dimension",
         "kind": "direct",
@@ -59001,7 +59043,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3242,
+        "line": 3329,
         "column": 21,
         "function": "create_plant",
         "kind": "direct",
@@ -59011,7 +59053,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3244,
+        "line": 3331,
         "column": 16,
         "function": "create_plant",
         "kind": "direct",
@@ -59021,7 +59063,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3150,
+        "line": 3237,
         "column": 12,
         "function": "create_space",
         "kind": "direct",
@@ -59031,7 +59073,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3055,
+        "line": 3142,
         "column": 17,
         "function": "create_wall",
         "kind": "direct",
@@ -59041,7 +59083,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3061,
+        "line": 3148,
         "column": 12,
         "function": "create_wall",
         "kind": "direct",
@@ -59091,7 +59133,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3557,
+        "line": 3644,
         "column": 50,
         "function": "import_image",
         "kind": "direct",
@@ -59101,7 +59143,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2695,
+        "line": 2782,
         "column": 12,
         "function": "place_symbol",
         "kind": "direct",
@@ -59111,7 +59153,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4288,
+        "line": 4375,
         "column": 13,
         "function": "send_to_surface",
         "kind": "direct",
@@ -59159,7 +59201,7 @@
     "LinearDim": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4179,
+        "line": 4266,
         "column": 16,
         "function": "create_chain_dimension",
         "kind": "direct",
@@ -59169,7 +59211,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4093,
+        "line": 4180,
         "column": 12,
         "function": "create_linear_dimension",
         "kind": "direct",
@@ -59215,7 +59257,7 @@
     "MakeModifierClass": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4376,
+        "line": 4463,
         "column": 8,
         "function": "make_site_modifier_class",
         "kind": "direct",
@@ -59227,7 +59269,7 @@
     "MakePolyline": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1976,
+        "line": 2063,
         "column": 26,
         "function": "convert_to_polyline",
         "kind": "direct",
@@ -59239,7 +59281,7 @@
     "Marker": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2600,
+        "line": 2687,
         "column": 4,
         "function": "set_default_marker",
         "kind": "direct",
@@ -59273,7 +59315,7 @@
     "Move3DObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1995,
+        "line": 2082,
         "column": 4,
         "function": "move_object_3d",
         "kind": "direct",
@@ -59297,7 +59339,7 @@
     "Name2Index": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4807,
+        "line": 4904,
         "column": 14,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -59307,7 +59349,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3640,
+        "line": 3727,
         "column": 29,
         "function": "apply_texture",
         "kind": "direct",
@@ -59317,7 +59359,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2529,
+        "line": 2616,
         "column": 14,
         "function": "set_object_texture",
         "kind": "direct",
@@ -59371,7 +59413,7 @@
     "NewField": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2956,
+        "line": 3043,
         "column": 8,
         "function": "create_record_format",
         "kind": "direct",
@@ -59405,7 +59447,7 @@
     "NextObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3912,
+        "line": 3999,
         "column": 12,
         "function": "_layer_uuids",
         "kind": "direct",
@@ -59415,7 +59457,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5266,
+        "line": 5363,
         "column": 13,
         "function": "_mrn_group",
         "kind": "direct",
@@ -59425,7 +59467,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5326,
+        "line": 5423,
         "column": 16,
         "function": "_mrn_node_info",
         "kind": "direct",
@@ -59435,7 +59477,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5277,
+        "line": 5374,
         "column": 13,
         "function": "_mrn_nodes",
         "kind": "direct",
@@ -59445,7 +59487,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5298,
+        "line": 5395,
         "column": 12,
         "function": "_mrn_ports",
         "kind": "direct",
@@ -59455,7 +59497,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5532,
+        "line": 5629,
         "column": 12,
         "function": "_res_walk",
         "kind": "direct",
@@ -59475,7 +59517,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5728,
+        "line": 5825,
         "column": 21,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -59485,7 +59527,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5729,
+        "line": 5826,
         "column": 12,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -59497,7 +59539,7 @@
     "NextSymDef": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5658,
+        "line": 5755,
         "column": 17,
         "function": "resource_create_folder.snap",
         "kind": "direct",
@@ -59507,7 +59549,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5554,
+        "line": 5651,
         "column": 17,
         "function": "resource_tree",
         "kind": "direct",
@@ -59519,7 +59561,7 @@
     "NumFields": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2897,
+        "line": 2984,
         "column": 30,
         "function": "get_object_records",
         "kind": "direct",
@@ -59529,7 +59571,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3997,
+        "line": 4084,
         "column": 27,
         "function": "get_pio_parameters",
         "kind": "direct",
@@ -59539,7 +59581,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3223,
+        "line": 3310,
         "column": 40,
         "function": "get_plants",
         "kind": "direct",
@@ -59549,7 +59591,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2877,
+        "line": 2964,
         "column": 50,
         "function": "get_record_formats",
         "kind": "direct",
@@ -59559,7 +59601,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2883,
+        "line": 2970,
         "column": 58,
         "function": "get_record_formats",
         "kind": "direct",
@@ -59571,7 +59613,7 @@
     "NumRecords": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2891,
+        "line": 2978,
         "column": 12,
         "function": "get_object_records",
         "kind": "direct",
@@ -59583,7 +59625,7 @@
     "NumSelectedObjects": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1861,
+        "line": 1948,
         "column": 40,
         "function": "deselect_by_criteria",
         "kind": "direct",
@@ -59593,7 +59635,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1854,
+        "line": 1941,
         "column": 40,
         "function": "select_by_criteria",
         "kind": "direct",
@@ -59605,7 +59647,7 @@
     "NumVectorFills": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6556,
+        "line": 6653,
         "column": 12,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -59615,7 +59657,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4385,
+        "line": 4472,
         "column": 12,
         "function": "list_hatches",
         "kind": "direct",
@@ -59627,7 +59669,7 @@
     "ObjSurfaceArea": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4501,
+        "line": 4588,
         "column": 33,
         "function": "get_solid_surface_area",
         "kind": "direct",
@@ -59639,7 +59681,7 @@
     "ObjVolume": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4495,
+        "line": 4582,
         "column": 27,
         "function": "get_solid_volume",
         "kind": "direct",
@@ -59651,7 +59693,7 @@
     "OffsetPoly": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4549,
+        "line": 4636,
         "column": 13,
         "function": "offset_polygon",
         "kind": "direct",
@@ -59663,7 +59705,7 @@
     "OpenPDFDocument": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3452,
+        "line": 3539,
         "column": 15,
         "function": "export_pdf",
         "kind": "direct",
@@ -59729,7 +59771,7 @@
     "PenBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2576,
+        "line": 2663,
         "column": 29,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -59741,7 +59783,7 @@
     "PenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2575,
+        "line": 2662,
         "column": 29,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -59753,7 +59795,7 @@
     "PenPatN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2579,
+        "line": 2666,
         "column": 41,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -59765,7 +59807,7 @@
     "PenSize": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2577,
+        "line": 2664,
         "column": 41,
         "function": "set_default_attributes",
         "kind": "direct",
@@ -59777,7 +59819,7 @@
     "PointAlongPoly": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4618,
+        "line": 4705,
         "column": 20,
         "function": "point_along_polygon",
         "kind": "direct",
@@ -59801,7 +59843,7 @@
     "PrevObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4294,
+        "line": 4381,
         "column": 20,
         "function": "send_to_surface",
         "kind": "direct",
@@ -59813,7 +59855,7 @@
     "Projection": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2081,
+        "line": 2168,
         "column": 4,
         "function": "set_projection",
         "kind": "direct",
@@ -59825,7 +59867,7 @@
     "PtInPoly": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4610,
+        "line": 4697,
         "column": 32,
         "function": "point_in_polygon",
         "kind": "direct",
@@ -59837,7 +59879,7 @@
     "RGBToColorIndex": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2570,
+        "line": 2657,
         "column": 12,
         "function": "set_default_attributes.idx",
         "kind": "direct",
@@ -59849,7 +59891,7 @@
     "ReDrawAll": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3693,
+        "line": 3780,
         "column": 4,
         "function": "align_objects",
         "kind": "direct",
@@ -59859,7 +59901,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3717,
+        "line": 3804,
         "column": 4,
         "function": "distribute_objects",
         "kind": "direct",
@@ -59869,7 +59911,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3591,
+        "line": 3678,
         "column": 4,
         "function": "refresh_view",
         "kind": "direct",
@@ -59879,7 +59921,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3571,
+        "line": 3658,
         "column": 22,
         "function": "zoom_to_fit",
         "kind": "direct",
@@ -59889,7 +59931,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3580,
+        "line": 3667,
         "column": 18,
         "function": "zoom_to_selection",
         "kind": "direct",
@@ -59901,7 +59943,7 @@
     "RecalculateWS": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2242,
+        "line": 2329,
         "column": 4,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -59911,7 +59953,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3442,
+        "line": 3529,
         "column": 4,
         "function": "recalculate_worksheet",
         "kind": "direct",
@@ -59921,7 +59963,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2261,
+        "line": 2348,
         "column": 4,
         "function": "set_worksheet_database_row",
         "kind": "direct",
@@ -59955,7 +59997,7 @@
     "RemoveVPClOvrd": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4885,
+        "line": 4982,
         "column": 8,
         "function": "remove_vp_class_override",
         "kind": "direct",
@@ -59979,7 +60021,7 @@
     "ResetObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3922,
+        "line": 4009,
         "column": 9,
         "function": "_apply_pio_params",
         "kind": "direct",
@@ -59989,7 +60031,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4772,
+        "line": 4859,
         "column": 8,
         "function": "_set_component_attr",
         "kind": "direct",
@@ -59999,7 +60041,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4820,
+        "line": 4917,
         "column": 8,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -60009,7 +60051,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3845,
+        "line": 3932,
         "column": 13,
         "function": "baumkataster_set_fields",
         "kind": "direct",
@@ -60019,7 +60061,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4100,
+        "line": 4187,
         "column": 16,
         "function": "create_linear_dimension",
         "kind": "direct",
@@ -60029,7 +60071,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3121,
+        "line": 3208,
         "column": 8,
         "function": "create_wall",
         "kind": "direct",
@@ -60039,7 +60081,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4760,
+        "line": 4847,
         "column": 8,
         "function": "delete_all_components",
         "kind": "direct",
@@ -60049,7 +60091,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4751,
+        "line": 4838,
         "column": 8,
         "function": "delete_component",
         "kind": "direct",
@@ -60059,7 +60101,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4739,
+        "line": 4826,
         "column": 13,
         "function": "insert_component",
         "kind": "direct",
@@ -60069,7 +60111,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7428,
+        "line": 7600,
         "column": 8,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -60079,7 +60121,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4230,
+        "line": 4317,
         "column": 8,
         "function": "set_dim_note",
         "kind": "direct",
@@ -60089,7 +60131,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4221,
+        "line": 4308,
         "column": 8,
         "function": "set_dim_text",
         "kind": "direct",
@@ -60099,7 +60141,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4018,
+        "line": 4105,
         "column": 8,
         "function": "set_pio_parameter",
         "kind": "direct",
@@ -60109,7 +60151,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4039,
+        "line": 4126,
         "column": 8,
         "function": "set_pio_style",
         "kind": "direct",
@@ -60119,7 +60161,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3321,
+        "line": 3408,
         "column": 22,
         "function": "update_site_model",
         "kind": "direct",
@@ -60131,7 +60173,7 @@
     "RevolveWithRail": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2011,
+        "line": 2098,
         "column": 8,
         "function": "revolve_with_rail",
         "kind": "direct",
@@ -60155,7 +60197,7 @@
     "Scale": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5485,
+        "line": 5582,
         "column": 4,
         "function": "marionette_recalc",
         "kind": "direct",
@@ -60167,7 +60209,7 @@
     "SelectObj": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1853,
+        "line": 1940,
         "column": 4,
         "function": "select_by_criteria",
         "kind": "direct",
@@ -60227,7 +60269,7 @@
     "SetClLS": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6434,
+        "line": 6531,
         "column": 8,
         "function": "_set_class_line_style",
         "kind": "direct",
@@ -60239,7 +60281,7 @@
     "SetClLSN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6431,
+        "line": 6528,
         "column": 8,
         "function": "_set_class_line_style",
         "kind": "direct",
@@ -60333,7 +60375,7 @@
     "SetComponentClass": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4771,
+        "line": 4858,
         "column": 8,
         "function": "_set_component_attr",
         "kind": "resolved_alias",
@@ -60348,7 +60390,7 @@
     "SetComponentFunction": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4771,
+        "line": 4858,
         "column": 8,
         "function": "_set_component_attr",
         "kind": "resolved_alias",
@@ -60363,7 +60405,7 @@
     "SetComponentMaterial": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4811,
+        "line": 4908,
         "column": 20,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -60375,7 +60417,7 @@
     "SetComponentName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4771,
+        "line": 4858,
         "column": 8,
         "function": "_set_component_attr",
         "kind": "resolved_alias",
@@ -60390,7 +60432,7 @@
     "SetComponentTexture": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4812,
+        "line": 4909,
         "column": 25,
         "function": "_set_component_resource",
         "kind": "direct",
@@ -60402,7 +60444,7 @@
     "SetComponentWidth": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4771,
+        "line": 4858,
         "column": 8,
         "function": "_set_component_attr",
         "kind": "resolved_alias",
@@ -60415,7 +60457,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3106,
+        "line": 3193,
         "column": 15,
         "function": "create_wall",
         "kind": "direct",
@@ -60427,7 +60469,7 @@
     "SetDimNote": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4229,
+        "line": 4316,
         "column": 8,
         "function": "set_dim_note",
         "kind": "direct",
@@ -60439,7 +60481,7 @@
     "SetDimText": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4220,
+        "line": 4307,
         "column": 8,
         "function": "set_dim_text",
         "kind": "direct",
@@ -60451,7 +60493,7 @@
     "SetDocGeoRefByUsrOrg": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2148,
+        "line": 2235,
         "column": 4,
         "function": "set_document_georef",
         "kind": "direct",
@@ -60461,7 +60503,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3609,
+        "line": 3696,
         "column": 8,
         "function": "set_georeferencing",
         "kind": "direct",
@@ -60473,7 +60515,7 @@
     "SetFPat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2795,
+        "line": 2882,
         "column": 4,
         "function": "set_fill_color",
         "kind": "direct",
@@ -60483,7 +60525,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2817,
+        "line": 2904,
         "column": 4,
         "function": "set_fill_pattern",
         "kind": "direct",
@@ -60493,7 +60535,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3743,
+        "line": 3830,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -60505,7 +60547,7 @@
     "SetFillBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2794,
+        "line": 2881,
         "column": 4,
         "function": "set_fill_color",
         "kind": "direct",
@@ -60515,7 +60557,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3742,
+        "line": 3829,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -60527,7 +60569,7 @@
     "SetFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2793,
+        "line": 2880,
         "column": 4,
         "function": "set_fill_color",
         "kind": "direct",
@@ -60537,7 +60579,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3741,
+        "line": 3828,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -60581,7 +60623,7 @@
     "SetLW": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2811,
+        "line": 2898,
         "column": 4,
         "function": "set_line_weight",
         "kind": "direct",
@@ -60593,7 +60635,7 @@
     "SetLayerElevation": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2037,
+        "line": 2124,
         "column": 4,
         "function": "set_layer_elevation",
         "kind": "direct",
@@ -60605,7 +60647,7 @@
     "SetLightInfo": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1817,
+        "line": 1904,
         "column": 8,
         "function": "create_light",
         "kind": "direct",
@@ -60615,7 +60657,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1826,
+        "line": 1913,
         "column": 4,
         "function": "set_light_info",
         "kind": "direct",
@@ -60627,7 +60669,7 @@
     "SetMaterialFillStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4699,
+        "line": 4786,
         "column": 8,
         "function": "set_material_fill",
         "kind": "direct",
@@ -60639,7 +60681,7 @@
     "SetMaterialTexture": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4689,
+        "line": 4776,
         "column": 8,
         "function": "set_material_texture",
         "kind": "direct",
@@ -60651,7 +60693,7 @@
     "SetName": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3152,
+        "line": 3239,
         "column": 12,
         "function": "create_space",
         "kind": "direct",
@@ -60661,7 +60703,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2500,
+        "line": 2587,
         "column": 22,
         "function": "create_texture",
         "kind": "direct",
@@ -60671,7 +60713,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5497,
+        "line": 5594,
         "column": 22,
         "function": "marionette_duplicate",
         "kind": "direct",
@@ -60681,7 +60723,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5697,
+        "line": 5794,
         "column": 4,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -60701,7 +60743,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2783,
+        "line": 2870,
         "column": 4,
         "function": "rename_symbol",
         "kind": "direct",
@@ -60711,7 +60753,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5672,
+        "line": 5769,
         "column": 16,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -60721,7 +60763,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7347,
+        "line": 7519,
         "column": 8,
         "function": "resource_import",
         "kind": "direct",
@@ -60731,7 +60773,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7355,
+        "line": 7527,
         "column": 12,
         "function": "resource_import",
         "kind": "direct",
@@ -60741,7 +60783,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7360,
+        "line": 7532,
         "column": 12,
         "function": "resource_import",
         "kind": "direct",
@@ -60751,7 +60793,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5575,
+        "line": 5672,
         "column": 4,
         "function": "resource_rename",
         "kind": "direct",
@@ -60773,7 +60815,7 @@
     "SetObjBeginningMarker": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2863,
+        "line": 2950,
         "column": 19,
         "function": "set_marker",
         "kind": "resolved_alias",
@@ -60786,7 +60828,7 @@
     "SetObjEndMarker": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2863,
+        "line": 2950,
         "column": 19,
         "function": "set_marker",
         "kind": "resolved_alias",
@@ -60799,7 +60841,7 @@
     "SetObjMaterialHandle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4665,
+        "line": 4752,
         "column": 8,
         "function": "assign_material",
         "kind": "direct",
@@ -60811,7 +60853,7 @@
     "SetObjectVariableBoolean": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3760,
+        "line": 3847,
         "column": 30,
         "function": "set_object_variable",
         "kind": "direct",
@@ -60833,7 +60875,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3759,
+        "line": 3846,
         "column": 30,
         "function": "set_object_variable",
         "kind": "direct",
@@ -60843,7 +60885,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2826,
+        "line": 2913,
         "column": 22,
         "function": "set_opacity",
         "kind": "direct",
@@ -60855,7 +60897,7 @@
     "SetObjectVariableReal": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4099,
+        "line": 4186,
         "column": 16,
         "function": "create_linear_dimension",
         "kind": "direct",
@@ -60865,7 +60907,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3366,
+        "line": 3453,
         "column": 8,
         "function": "create_viewport",
         "kind": "direct",
@@ -60875,7 +60917,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3761,
+        "line": 3848,
         "column": 30,
         "function": "set_object_variable",
         "kind": "direct",
@@ -60885,7 +60927,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3385,
+        "line": 3472,
         "column": 4,
         "function": "set_viewport_scale",
         "kind": "direct",
@@ -60897,7 +60939,7 @@
     "SetObjectVariableString": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3762,
+        "line": 3849,
         "column": 30,
         "function": "set_object_variable",
         "kind": "direct",
@@ -60909,7 +60951,7 @@
     "SetOpacity": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2824,
+        "line": 2911,
         "column": 8,
         "function": "set_opacity",
         "kind": "direct",
@@ -60921,7 +60963,7 @@
     "SetParent": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5733,
+        "line": 5830,
         "column": 12,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -60931,7 +60973,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5676,
+        "line": 5773,
         "column": 24,
         "function": "resource_create_folder",
         "kind": "direct",
@@ -60941,7 +60983,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5565,
+        "line": 5662,
         "column": 9,
         "function": "resource_move",
         "kind": "direct",
@@ -60963,7 +61005,7 @@
     "SetPenBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2803,
+        "line": 2890,
         "column": 4,
         "function": "set_pen_color",
         "kind": "direct",
@@ -60975,7 +61017,7 @@
     "SetPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2802,
+        "line": 2889,
         "column": 4,
         "function": "set_pen_color",
         "kind": "direct",
@@ -60987,7 +61029,7 @@
     "SetPluginStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5637,
+        "line": 5734,
         "column": 34,
         "function": "resource_delete",
         "kind": "direct",
@@ -60997,7 +61039,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5748,
+        "line": 5845,
         "column": 8,
         "function": "set_object_style",
         "kind": "direct",
@@ -61007,7 +61049,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4038,
+        "line": 4125,
         "column": 8,
         "function": "set_pio_style",
         "kind": "direct",
@@ -61019,7 +61061,7 @@
     "SetPolyClosed": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2192,
+        "line": 2279,
         "column": 4,
         "function": "set_poly_closed",
         "kind": "direct",
@@ -61031,7 +61073,7 @@
     "SetPolyPt": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2168,
+        "line": 2255,
         "column": 4,
         "function": "set_poly_vertex",
         "kind": "direct",
@@ -61043,7 +61085,7 @@
     "SetRField": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3920,
+        "line": 4007,
         "column": 13,
         "function": "_apply_pio_params",
         "kind": "direct",
@@ -61053,7 +61095,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3925,
+        "line": 4012,
         "column": 13,
         "function": "_apply_pio_params",
         "kind": "direct",
@@ -61063,7 +61105,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3299,
+        "line": 3386,
         "column": 12,
         "function": "batch_update_plants",
         "kind": "direct",
@@ -61073,7 +61115,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3840,
+        "line": 3927,
         "column": 12,
         "function": "baumkataster_set_fields",
         "kind": "direct",
@@ -61083,7 +61125,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3849,
+        "line": 3936,
         "column": 12,
         "function": "baumkataster_set_fields",
         "kind": "direct",
@@ -61093,7 +61135,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5463,
+        "line": 5560,
         "column": 4,
         "function": "marionette_set_node_code",
         "kind": "direct",
@@ -61103,7 +61145,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5472,
+        "line": 5569,
         "column": 4,
         "function": "marionette_set_node_name",
         "kind": "direct",
@@ -61113,7 +61155,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5418,
+        "line": 5515,
         "column": 4,
         "function": "marionette_set_node_param",
         "kind": "direct",
@@ -61123,7 +61165,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5442,
+        "line": 5539,
         "column": 4,
         "function": "marionette_set_wrapper_param",
         "kind": "direct",
@@ -61133,7 +61175,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5449,
+        "line": 5546,
         "column": 16,
         "function": "marionette_set_wrapper_param",
         "kind": "direct",
@@ -61143,7 +61185,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5711,
+        "line": 5808,
         "column": 16,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -61153,7 +61195,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5721,
+        "line": 5818,
         "column": 24,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -61163,7 +61205,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5726,
+        "line": 5823,
         "column": 20,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -61173,7 +61215,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5727,
+        "line": 5824,
         "column": 20,
         "function": "marionette_style_clone",
         "kind": "direct",
@@ -61183,7 +61225,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7425,
+        "line": 7597,
         "column": 8,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -61193,7 +61235,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7426,
+        "line": 7598,
         "column": 8,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -61203,7 +61245,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 7427,
+        "line": 7599,
         "column": 8,
         "function": "plant_style_relink",
         "kind": "direct",
@@ -61213,7 +61255,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4017,
+        "line": 4104,
         "column": 8,
         "function": "set_pio_parameter",
         "kind": "direct",
@@ -61223,7 +61265,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2914,
+        "line": 3001,
         "column": 4,
         "function": "set_record_field",
         "kind": "direct",
@@ -61233,7 +61275,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3271,
+        "line": 3358,
         "column": 26,
         "function": "update_plant",
         "kind": "direct",
@@ -61243,7 +61285,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3274,
+        "line": 3361,
         "column": 22,
         "function": "update_plant",
         "kind": "direct",
@@ -61255,7 +61297,7 @@
     "SetRecord": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2921,
+        "line": 3008,
         "column": 4,
         "function": "attach_record",
         "kind": "direct",
@@ -61265,7 +61307,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3835,
+        "line": 3922,
         "column": 8,
         "function": "baumkataster_set_fields",
         "kind": "direct",
@@ -61277,7 +61319,7 @@
     "SetSelect": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3148,
+        "line": 3235,
         "column": 19,
         "function": "create_space",
         "kind": "direct",
@@ -61297,7 +61339,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 5484,
+        "line": 5581,
         "column": 4,
         "function": "marionette_recalc",
         "kind": "direct",
@@ -61329,7 +61371,7 @@
     "SetSymbolOptionsN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6952,
+        "line": 7049,
         "column": 26,
         "function": "create_hybrid_symbol",
         "kind": "direct",
@@ -61339,7 +61381,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6793,
+        "line": 6890,
         "column": 18,
         "function": "set_symbol_options",
         "kind": "direct",
@@ -61351,7 +61393,7 @@
     "SetTexMapRealN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2550,
+        "line": 2637,
         "column": 4,
         "function": "set_texture_mapping",
         "kind": "direct",
@@ -61363,7 +61405,7 @@
     "SetText": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1938,
+        "line": 2025,
         "column": 4,
         "function": "set_text",
         "kind": "direct",
@@ -61375,7 +61417,7 @@
     "SetTextFont": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3730,
+        "line": 3817,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -61387,7 +61429,7 @@
     "SetTextJust": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3737,
+        "line": 3824,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -61399,7 +61441,7 @@
     "SetTextSize": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1946,
+        "line": 2033,
         "column": 4,
         "function": "set_text_size_all",
         "kind": "direct",
@@ -61409,7 +61451,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3732,
+        "line": 3819,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -61421,7 +61463,7 @@
     "SetTextStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3734,
+        "line": 3821,
         "column": 12,
         "function": "set_text_style",
         "kind": "direct",
@@ -61433,7 +61475,7 @@
     "SetTextureRefN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3640,
+        "line": 3727,
         "column": 8,
         "function": "apply_texture",
         "kind": "direct",
@@ -61443,7 +61485,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2531,
+        "line": 2618,
         "column": 4,
         "function": "set_object_texture",
         "kind": "direct",
@@ -61455,7 +61497,7 @@
     "SetTextureSize": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2503,
+        "line": 2590,
         "column": 22,
         "function": "create_texture",
         "kind": "direct",
@@ -61465,7 +61507,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2517,
+        "line": 2604,
         "column": 4,
         "function": "set_texture_size",
         "kind": "direct",
@@ -61477,7 +61519,7 @@
     "SetVPClOvrdFillBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4862,
+        "line": 4959,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61489,7 +61531,7 @@
     "SetVPClOvrdFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4859,
+        "line": 4956,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61501,7 +61543,7 @@
     "SetVPClOvrdFillOpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4870,
+        "line": 4967,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61513,7 +61555,7 @@
     "SetVPClOvrdFillStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4874,
+        "line": 4971,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61525,7 +61567,7 @@
     "SetVPClOvrdPenBack": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4868,
+        "line": 4965,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61537,7 +61579,7 @@
     "SetVPClOvrdPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4865,
+        "line": 4962,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61549,7 +61591,7 @@
     "SetVPClOvrdPenOpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4872,
+        "line": 4969,
         "column": 12,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -61561,7 +61603,7 @@
     "SetVPCropObject": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3394,
+        "line": 3481,
         "column": 8,
         "function": "set_viewport_crop",
         "kind": "direct",
@@ -61573,7 +61615,7 @@
     "SetVPLayerVisibility": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3369,
+        "line": 3456,
         "column": 19,
         "function": "create_viewport",
         "kind": "direct",
@@ -61585,7 +61627,7 @@
     "SetVPLrOvrdFillFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4917,
+        "line": 5014,
         "column": 12,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -61597,7 +61639,7 @@
     "SetVPLrOvrdOpty": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4922,
+        "line": 5019,
         "column": 12,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -61609,7 +61651,7 @@
     "SetVPLrOvrdPenFore": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4920,
+        "line": 5017,
         "column": 12,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -61621,7 +61663,7 @@
     "SetVectorFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4400,
+        "line": 4487,
         "column": 13,
         "function": "set_hatch_on_object",
         "kind": "direct",
@@ -61633,7 +61675,7 @@
     "SetView": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2053,
+        "line": 2140,
         "column": 4,
         "function": "set_view_angles",
         "kind": "direct",
@@ -61645,7 +61687,7 @@
     "SetViewVector": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2652,
+        "line": 2739,
         "column": 8,
         "function": "set_3d_view",
         "kind": "direct",
@@ -61657,7 +61699,7 @@
     "SetWSCellAlignment": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2297,
+        "line": 2384,
         "column": 4,
         "function": "set_worksheet_cell_alignment",
         "kind": "direct",
@@ -61669,7 +61711,7 @@
     "SetWSCellFill": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2330,
+        "line": 2417,
         "column": 4,
         "function": "set_worksheet_cell_fill",
         "kind": "direct",
@@ -61681,7 +61723,7 @@
     "SetWSCellFormula": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2236,
+        "line": 2323,
         "column": 8,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -61691,7 +61733,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2238,
+        "line": 2325,
         "column": 4,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -61701,7 +61743,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2241,
+        "line": 2328,
         "column": 14,
         "function": "create_report_worksheet",
         "kind": "direct",
@@ -61711,7 +61753,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3436,
+        "line": 3523,
         "column": 4,
         "function": "set_worksheet_cell",
         "kind": "direct",
@@ -61721,7 +61763,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2260,
+        "line": 2347,
         "column": 4,
         "function": "set_worksheet_database_row",
         "kind": "direct",
@@ -61733,7 +61775,7 @@
     "SetWSCellNumberFormat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2319,
+        "line": 2406,
         "column": 4,
         "function": "set_worksheet_cell_number_format",
         "kind": "direct",
@@ -61745,7 +61787,7 @@
     "SetWSCellTextFormat": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2308,
+        "line": 2395,
         "column": 4,
         "function": "set_worksheet_cell_text_format",
         "kind": "direct",
@@ -61757,7 +61799,7 @@
     "SetWSColumnWidth": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1925,
+        "line": 2012,
         "column": 4,
         "function": "set_worksheet_column_width",
         "kind": "direct",
@@ -61769,7 +61811,7 @@
     "SetWSRowHeight": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2340,
+        "line": 2427,
         "column": 4,
         "function": "set_worksheet_row_height",
         "kind": "direct",
@@ -61781,7 +61823,7 @@
     "SetWallOverallHeights": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3118,
+        "line": 3205,
         "column": 11,
         "function": "create_wall",
         "kind": "direct",
@@ -61793,7 +61835,7 @@
     "SetWallStyle": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 1800,
+        "line": 1887,
         "column": 9,
         "function": "set_wall_style",
         "kind": "direct",
@@ -61805,7 +61847,7 @@
     "SetZoom": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3585,
+        "line": 3672,
         "column": 8,
         "function": "set_zoom",
         "kind": "direct",
@@ -61841,7 +61883,7 @@
     "SubtractPolygon": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4563,
+        "line": 4650,
         "column": 13,
         "function": "_poly_boolean",
         "kind": "resolved_alias",
@@ -61854,7 +61896,7 @@
     "SubtractSolid": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4460,
+        "line": 4547,
         "column": 14,
         "function": "_solid_op",
         "kind": "resolved_alias",
@@ -61866,7 +61908,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2617,
+        "line": 2704,
         "column": 17,
         "function": "boolean_operation",
         "kind": "resolved_alias",
@@ -61880,7 +61922,7 @@
     "Symbol": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3243,
+        "line": 3330,
         "column": 12,
         "function": "create_plant",
         "kind": "direct",
@@ -61890,7 +61932,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2693,
+        "line": 2780,
         "column": 8,
         "function": "place_symbol",
         "kind": "direct",
@@ -61902,7 +61944,7 @@
     "TextFace": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2594,
+        "line": 2681,
         "column": 34,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -61914,7 +61956,7 @@
     "TextFont": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2590,
+        "line": 2677,
         "column": 8,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -61936,7 +61978,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2592,
+        "line": 2679,
         "column": 43,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -61970,7 +62012,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2591,
+        "line": 2678,
         "column": 34,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -61982,7 +62024,7 @@
     "TextSpace": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2593,
+        "line": 2680,
         "column": 37,
         "function": "set_default_text_style",
         "kind": "direct",
@@ -62006,7 +62048,7 @@
     "UpdateStyledObjects": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4048,
+        "line": 4135,
         "column": 8,
         "function": "update_all_styled_instances",
         "kind": "direct",
@@ -62018,7 +62060,7 @@
     "UpdateVP": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4875,
+        "line": 4972,
         "column": 13,
         "function": "add_vp_class_override",
         "kind": "direct",
@@ -62028,7 +62070,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4923,
+        "line": 5020,
         "column": 13,
         "function": "add_vp_layer_override",
         "kind": "direct",
@@ -62038,7 +62080,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4886,
+        "line": 4983,
         "column": 13,
         "function": "remove_vp_class_override",
         "kind": "direct",
@@ -62048,7 +62090,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3386,
+        "line": 3473,
         "column": 18,
         "function": "set_viewport_scale",
         "kind": "direct",
@@ -62058,7 +62100,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3379,
+        "line": 3466,
         "column": 4,
         "function": "update_viewport",
         "kind": "direct",
@@ -62070,7 +62112,7 @@
     "VWCoordToGeogN": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2109,
+        "line": 2196,
         "column": 8,
         "function": "drawing_to_geo",
         "kind": "direct",
@@ -62082,7 +62124,7 @@
     "VectorFillList": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 6559,
+        "line": 6656,
         "column": 30,
         "function": "create_hatch_definition",
         "kind": "direct",
@@ -62092,7 +62134,7 @@
       },
       {
         "path": "vwx-plugin/commands.py",
-        "line": 4388,
+        "line": 4475,
         "column": 28,
         "function": "list_hatches",
         "kind": "direct",
@@ -62104,7 +62146,7 @@
     "Wall": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 3060,
+        "line": 3147,
         "column": 8,
         "function": "create_wall",
         "kind": "direct",
@@ -62116,7 +62158,7 @@
     "WorksheetMergeCells": [
       {
         "path": "vwx-plugin/commands.py",
-        "line": 2349,
+        "line": 2436,
         "column": 9,
         "function": "merge_worksheet_cells",
         "kind": "direct",
@@ -62198,7 +62240,7 @@
       "resolved": true
     },
     {
-      "line": 4560,
+      "line": 4647,
       "function": "_poly_boolean",
       "expression": "fn_name",
       "candidates": [
@@ -62208,7 +62250,7 @@
       "resolved": true
     },
     {
-      "line": 4768,
+      "line": 4855,
       "function": "_set_component_attr",
       "expression": "fn_name",
       "candidates": [
@@ -62220,7 +62262,7 @@
       "resolved": true
     },
     {
-      "line": 4457,
+      "line": 4544,
       "function": "_solid_op",
       "expression": "fn_name",
       "candidates": [
@@ -62268,7 +62310,16 @@
       "resolved": true
     },
     {
-      "line": 5024,
+      "line": 1852,
+      "function": "join_walls",
+      "expression": "'JoinWalls'",
+      "candidates": [
+        "JoinWalls"
+      ],
+      "resolved": true
+    },
+    {
+      "line": 5121,
       "function": "sdk_list.describe",
       "expression": "name",
       "candidates": [],

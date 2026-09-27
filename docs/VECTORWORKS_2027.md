@@ -21,7 +21,7 @@ repetitions are not extra unique coverage. Eight semantic diagnostic families an
 thirteen characterization families are outside the default selection.
 
 All **3,098 SDK Python names** have generated adapters. Handwritten workflows use
-464 SDK functions; the default MCP inventory is 287 handwritten plus 3,098 SDK
+465 SDK functions; the default MCP inventory is 287 handwritten plus 3,098 SDK
 tools. Current evidence confirms native results for **401 APIs**, with native
 passes for 399; **2,697 remain unconfirmed**. The 5,756 native passing cases,
 26 preserved failures, one uncertain attempt, 70 compatibility passes across
@@ -117,6 +117,10 @@ Native Hardscape, Landscape Area, Plant PIO, wall, roof and site-model workflows
 need separate disposable-file verification. `create_plant` inserts an existing
 symbol; it does not promise a native Plant PIO. A newer SDK or successful build
 does not establish a crash fix, safe geometry or complete regeneration.
+Scoped [architectural cases](NATIVE_ARCHITECTURE_2027.md) verify native Roof Face
+and modern Slab creation/edits and several straight-Wall joins, while retaining
+the roof size-getter discrepancy and a failed near-collinear join. Their local
+operational evidence does not increase the imported SDK coverage counts.
 
 ## Build and generated artifacts
 

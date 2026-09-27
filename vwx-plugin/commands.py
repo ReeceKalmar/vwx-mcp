@@ -1775,12 +1775,99 @@ def create_slab(p):
     return {'status': 'ok', 'object_id': _oid(s)}
 
 def join_walls(p):
-    """Join two walls (T or L join). params: {wall_id_a, wall_id_b, mode(1=T,2=L),
-    capped(bool)}."""
-    a = _h(p.get('wall_id_a')); b = _h(p.get('wall_id_b'))
-    if not a or not b: return {'error': 'wall_id_a and wall_id_b required'}
-    ok = vs.JoinWalls(a, b, a, b, int(p.get('mode', 2)), bool(p.get('capped', True)), False)
-    return {'status': 'ok', 'joined': bool(ok)}
+    """Join two native straight Walls using explicit pick points in document units.
+
+    Both point_a and point_b are required. mode: 1=T, 2=L, 3=X, 4=auto.
+    Success accepts the native operation; geometry requires a later job.
+    """
+    import math
+    import uuid
+
+    out = {'status': 'error', 'joined': None, 'mutation_dispatched': False,
+           'geometry_verified': False, 'wall_id_a': None, 'wall_id_b': None,
+           'phase': 'validate_arguments'}
+    try:
+        if type(p) is not dict:
+            raise ValueError('join_walls parameters must be an object')
+
+        def identifier(value, label):
+            if type(value) is not str:
+                raise ValueError(label + ' must be an object UUID string')
+            try:
+                parsed = uuid.UUID(value)
+            except (ValueError, AttributeError):
+                raise ValueError(label + ' must be a valid object UUID string')
+            if parsed.int == 0:
+                raise ValueError(label + ' must not be the nil UUID')
+            return str(parsed)
+
+        def point(value, label):
+            if type(value) not in (list, tuple) or len(value) != 2:
+                raise ValueError(label + ' must contain exactly two finite numbers')
+            converted = []
+            for coordinate in value:
+                if type(coordinate) not in (int, float):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                try:
+                    number = float(coordinate)
+                except (ValueError, OverflowError):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                if not math.isfinite(number):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                converted.append(number)
+            return tuple(converted)
+
+        out['wall_id_a'] = identifier(p.get('wall_id_a'), 'wall_id_a')
+        out['wall_id_b'] = identifier(p.get('wall_id_b'), 'wall_id_b')
+        if out['wall_id_a'] == out['wall_id_b']:
+            raise ValueError('Two distinct wall UUIDs are required')
+        point_a = point(p.get('point_a'), 'point_a')
+        point_b = point(p.get('point_b'), 'point_b')
+        mode = p.get('mode', 2)
+        if type(mode) is not int or mode not in (1, 2, 3, 4):
+            raise ValueError('mode must be an integer: 1=T, 2=L, 3=X, 4=auto')
+        capped = p.get('capped', True)
+        if type(capped) is not bool:
+            raise ValueError('capped must be a Boolean')
+
+        handles = []
+        for key in ('wall_id_a', 'wall_id_b'):
+            out['phase'] = 'resolve_' + key
+            handle = vs.GetObjectByUuid(out[key])
+            if handle is None:
+                raise ValueError(key + ' does not resolve to a native Wall')
+            kind = vs.GetTypeN(handle)
+            if type(kind) is not int or kind != 68:
+                raise ValueError(key + ' must resolve to a type-68 native Wall')
+            path_type = vs.GetWallPathType(handle)
+            if type(path_type) is not int or path_type != 0:
+                raise ValueError(key + ' must be a straight native Wall (path type 0)')
+            if identifier(vs.GetObjectUuid(handle), key + ' readback') != out[key]:
+                raise ValueError(key + ' UUID readback does not match the requested Wall')
+            handles.append(handle)
+        if handles[0] == handles[1]:
+            raise ValueError('The two UUIDs resolved to the same native Wall')
+
+        out['phase'] = 'JoinWalls_available'
+        if not callable(getattr(vs, 'JoinWalls', None)):
+            raise ValueError('JoinWalls is unavailable in the native host')
+        out['phase'] = 'JoinWalls'
+        out['mutation_dispatched'] = True
+        accepted = vs.JoinWalls(handles[0], handles[1], point_a, point_b, mode, capped, False)
+        if type(accepted) is not bool:
+            return dict(out, code='WALL_JOIN_RESULT', outcome='uncertain',
+                        native_result_type=type(accepted).__name__,
+                        error='JoinWalls returned a non-Boolean result. Do not retry; inspect both Walls.')
+        if not accepted:
+            return dict(out, code='WALL_JOIN_REJECTED', outcome='native_false', joined=False,
+                        error='JoinWalls returned False. The operation was dispatched; inspect both Walls before continuing.')
+        return dict(out, status='ok', outcome='native_accepted', joined=True,
+                    point_a=list(point_a), point_b=list(point_b), mode=mode, capped=capped,
+                    verification='Inspect both Walls in a later menu job; native acceptance does not verify joined geometry.')
+    except Exception as error:
+        return dict(out, code='WALL_JOIN_NATIVE' if out['mutation_dispatched'] else 'WALL_JOIN_ARGUMENT',
+                    outcome='uncertain' if out['mutation_dispatched'] else 'undispatched',
+                    error=str(error) + ('. Do not retry; inspect both Walls.' if out['mutation_dispatched'] else ''))
 
 def add_symbol_to_wall(p):
     """Insert a symbol (door/window) into a wall. params: {wall_id, symbol_name,
@@ -4785,9 +4872,19 @@ def _set_component_resource(p, resource_kind):
         h = _h(p.get('object_id'))
         if not h:
             raise ValueError('Object not found')
-        # The SDK documents walls, slabs/roof faces, roofs and their styles.
-        # Generic PIOs (including Landscape Area/Hardscape) are not this domain.
-        if vs.GetTypeN(h) not in (16, 68, 71, 83):
+        # Preserve the established architectural owner types. Modern Slabs are
+        # type-86 PIOs: SDK GetParametricRecord exposes their hidden parameter
+        # record, not an arbitrary attached record. Native SDK-3200 CreateSlab
+        # identity was measured as type86 + hidden record type48/name "Slab".
+        owner_type = vs.GetTypeN(h)
+        valid_owner = type(owner_type) is int and owner_type in (16, 68, 71, 83)
+        if type(owner_type) is int and owner_type == 86:
+            record = vs.GetParametricRecord(h)
+            if record:
+                record_type = vs.GetTypeN(record)
+                valid_owner = (type(record_type) is int and record_type == 48
+                               and vs.GetName(record) == 'Slab')
+        if not valid_owner:
             raise ValueError('Component resource setter requires a wall, slab, roof or architectural style')
         idx = p.get('index', 1)
         if type(idx) is not int or not 1 <= idx <= 32767:
@@ -7266,33 +7363,110 @@ def _pio_name(h):
     return _safe(lambda: vs.GetName(vs.GetParametricRecord(h)), '')
 
 
+def _resource_children(container, limit, seen=None, budget=None):
+    """Collect at most limit owned immediate children; report complete traversal.
+
+    False continues ForEachObjectInList; True stops it. Validate the first
+    child's parent before entering the native iterator, including empty-group
+    escapes into the parent list. Unknown/cyclic identities fail closed.
+    """
+    import uuid
+    if type(limit) is not int or limit < 0:
+        raise ValueError('Resource child limit must be a nonnegative integer')
+    if limit == 0:
+        return [], False
+    if not container:
+        return [], True
+    seen = set() if seen is None else seen
+    budget = [limit] if budget is None else budget
+    if budget[0] <= 0:
+        return [], False
+    items = []
+    complete = [True]
+
+    def identity(obj):
+        if not obj:
+            return None
+        try:
+            kind = vs.GetTypeN(obj)
+            if type(kind) is not int or kind <= 0:
+                return None
+            raw = vs.GetObjectUuid(obj)
+            if type(raw) is not str:
+                return None
+            value = uuid.UUID(raw)
+            return str(value) if value.int else None
+        except Exception:
+            return None
+
+    try:
+        container_id = identity(container)
+        kind = vs.GetTypeN(container)
+        if container_id is None or kind not in (11, 16, 86):
+            return [], False
+        seen.add(container_id)
+        first = vs.FInSymDef(container) if kind == 16 else vs.FInGroup(container)
+        if not first:
+            return [], True
+
+        def owned_id(obj):
+            obj_id = identity(obj)
+            if obj_id is None or obj_id in seen:
+                return None
+            return obj_id if identity(vs.GetParent(obj)) == container_id else None
+
+        # Never hand an escaped first handle to a native list traversal.
+        if owned_id(first) is None:
+            return [], False
+
+        def collect(obj):
+            if not complete[0] or len(items) >= limit or budget[0] <= 0:
+                complete[0] = False
+                return True
+            budget[0] -= 1  # Rejected/repeated callbacks also consume budget.
+            try:
+                obj_id = owned_id(obj)
+                if obj_id is None:
+                    complete[0] = False
+                    return True
+                seen.add(obj_id)
+                items.append(obj)
+                if len(items) >= limit or budget[0] <= 0:
+                    complete[0] = False
+                    return True
+                return False
+            except Exception:
+                complete[0] = False
+                return True
+
+        vs.ForEachObjectInList(collect, 0, 0, first)
+    except Exception:
+        complete[0] = False
+    return items, complete[0]
+
+
 def _deep_count(h, cap=500, max_depth=4):
-    """Count objects inside a group-like container (PIO, group, symbol def), capped."""
-    c = [0]
+    """Count distinct owned descendants up to one global cap and depth bound.
 
-    # VW2026 trap: FInGroup() of an EMPTY group returns a handle into the PARENT list
-    # (e.g. the layer), so a naive walk counts the whole layer as 'nested'. Count a
-    # child only if its parent really is the container (compared by UUID).
-    def walk(container, first, depth):
-        cu = _safe(lambda: vs.GetObjectUuid(container), None)
-        items = []
-        vs.ForEachObjectInList(lambda o: items.append(o), 0, 0, first)
-        for o in items:
-            pu = _safe(lambda: vs.GetObjectUuid(vs.GetParent(o)), None)
-            if cu is not None and pu != cu:
-                continue
-            c[0] += 1
-            if c[0] >= cap:
-                return
-            if vs.GetTypeN(o) in (11, 86) and depth < max_depth:
-                g = vs.FInGroup(o)
-                if g is not None:
-                    walk(o, g, depth + 1)
-
-    first = vs.FInSymDef(h) if vs.GetTypeN(h) == 16 else vs.FInGroup(h)
-    if first is not None:
-        walk(h, first, 0)
-    return c[0]
+    Immediate children are depth zero, preserving the previous max_depth
+    convention. The integer count is bounded inspection, not proof that every
+    native descendant was examined when a limit or invalid identity stopped it.
+    """
+    if type(cap) is not int or cap < 0 or type(max_depth) is not int or max_depth < 0:
+        raise ValueError('Resource count cap and depth must be nonnegative integers')
+    count = 0
+    seen = set()
+    budget = [cap]
+    pending = [(h, 0)]
+    while pending and count < cap and budget[0] > 0:
+        container, depth = pending.pop()
+        children, _ = _resource_children(container, cap - count, seen, budget)
+        count += len(children)
+        if depth < max_depth and count < cap:
+            for child in reversed(children):
+                if _safe(lambda child=child: vs.GetTypeN(child), 0) in (11, 86):
+                    pending.append((child, depth + 1))
+    return count
 
 
 def resource_info(p):
@@ -7305,15 +7479,13 @@ def resource_info(p):
     t = vs.GetTypeN(h)
     out = {'status': 'ok', 'name': vs.GetName(h), 'type': t}
     if t == 16:
-        inner = []
-        first = vs.FInSymDef(h)
-        if first is not None:
-            vs.ForEachObjectInList(lambda o: inner.append(o), 0, 0, first)
+        inner, contents_complete = _resource_children(h, 500)
         pios = [_pio_name(o) for o in inner if vs.GetTypeN(o) == 86]
         out.update({'subtype': _safe(lambda: vs.GetSymDefSubType(h)),
                     'inner_types': [vs.GetTypeN(o) for o in inner][:50],
                     'inner_pio': pios,
-                    'is_plugin_style': bool(pios) and len(inner) == 1,
+                    'is_plugin_style': contents_complete and bool(pios) and len(inner) == 1,
+                    'contents_complete': contents_complete,
                     'nesting_count': _deep_count(h)})
     return out
 

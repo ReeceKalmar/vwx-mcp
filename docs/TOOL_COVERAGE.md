@@ -1,7 +1,7 @@
 # Vectorworks 2027 API coverage
 
 All **3,098 SDK Python function names have generated adapters and named MCP
-tools**. The handwritten workflows separately use **464 distinct SDK functions
+tools**. The handwritten workflows separately use **465 distinct SDK functions
 (14.98%)**. Generated binding coverage is not native semantic verification.
 
 | Measure | Count | Meaning |
@@ -9,8 +9,8 @@ tools**. The handwritten workflows separately use **464 distinct SDK functions
 | SDK Python functions | 3,098 | Top-level functions in official SDK 3200 / build 882699 `vs.py` |
 | Generated direct SDK bindings | 3,098 | Each `sdk_Name` declares a `vs.Name` binding; runtime compatibility paths are separate |
 | Missing generated bindings | 0 | Every indexed function has an adapter |
-| Handwritten SDK function use | 464 | Distinct calls from reachable handwritten commands/helpers |
-| APIs without a handwritten workflow | 2,634 | Still exposed through generated adapters |
+| Handwritten SDK function use | 465 | Distinct calls from reachable handwritten commands/helpers |
+| APIs without a handwritten workflow | 2,633 | Still exposed through generated adapters |
 | Fake-host baseline dispatched | 2,882 | Runtime adapters reached an injected fake native callable in ordinary menu context |
 | Local compatibility baseline | 1 | ASCII `UprString` executes Python uppercasing without calling native `vs.UprString` |
 | Fake-host baseline rejected | 215 | Context/representation prerequisites rejected before native dispatch |

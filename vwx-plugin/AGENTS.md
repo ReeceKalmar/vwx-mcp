@@ -79,8 +79,25 @@ parameter before reset. `parameter_verified` does not verify regenerated
 geometry; perform that inspection in a later job. Errors report whether a
 mutation was dispatched and never retry it. Hardscape/Landscape Area PIOs need
 a separately verified component-owner workflow; these setters reject generic
-PIO handles. These corrections have offline contract tests, not new native
-workflow certification.
+PIO handles, except the measured modern Slab identity: type86 with its hidden
+`GetParametricRecord` of type48 named exactly `Slab`. An ordinary attached Slab
+record is insufficient. One simple-material assignment on that Slab exception
+passed native resource/name readback and separate unchanged dimensions, center,
+height and path checks. Texture assignment and other assemblies remain separate
+cases. See [architectural workflows](../docs/NATIVE_ARCHITECTURE_2027.md)
+for the bounded native Slab evidence.
+
+`join_walls` requires explicit finite `point_a`/`point_b` picks and two distinct
+type68 objects with `GetWallPathType=0`. Native acceptance is not geometry
+verification; inspect later and retain dispatched failures without retry.
+
+Resource nesting inspection uses a shared callback budget, canonical UUID
+cycle checks and verified immediate parentage before traversal. `nesting_count`
+is a bounded diagnostic, not proof of complete inspection. `resource_info`
+reports `contents_complete` for its immediate list and only infers a plug-in
+style from a complete one-PIO list. A nesting check's `clean` flag cannot certify
+complete geometry. Create/read/import resource lists in the same menu job;
+cross-job list identifiers have returned empty names in the measured host.
 
 ## Checks from repository root
 

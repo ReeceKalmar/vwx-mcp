@@ -29,7 +29,9 @@ repository into its context window.
 ## Investigate a native discrepancy
 
 [NATIVE_REPAIRS_2027.md](NATIVE_REPAIRS_2027.md) is the current investigation
-entry point. [REGRESSION_FINDINGS_2027.md](REGRESSION_FINDINGS_2027.md) retains
+entry point. [Native architectural workflows](NATIVE_ARCHITECTURE_2027.md)
+records scoped Wall join, Roof Face and modern Slab cases and their limitations.
+[REGRESSION_FINDINGS_2027.md](REGRESSION_FINDINGS_2027.md) retains
 earlier failed expectations and fixture corrections. The
 [Vision startup record](VISION_STARTUP_2027.md) describes one installation's
 measured repair, not a universal registry or file-copy procedure.

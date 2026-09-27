@@ -16,9 +16,10 @@ import json
 import time
 import uuid
 import threading
-from typing import AsyncIterator, Dict, Any, List, Optional
+from typing import Annotated, AsyncIterator, Dict, Any, List, Optional
 # Standalone FastMCP, pinned in requirements.txt; see mcp-server/AGENTS.md.
 from fastmcp import FastMCP, Context
+from pydantic import WithJsonSchema
 from background_policy import check as check_background_operation
 import maintenance as bridge_lease
 
@@ -1656,9 +1657,82 @@ def create_slab(ctx: Context, object_id: str) -> str:
     return cmd("create_slab", {"object_id": object_id})
 
 @vtool
-def join_walls(ctx: Context, wall_id_a: str, wall_id_b: str, mode: int = 2, capped: bool = True) -> str:
-    """Join two walls. mode: 1=T-join, 2=L-join."""
-    return cmd("join_walls", {"wall_id_a": wall_id_a, "wall_id_b": wall_id_b, "mode": mode, "capped": capped})
+def join_walls(ctx: Context,
+               wall_id_a: Annotated[Any, WithJsonSchema({'type': 'string', 'format': 'uuid'})],
+               wall_id_b: Annotated[Any, WithJsonSchema({'type': 'string', 'format': 'uuid'})],
+               mode: Annotated[Any, WithJsonSchema({'type': 'integer', 'enum': [1, 2, 3, 4]})] = 2,
+               capped: Annotated[Any, WithJsonSchema({'type': 'boolean'})] = True,
+               point_a: Annotated[Any, WithJsonSchema({'anyOf': [
+                   {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
+                   {'type': 'null'}]})] = None,
+               point_b: Annotated[Any, WithJsonSchema({'anyOf': [
+                   {'type': 'array', 'items': {'type': 'number'}, 'minItems': 2, 'maxItems': 2},
+                   {'type': 'null'}]})] = None) -> str:
+    """Join two straight type-68 Walls using explicit [x,y] picks in document units.
+
+    Both points are required for dispatch; no endpoint is guessed. mode: 1=T,
+    2=L, 3=X, 4=auto. Native acceptance requires geometry readback in a later job.
+    """
+    # FastMCP passes strict=False to Pydantic, overriding Strict* annotations.
+    # Any preserves raw JSON values; schema metadata is informational. Validate
+    # before publication, and again in the host for generic vwx/batch callers.
+    import math
+    import uuid
+
+    out = {'status': 'error', 'joined': None, 'mutation_dispatched': False,
+           'geometry_verified': False, 'wall_id_a': None, 'wall_id_b': None,
+           'phase': 'validate_arguments'}
+    p = {'wall_id_a': wall_id_a, 'wall_id_b': wall_id_b, 'mode': mode,
+         'capped': capped, 'point_a': point_a, 'point_b': point_b}
+    try:
+        def identifier(value, label):
+            if type(value) is not str:
+                raise ValueError(label + ' must be an object UUID string')
+            try:
+                parsed = uuid.UUID(value)
+            except (ValueError, AttributeError):
+                raise ValueError(label + ' must be a valid object UUID string')
+            if parsed.int == 0:
+                raise ValueError(label + ' must not be the nil UUID')
+            return str(parsed)
+
+        def point(value, label):
+            if type(value) not in (list, tuple) or len(value) != 2:
+                raise ValueError(label + ' must contain exactly two finite numbers')
+            converted = []
+            for coordinate in value:
+                if type(coordinate) not in (int, float):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                try:
+                    number = float(coordinate)
+                except (ValueError, OverflowError):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                if not math.isfinite(number):
+                    raise ValueError(label + ' must contain exactly two finite numbers')
+                converted.append(number)
+            return tuple(converted)
+
+        out['wall_id_a'] = identifier(p.get('wall_id_a'), 'wall_id_a')
+        out['wall_id_b'] = identifier(p.get('wall_id_b'), 'wall_id_b')
+        if out['wall_id_a'] == out['wall_id_b']:
+            raise ValueError('Two distinct wall UUIDs are required')
+        point_a = point(p.get('point_a'), 'point_a')
+        point_b = point(p.get('point_b'), 'point_b')
+        mode = p.get('mode', 2)
+        if type(mode) is not int or mode not in (1, 2, 3, 4):
+            raise ValueError('mode must be an integer: 1=T, 2=L, 3=X, 4=auto')
+        capped = p.get('capped', True)
+        if type(capped) is not bool:
+            raise ValueError('capped must be a Boolean')
+
+    except Exception as error:
+        return json.dumps(dict(out, code='WALL_JOIN_ARGUMENT', outcome='undispatched',
+                               error=str(error)), ensure_ascii=False, separators=(',', ':'))
+    # A transport exception may occur after publication; never reclassify it as
+    # an undispatched input error. The transport owns uncertainty reporting.
+    return cmd('join_walls', {'wall_id_a': out['wall_id_a'], 'wall_id_b': out['wall_id_b'],
+                             'mode': mode, 'capped': capped,
+                             'point_a': list(point_a), 'point_b': list(point_b)})
 
 @vtool
 def add_symbol_to_wall(ctx: Context, wall_id: str, symbol_name: str, offset: float = 0,
