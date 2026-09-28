@@ -20,12 +20,13 @@ function, contract or failure being changed.
 
 | Task | Read next | Main implementation |
 |---|---|---|
+| Design queue, checkpoints, recoverable errors and handoffs | [design workflow](docs/DESIGN_WORKFLOW.md) | Existing typed tools; local project register and incident evidence |
 | Client tools, timeout, queue, background policy | [mcp-server/AGENTS.md](mcp-server/AGENTS.md) | `vwx_mcp_server.py`, `background_policy.py`, `maintenance.py` |
 | Handwritten commands, generated SDK execution | [vwx-plugin/AGENTS.md](vwx-plugin/AGENTS.md) | `commands.py`, `sdk_runtime.py`, `sdk_sequences.py`, `vwx_pump.py` |
 | Native scheduling, palette, C++ helpers | [native/AGENTS.md](native/AGENTS.md) | `Source/Bridge/`, `VwxBridge2027.vcxproj` |
 | Fixtures, assertions, fake host, evidence | [tests/AGENTS.md](tests/AGENTS.md) and [testing guide](docs/TESTING_2027.md) | `tests/`, `tools/sdk_*` |
 | Generators, reports, maintenance controller | [tools/AGENTS.md](tools/AGENTS.md) | `tools/` |
-| Build, deployment, client setup | [build/setup](docs/BUILD_SETUP.md) | `tools/build_2027.py`, `bridge/` |
+| Build, deployment, client setup | [build/setup](docs/BUILD_SETUP.md), [deployment context](bridge/AGENTS.md) | `tools/build_2027.py`, `bridge/` |
 | Known native discrepancies | [native investigations](docs/NATIVE_REPAIRS_2027.md) | Narrow compatibility branches plus original evidence |
 
 ## Invariants that apply everywhere
@@ -63,6 +64,16 @@ save/restart work. It requires the one exact saved drawing, a persistent lease,
 verified native save, actual process exit and a verified replacement installation.
 Do not force-kill Vectorworks, discard changes, suppress security prompts, or
 retry a consumed maintenance action. Startup problems may still need the user.
+
+## Keep work moving
+
+Use the [design workflow](docs/DESIGN_WORKFLOW.md) to classify an interruption
+before escalating it. A verified pre-publication pause or correctable rejected
+input does not by itself require a code repair. Continue independent preparation
+while the affected native work is blocked, and distinguish that preparation from
+objects actually authored and saved. Preserve existing holds and consumed
+attempts; updated guidance never grants their release or replay. Hand off one
+concrete problem with its evidence and an explicit return condition.
 
 ## Implementing changes
 

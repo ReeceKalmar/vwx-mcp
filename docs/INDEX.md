@@ -11,7 +11,10 @@ repository into its context window.
 | [README](../README.md) | Project scope, quick start and support boundary |
 | [Agent entry point](../AGENTS.md) | Cross-project invariants and task routing |
 | [Build and setup](BUILD_SETUP.md) | Prerequisites, compiler, first installation, MCP configuration and verification |
+| [Deployment context](../bridge/AGENTS.md) | Installer, deployment verification and optional HTTP launcher rules |
 | [Architecture](ARCHITECTURE.md) | Request lifecycle, files, failure semantics and component relationships |
+| [Design workflow](DESIGN_WORKFLOW.md) | Readiness, one native owner, concise project context, error classification and continued work during recovery |
+| [Native architectural workflows](NATIVE_ARCHITECTURE_2027.md) | Measured Wall, Roof Face and Slab cases and their geometry limits |
 | [Server context](../mcp-server/AGENTS.md) | MCP registration, transport, interaction policy, caching and maintenance leases |
 | [Host Python context](../vwx-plugin/AGENTS.md) | Menu runner, commands, UUIDs, adapter and sequence contracts |
 | [Native context](../native/AGENTS.md) | C++ scheduling, status publication, palette resources and native helper ABI |
@@ -46,6 +49,8 @@ The small evidence records cover [arcs](ARC_REPAIR_2027.json),
 [first maintenance cycle](MAINTENANCE_2027.json),
 [English palette/atomic-status maintenance](MAINTENANCE_ENGLISH_ATOMIC_2027.json),
 and [guarded document transitions](DOCUMENT_TRANSITION_2027.json).
+The separate [Wall construction record](WALL_CREATION_2027.json) verifies its
+scoped native dimension repair.
 They retain their original build/source identities. Do not relabel old evidence
 as a measurement of a new revision.
 
@@ -77,3 +82,13 @@ and are not required for a fresh checkout's offline tests. Published summaries
 retain source hashes and may name those local paths; that is provenance, not a
 promise that raw local artifacts are bundled. Re-running live tests produces
 new evidence and requires a running, authorized host.
+
+## Keep context small and current
+
+Use `VECTORWORKS_2027.md` for readiness, `TESTING_2027.md` for the latest offline
+checkpoint, generated coverage for API counts and `DESIGN_WORKFLOW.md` for
+operating decisions. Read one relevant subsystem guide and the exact contract
+being changed. Historical evidence remains immutable; it is not the next-action
+queue. Private project registers and incident packets stay outside published
+documentation. Their last saved status must be reconciled with fresh local
+observations before native work resumes.

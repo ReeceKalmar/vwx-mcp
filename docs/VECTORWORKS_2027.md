@@ -8,10 +8,24 @@ documentation; subsystem `AGENTS.md` files identify the implementation boundarie
 
 ## Verified status
 
-The document-transition and wall-repair checkpoint passed **924 offline tests**
-with one Windows symlink test skipped; see [testing](TESTING_2027.md).
-The earlier 821-test publication checkpoint remains in
-[publication validation](PUBLICATION_2027.md).
+This is a working bridge for scoped background operations, with incomplete
+verification of full unattended design delivery. Successful API adapters,
+offline tests and individual native objects do not establish a complete
+landscape/house project, its sheets, save/reopen persistence or crash recovery.
+
+| Workflow | Evidence boundary |
+|---|---|
+| Typed background delivery | Verified scoped runs; Vectorworks must stay open, unminimized and unpaused |
+| Native straight Walls, Roof Faces and modern Slabs | [Scoped architectural cases](NATIVE_ARCHITECTURE_2027.md); complex configurations and retained geometry failures remain |
+| Native Hardscape, Landscape Area, Plant and site-model workflows | Complete intended workflows still need separate verification |
+| Unattended multi-project delivery and unexpected-crash recovery | Not yet established; controlled restarts and existing-file transitions are separate capabilities |
+
+The [design workflow](DESIGN_WORKFLOW.md) defines ownership, useful work during
+pauses and focused recovery handoffs. It is operating guidance, not a newly
+implemented automatic recovery service. [Current offline validation](TESTING_2027.md#current-offline-checkpoint)
+owns the latest suite results; [publication history](PUBLICATION_2027.md) and
+the testing guide retain earlier checkpoints.
+
 The native baseline passed the complete default selection:
 **57 routine families / 2,303 unique fixture jobs**.
 [LIVE_DEFAULT_SUITE_2027.json](LIVE_DEFAULT_SUITE_2027.json) independently checks

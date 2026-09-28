@@ -6,10 +6,13 @@ It sends no mouse, keyboard or focus events. This is maintenance of one shared
 Vectorworks process, not independent document sessions for multiple agents.
 
 The implementation builds against SDK 3200 and has offline tests for document
-guards, native callbacks, lease races and controller failures. The clean
+guards, native callbacks, lease races and controller failures. The historical clean
 publication suite ran **821 tests** successfully, with one Windows symlink test
 skipped; see [publication validation](PUBLICATION_2027.md). SDK adapter/index
 freshness, generated reports and static consistency checks also passed.
+The [testing guide](TESTING_2027.md#current-offline-checkpoint) owns the latest
+repository validation; [design recovery](DESIGN_WORKFLOW.md) describes when an
+interruption needs maintenance rather than an ordinary pause.
 
 The first controlled native save/quit/deploy/reopen cycle **passed** on 2026-09-27.
 The [checked audit](MAINTENANCE_2027.json) records native save and quit success

@@ -1,11 +1,36 @@
-# 2027 source publication checkpoint
+# 2027 source publication history
 
 This checkpoint packages the SDK 3200 bridge, generated adapters, offline/live
 test tooling and measured results as a documented Windows source project.
 It does not claim complete SDK functionality or add native passes merely by
 publishing source. See [coverage](TOOL_COVERAGE.md) for the verification limits.
 
-## Cleanup
+## 2026-09-28 context consolidation
+
+Current agent entry points now link to one [offline checkpoint](TESTING_2027.md#current-offline-checkpoint)
+and state the limits of unattended design explicitly. The new
+[design workflow](DESIGN_WORKFLOW.md) separates routine pauses, rejected inputs,
+geometry discrepancies and uncertain execution. It keeps one native owner,
+continues independent preparation during holds and limits repair handoffs to
+concrete problems with a return condition. Existing holds, consumed attempts
+and original evidence remain valid; guidance alone implements no automatic
+recovery or permission to resume an incident.
+
+The roadmap prioritizes complete native design and recovery workflows over an
+undifferentiated API backlog. Repeated current-facing validation prose was
+replaced with links, and deployment/architectural context was added to the
+documentation map. Historical checkpoints and focused subsystem guides remain.
+No runtime source, generated adapter, measured native coverage or deployed
+binary changed. Private project notes and incident frameworks remain outside
+Git. This publication consolidates context; it does not certify a completed
+landscape project or unexpected-crash recovery.
+
+The full offline suite and all four required consistency, report-freshness and
+repository-hygiene checks passed. The testing guide records the exact local
+count, skip, duration and log identity. No empty publishable files or nonignored
+empty directories were found; no historical evidence was deleted for cleanup.
+
+## Initial source cleanup
 
 - Removed the unused modal/TCP bridge scripts and unreachable server TCP and
   watchdog paths. The server accepts only the supported Vectorworks file

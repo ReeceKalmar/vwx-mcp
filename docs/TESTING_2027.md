@@ -14,6 +14,44 @@ Read [VECTORWORKS_2027.md](VECTORWORKS_2027.md) and
 The plan generator prints its own current case, assertion, and API counts;
 these are fixture availability counts, not native passes.
 
+## Current offline checkpoint
+
+The **2026-09-28 repository consolidation** run completed **1,002 tests in
+116.919 seconds: 1,001 passed, zero failures/errors and one skipped**. The skip
+was the Windows symlink-creation privilege test; separate reparse-path checks
+and the compiled offline C++ harnesses passed. The command was
+`python -m unittest discover -s tests -v` using Python 3.12.14 on Windows with
+the configured dependencies and normal temporary-file access. The unchanged
+runtime/test source was commit `061b48431595e94a800d1008f6a3ad529d3b22c7`;
+the consolidation changes documentation only.
+
+The private log is `.audit/context-consolidation-20260928/unittest.log`, SHA-256
+`66e9827fd863e3473acc6d5e1f9dad788c3c5e6e6708caeee5e42dfbb6221795`.
+It is not distributed with the repository. Earlier sandbox temporary-directory
+access failures and the historical Code Integrity block remain separate evidence;
+the successful run does not explain those earlier environmental failures.
+No live Vectorworks call, new SDK semantic result, plug-in build or deployment
+is claimed by this checkpoint. See [publication history](PUBLICATION_2027.md)
+for the consolidation scope and [design readiness](DESIGN_WORKFLOW.md) before
+using test counts to assess a complete design workflow.
+
+The required handwritten tool/tag consistency, SDK test-matrix freshness,
+API-coverage freshness and repository hygiene/link/empty-content checks also
+passed. Generated reports were already current and were not rewritten. These
+local results do not assert that a new GitHub Actions run has completed.
+
+## Earlier checkpoints and native evidence
+
+[Hosted CI for `bad5ce3`](https://github.com/ReeceKalmar/vwx-mcp/actions/runs/36315101072)
+passed on both platforms, discovering 1,002 tests per job: 997 passed and five
+skipped on Windows; 991 passed and eleven skipped on Linux. The Windows
+status-file harness was skipped because the configured MSVC 14.42 compiler was
+unavailable; Linux skipped it because it requires Windows/MSVC. Those hosted
+results did not validate the locally blocked harness at that time. Static
+contracts, repository hygiene, report freshness and offline native-plan
+generation also passed. These are historical hosted results, not a CI result
+for the current consolidation commit.
+
 The document-transition and wall-repair checkpoint passed **924 tests in
 105.137 seconds**, including compiled native harnesses, strict inventory and
 transition guards, delivery-stamp races, terrain/component contracts and wall
@@ -127,6 +165,7 @@ python -m unittest discover -s tests -v
 python tools/pruefe_konsistenz.py .
 python tools/sdk_test_matrix.py --check
 python tools/api_coverage.py --check
+python tools/check_repository.py
 ```
 
 Installing the server requirements enables the real FastMCP registration tests;

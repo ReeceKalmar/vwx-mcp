@@ -100,6 +100,13 @@ the document and a later `vwx("poll", {"cid": ...})` result before deciding on
 new work. Absence of a result file is not proof of failure: the server may have
 already consumed it. Python exception handling cannot catch native crashes.
 
+The transport CID and an agent workflow's one-use attempt are different
+identities. An undispatched transport response does not release a consumed
+workflow claim or an existing incident hold. A saved scheduler queue count can
+also precede the server's removal of the unclaimed request; use fresh validated
+observations for subsequent readiness. See [design recovery](DESIGN_WORKFLOW.md)
+for scoped handoffs and work that can continue independently.
+
 `marionette_recalc` has an attended-only historical early acknowledgment because
 its execution can destroy the Python context; that acknowledgment is not
 completion. Background policy blocks the workflow.

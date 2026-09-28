@@ -11,6 +11,11 @@ application without moving the mouse or taking keyboard focus. Leave
 Vectorworks open and **unminimized**, with its bridge palette open and unpaused.
 Known interactive operations and arbitrary scripts are blocked by default.
 
+The current release supports scoped background design workflows. Complete
+unattended landscape/house delivery and recovery from unexpected crashes have
+not been verified. Use the [design and recovery guide](docs/DESIGN_WORKFLOW.md)
+to keep useful work moving while handling blocked or uncertain operations.
+
 ## Start here
 
 - **Install or build:** [complete setup and build instructions](docs/BUILD_SETUP.md).
@@ -18,6 +23,7 @@ Known interactive operations and arbitrary scripts are blocked by default.
 - **Find a topic:** [documentation index](docs/INDEX.md).
 - **Understand execution:** [architecture](docs/ARCHITECTURE.md) and
   [background operation](docs/BACKGROUND_WORK.md).
+- **Run a design queue:** [ownership, checkpoints and recovery](docs/DESIGN_WORKFLOW.md).
 - **Assess support:** [current 2027 context](docs/VECTORWORKS_2027.md),
   [coverage](docs/TOOL_COVERAGE.md) and [remaining work](docs/ROADMAP.md).
 
@@ -73,9 +79,9 @@ its calls. An uncertain result must not trigger automatic mutation replay.
 
 ## Verification and limitations
 
-The document-transition and wall-repair checkpoint passed **924 offline tests**,
-with one Windows symlink test skipped; see [testing](docs/TESTING_2027.md).
-The recorded native baseline passed all **57 default
+The [testing guide](docs/TESTING_2027.md#current-offline-checkpoint) owns the latest
+offline validation checkpoint and its skips. Offline passes do not certify a
+complete native design workflow. The recorded native baseline passed all **57 default
 live fixture families / 2,303 unique jobs** across resumed batches. The
 [default-suite audit](docs/LIVE_DEFAULT_SUITE_2027.json) retains interruptions
 and repeated attempts. Cleanup validation is recorded in

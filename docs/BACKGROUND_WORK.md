@@ -6,6 +6,13 @@ Vectorworks **unminimized**, and the **VWX Bridge** palette open and unpaused.
 Other applications may cover it. This runs inside the desktop application;
 a headless Vectorworks service is not implemented.
 
+Use the [design workflow](DESIGN_WORKFLOW.md) to distinguish an environmental
+pause, a rejected input and an operation needing reconciliation. A routine
+pre-publication pause can leave independent design preparation moving; an
+outstanding request or existing incident hold must still be resolved before
+new native work. This guidance does not add automatic window restoration or
+queue recovery.
+
 The installed English palette offers **Pause**, **Resume**, **Queued commands**
 and **Last activity**. Add **Show VWX Bridge Palette** from **Extras** to the
 workspace if necessary. The separate Python menu command must retain the exact

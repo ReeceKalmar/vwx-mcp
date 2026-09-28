@@ -2,7 +2,7 @@
 
 All **3,098 SDK Python function names have generated adapters and named MCP
 tools**. The handwritten workflows separately use **465 distinct SDK functions
-(14.98%)**. Generated binding coverage is not native semantic verification.
+(15.01%)**. Generated binding coverage is not native semantic verification.
 
 | Measure | Count | Meaning |
 |---|---:|---|
@@ -123,16 +123,16 @@ imports the real `vs` module or opens a host connection.
 
 ## Test and verification limits
 
-The document-transition and wall-repair checkpoint passed **924 tests in
-105.137 seconds**, with one Windows symlink test skipped (see
-[testing details](TESTING_2027.md)), including all **75,701** current
-adapter-contract cases. These include independent fixture models,
-adversarial response and provenance checks, and strict evidence-import tests.
-Generated-wrapper/report freshness, static API arity and wrapper/tag consistency
-checks also passed. Offline success does not clear the native
+The [current offline checkpoint](TESTING_2027.md#current-offline-checkpoint)
+records the latest repository suite run and its skips. The
+[earlier checkpoints](TESTING_2027.md#earlier-checkpoints-and-native-evidence)
+retain the source-publication and document-transition results as historical
+evidence for their recorded revisions.
+
+The offline suite includes independent fixture models, adversarial response and
+provenance checks, and strict evidence-import tests. Tests use normal temporary
+file access without weakening assertions. Offline success does not clear native
 failures or establish native results for pending APIs.
-The earlier 781-, 793- and 821-test checkpoints remain historical; tests use
-normal temporary-file access without weakening assertions.
 
 Verified [maintenance cycles](MAINTENANCE_2027.md),
 [background delivery](BACKGROUND_DELIVERY_2027.json), and

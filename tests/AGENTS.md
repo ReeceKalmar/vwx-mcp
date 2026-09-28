@@ -44,6 +44,7 @@ and retain both outcomes. Avoid modifying source-hashed fixture files during
 registry tests or live runs. Generated reports need regeneration after their
 source inputs change; empirical records never need rewriting to make tests pass.
 
-The 793-test/57-family checkpoint is evidence for its recorded revision, not a
-permanent expected test count. Consult current logs and generated reports after
-changes. A local pass does not assert that hosted CI or every native API passed.
+Historical test counts are evidence for their recorded revision, not permanent
+expected counts. Use the [current offline checkpoint](../docs/TESTING_2027.md#current-offline-checkpoint),
+current logs and generated reports after changes. A local pass does not assert
+that hosted CI or every native API passed.

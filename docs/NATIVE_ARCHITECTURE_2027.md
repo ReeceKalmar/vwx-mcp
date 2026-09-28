@@ -188,13 +188,13 @@ readback matched; component width, elevation, 3D dimensions, center and original
 path remained unchanged. This verifies resource assignment for that one Slab,
 not the material's rendered appearance, texture assignment or saved persistence.
 
-## Offline validation checkpoint
+## Historical offline validation checkpoints
 
 The recorded full discovery run reported 981 test cases: **979 passed, one skipped,
 and one was blocked from execution**. Windows Code Integrity event 3077 rejected
 the freshly compiled status-file harness executable before its process started.
-That environmental block remains unresolved; the run is not an all-tests-pass
-result, and no policy bypass was used. The changed Python behavior also passed
+That environmental block was unresolved at this checkpoint; the run is not an
+all-tests-pass result, and no policy bypass was used. The changed Python behavior also passed
 57 focused tests. Native C++ was unchanged in that
 checkpoint.
 
@@ -204,14 +204,10 @@ previously captured six native roof boundary polygons, independently reproducing
 their volume, centroid, extents and closed edge incidence. This offline
 reassessment makes no new native calls or combined full-suite rerun claim.
 
-[Hosted CI for `bad5ce3`](https://github.com/ReeceKalmar/vwx-mcp/actions/runs/36315101072)
-subsequently passed on both platforms, discovering 1,002 tests per job:
-997 passed and five skipped on Windows; 991 passed and eleven skipped on Linux.
-The Windows status-file harness was skipped because the configured MSVC 14.42
-compiler was unavailable; Linux skipped it because it requires Windows/MSVC.
-Hosted success therefore does not resolve or validate the locally blocked
-status-file harness. Static contracts, repository hygiene, report freshness and
-offline native-plan generation also passed in both jobs.
+The [testing guide](TESTING_2027.md#earlier-checkpoints-and-native-evidence)
+records the subsequent hosted results and their harness skips. It also owns the
+[latest local checkpoint](TESTING_2027.md#current-offline-checkpoint). Later passes
+do not erase the original Code Integrity block or add native geometry evidence.
 
 ## Provenance and delivery
 
