@@ -130,16 +130,26 @@ class ProjectSessionTests(unittest.TestCase):
 
     def test_unreadable_lease_path_never_looks_like_an_absent_owner(self):
         self.acquire()
-        target = self.base / PROJECT.LEASE_FILE
+        # The publication gate resolves the installation path. Hosted Windows
+        # TEMP can use an 8.3 alias, so match the same file after normalization
+        # instead of silently leaving its long-path spelling unpatched.
+        target = (self.base / PROJECT.LEASE_FILE).resolve()
+        lease_paths = {self.base / PROJECT.LEASE_FILE, target,
+                       self.base.resolve() / PROJECT.LEASE_FILE}
         before = target.read_bytes()
         actual_lstat = Path.lstat
+        denied_paths = []
         def denied(path):
-            if path == target:
+            if path in lease_paths:
+                denied_paths.append(path)
                 raise PermissionError('lease metadata inaccessible')
             return actual_lstat(path)
         with patch.object(Path, 'lstat', denied):
             for action in (self.status, self.release, self.acquire, self.publish):
-                self.error('VWX_PROJECT_STATE', action)
+                with self.subTest(action=action.__name__):
+                    attempts = len(denied_paths)
+                    self.error('VWX_PROJECT_STATE', action)
+                    self.assertGreater(len(denied_paths), attempts)
         self.assertEqual(target.read_bytes(), before)
         self.assertEqual(list((self.ipc / 'jobs').iterdir()), [])
 

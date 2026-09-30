@@ -38,6 +38,13 @@ complete rerun above passed. Windows temporary-file ACL restrictions required
 normal temporary-file access for filesystem tests; assertions were not weakened.
 Logs remain local under `.audit/landscape-complete-unittest*.log`.
 
+The first hosted run passed Linux and found one Windows-only test-fixture
+failure: the unreadable-lease fault injection compared an 8.3 temporary path
+with the publication gate's resolved long path, so the injected failure never
+ran. The fixture now matches both spellings and asserts that each operation
+actually encounters the injected denial. All 22 ownership tests passed after
+this correction; production ownership behavior is unchanged.
+
 No native host operation, deployment or installed-file replacement was performed
 for this update. The installed Python bridge was detected as older; install all
 eleven Python/data companions together. The native binary sources are unchanged.
