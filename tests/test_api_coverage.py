@@ -1,6 +1,7 @@
 """Coverage must count implementations, not index entries or arbitrary scripts."""
 import importlib.util
 import hashlib
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -184,20 +185,45 @@ def sdk_Absolute(p):
                          counts['generated_mock_compatibility'], 3098)
         self.assertLess(counts['handwritten_sdk_functions'], counts['generated_sdk_adapters'])
         self.assertGreater(counts['generated_mock_rejected'], 0)
+        self.assertEqual(report['default_mcp_toolset'], 'landscape')
+        self.assertEqual(counts['handwritten_mcp_tools'], 294)
+        self.assertEqual(counts['handwritten_mcp_tools_default'], 257)
+        self.assertEqual(counts['generated_mcp_tools_default'], 0)
         self.assertEqual(counts['total_mcp_tools_default'],
-                         counts['handwritten_mcp_tools'] + counts['generated_mcp_tools_default'])
+                         counts['handwritten_mcp_tools_default'] + counts['generated_mcp_tools_default'])
+        self.assertEqual(counts['generated_mcp_tools_full'], 3098)
+        self.assertEqual(counts['total_mcp_tools_full'],
+                         counts['handwritten_mcp_tools'] + counts['generated_mcp_tools_full'])
         self.assertEqual(counts['total_public_dispatcher_commands'],
                          counts['handwritten_public_dispatcher_verbs'] + counts['generated_public_dispatcher_commands'])
         self.assertEqual(counts['live_fixtures_pending'] + counts['sdk_functions_observed_live'], 3098)
         self.assertEqual(counts['full_semantics_verified_functions'], 0)
         self.assertEqual(report['invalid_generated_bindings'], [])
         self.assertEqual(report['missing_tool_targets'], [])
+        self.assertEqual(report['pump_protocol_envelopes'], ['project_execute'])
+        self.assertEqual(report['handwritten_explicit_tools']['project_execute'], ['project_execute'])
         dispatched = set(report['generated_mock_dispatched_functions'])
         rejected = set(report['generated_mock_rejected_functions'])
         compatibility = set(report['generated_mock_compatibility_functions'])
         self.assertFalse(dispatched & rejected)
         self.assertFalse(compatibility & (dispatched | rejected))
         self.assertEqual(dispatched | rejected | compatibility, set(report['generated_sdk_bindings']))
+
+    def test_published_tool_inventory_ignores_client_environment_overrides(self):
+        tree = COVERAGE.ast.parse((ROOT / COVERAGE.SERVER).read_text(encoding='utf-8-sig'))
+        tools = [node.name for node in tree.body
+                 if isinstance(node, (COVERAGE.ast.FunctionDef, COVERAGE.ast.AsyncFunctionDef))
+                 and COVERAGE.is_vtool(node)]
+        with patch.dict(os.environ, VWX_TOOLSET='full', VWX_SDK_TOOLS='1'):
+            inventory = COVERAGE.mcp_inventory(ROOT, tools, 3098)
+        self.assertEqual(inventory, {
+            'default_toolset': 'landscape',
+            'handwritten_mcp_tools_default': 257,
+            'generated_mcp_tools_default': 0,
+            'total_mcp_tools_default': 257,
+            'generated_mcp_tools_full': 3098,
+            'total_mcp_tools_full': 3392,
+        })
 
     def test_report_keeps_unknown_and_compatibility_results_out_of_native_counts(self):
         matrix = COVERAGE.mock_matrix(ROOT)
@@ -224,26 +250,29 @@ def sdk_Absolute(p):
         self.assertEqual(report['counts']['live_cases_uncertain'], 1)
         self.assertEqual(report['counts']['compatibility_cases_passed'], 1)
 
-    def test_sequence_runner_changes_invalidate_report_provenance(self):
-        source = 'vwx-plugin/sdk_sequences.py'
-        path = ROOT / source
+    def test_sequence_runner_and_toolset_changes_invalidate_report_provenance(self):
         original_read = Path.read_bytes
-        contents = original_read(path)
         report = COVERAGE.build_report(ROOT)
-        self.assertEqual(report['source_sha256'][source], hashlib.sha256(contents).hexdigest())
         self.assertNotIn('vwx-plugin/sdk_sequence.py', report['source_sha256'])
+        for source in ('vwx-plugin/sdk_sequences.py', 'mcp-server/tool_tags.py',
+                       'vwx-plugin/project_guard.py', 'vwx-plugin/landscape_takeoff.py',
+                       'mcp-server/project_session.py', 'mcp-server/discovery.py'):
+            with self.subTest(source=source):
+                path = ROOT / source
+                contents = original_read(path)
+                self.assertEqual(report['source_sha256'][source], hashlib.sha256(contents).hexdigest())
+                changed_contents = contents + b'\n# simulated source change\n'
 
-        changed_contents = contents + b'\n# simulated sequence-runner change\n'
-        def changed_read(candidate):
-            return changed_contents if candidate == path else original_read(candidate)
+                def changed_read(candidate):
+                    return changed_contents if candidate == path else original_read(candidate)
 
-        # Simulate a changed runner without modifying the shared working tree.
-        with patch.object(Path, 'read_bytes', changed_read):
-            changed_report = COVERAGE.build_report(ROOT)
-        self.assertEqual(changed_report['source_sha256'][source],
-                         hashlib.sha256(changed_contents).hexdigest())
-        self.assertNotEqual(report['source_sha256'], changed_report['source_sha256'])
-        self.assertEqual(report['counts'], changed_report['counts'])
+                # Simulate source changes without modifying the shared working tree.
+                with patch.object(Path, 'read_bytes', changed_read):
+                    changed_report = COVERAGE.build_report(ROOT)
+                self.assertEqual(changed_report['source_sha256'][source],
+                                 hashlib.sha256(changed_contents).hexdigest())
+                self.assertNotEqual(report['source_sha256'], changed_report['source_sha256'])
+                self.assertEqual(report['counts'], changed_report['counts'])
 
 
 if __name__ == '__main__':

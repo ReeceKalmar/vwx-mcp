@@ -1,26 +1,30 @@
 # Vectorworks 2027 API coverage
 
-All **3,098 SDK Python function names have generated adapters and named MCP
-tools**. The handwritten workflows separately use **463 distinct SDK functions
-(14.95%)**. Generated binding coverage is not native semantic verification.
+The default **landscape** toolset exposes **257 handwritten MCP tools**. All
+**3,098 SDK Python function names have generated adapters**; their named MCP
+tools are available through the opt-in full/SDK profiles. The handwritten
+workflows separately use **469 distinct SDK functions (15.14%)**. Generated
+binding coverage is not native semantic verification.
 
 | Measure | Count | Meaning |
 |---|---:|---|
 | SDK Python functions | 3,098 | Top-level functions in official SDK 3200 / build 882699 `vs.py` |
 | Generated direct SDK bindings | 3,098 | Each `sdk_Name` declares a `vs.Name` binding; runtime compatibility paths are separate |
 | Missing generated bindings | 0 | Every indexed function has an adapter |
-| Handwritten SDK function use | 463 | Distinct calls from reachable handwritten commands/helpers |
-| APIs without a handwritten workflow | 2,635 | Still exposed through generated adapters |
+| Handwritten SDK function use | 469 | Distinct calls from reachable handwritten commands/helpers |
+| APIs without a handwritten workflow | 2,629 | Still available through generated adapters |
 | Fake-host baseline dispatched | 2,882 | Runtime adapters reached an injected fake native callable in ordinary menu context |
 | Local compatibility baseline | 1 | ASCII `UprString` executes Python uppercasing without calling native `vs.UprString` |
 | Fake-host baseline rejected | 215 | Context/representation prerequisites rejected before native dispatch |
 | Restrictions after sequence/force validation | 174 | 173 APIs have no supported workflow; `SetControlData` requires its implemented dialog-handler route |
-| Handwritten MCP tools | 287 | `@vtool` registrations, including SDK discovery/call/sequence helpers |
-| Named SDK MCP tools by default | 3,098 | Controlled by `VWX_SDK_TOOLS` and visibility presets |
-| Total MCP tools by default | 3,385 | Handwritten plus generated registrations |
-| Handwritten public dispatcher verbs | 362 | Public functions in `commands.py` |
+| Handwritten MCP tools, all profiles | 294 | `@vtool` registrations, including SDK discovery/call/sequence helpers |
+| Handwritten MCP tools by default | 257 | Landscape preset; IFC-specific tools are hidden |
+| Named SDK MCP tools by default | 0 | Named registrations are omitted; SDK discovery/call/sequence helpers remain available |
+| Total MCP tools by default | 257 | Published landscape startup defaults, before client environment overrides |
+| Total MCP tools in full profile | 3,392 | 294 handwritten plus 3,098 named SDK tools when generated registration is enabled |
+| Handwritten public dispatcher verbs | 367 | Public functions in `commands.py` |
 | Generated dispatcher commands | 3,098 | Named `sdk_Name` routes |
-| Total public dispatcher commands | 3,460 | Handwritten plus generated commands |
+| Total public dispatcher commands | 3,465 | Handwritten plus generated commands |
 | Host adapter contract checks | 75,700 | Passed across all 3,098 API names under the recorded earlier source hashes; no native target calls |
 | Current offline adapter contract checks | 75,701 | Adds the ASCII-workaround constraint; not repeated in the host |
 | Planned fixture jobs | 3,362 | 2,439 native cases, three local compatibility cases, 47 conditional compatibility cases, 873 characterization observations |
@@ -46,7 +50,8 @@ supported workflow. Background mode separately blocks interactive operations.
 See [SDK_ADAPTERS_2027.md](SDK_ADAPTERS_2027.md) for invocation contracts.
 
 Native fixture work is recorded separately in [LIVE_SDK_2027.json](LIVE_SDK_2027.json).
-The table is the current 2026-09-27 aggregate. It retains the earlier typed-MCP
+Native figures retain the 2026-09-27 aggregate; changing tool visibility adds no
+native evidence. It retains the earlier typed-MCP
 design series of 139 fixture jobs covering 104 APIs, all passed. The expanded
 suite's [run report](REGRESSION_RESULTS_2027.json) audits 141 saved run plans,
 including one missing result after a blocked provenance prelude. There are
@@ -123,15 +128,15 @@ imports the real `vs` module or opens a host connection.
 
 ## Test and verification limits
 
-The final publication run passed **821 tests in 91.918 seconds**, with one Windows
-symlink test skipped (see [publication details](PUBLICATION_2027.md)), including
+The landscape checkpoint completed **948 tests in 101.853 seconds: 947 passed,
+one Windows symlink test skipped** (see [publication details](PUBLICATION_2027.md)), including
 all **75,701** current
 adapter-contract cases. These include independent fixture models,
 adversarial response and provenance checks, and strict evidence-import tests.
 Generated-wrapper/report freshness, static API arity and wrapper/tag consistency
 checks also passed. Offline success does not clear the native
 failures or establish native results for pending APIs.
-The earlier 781- and 793-test checkpoints remain historical; publication checks
+The earlier 781-, 793- and 821-test checkpoints remain historical; publication checks
 used normal temporary-file access without weakening assertions.
 
 Verified [maintenance cycles](MAINTENANCE_2027.md),

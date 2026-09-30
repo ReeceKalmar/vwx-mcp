@@ -118,12 +118,13 @@ class PresenceExecutionTests(unittest.TestCase):
         source_plugin.mkdir(parents=True)
         self.plugin = self.directory / 'installed'
         self.plugin.mkdir()
-        for filename in ('commands.py', 'sdk_runtime.py', 'sdk_catalog.json'):
+        for filename in PRESENCE.PYTHON_FILES:
             data = ('offline source: ' + filename).encode('utf-8')
             (source_plugin / filename).write_bytes(data)
             (self.plugin / filename).write_bytes(data)
         self.names = ['Abs', 'Arc', 'Text']
         (source_plugin / 'vs_index.json').write_text(json.dumps(dict.fromkeys(self.names, {})), encoding='utf-8')
+        (self.plugin / 'vs_index.json').write_bytes((source_plugin / 'vs_index.json').read_bytes())
         self.entries = [{'name': 'Abs', 'host_callable': True}, {'name': 'Arc', 'host_callable': False},
                         {'name': 'Text', 'host_callable': None, 'host_inspection_error': 'lookup unavailable'}]
         self.output = self.directory / 'observations'
@@ -258,6 +259,22 @@ class PresenceExecutionTests(unittest.TestCase):
         self.transport_factory.assert_not_called()
         self.settle.assert_not_awaited()
         self.assertFalse((self.output / 'intent.json').exists())
+
+    def test_landscape_companion_drift_prevents_host_connection(self):
+        for name in ('project_guard.py', 'landscape_takeoff.py'):
+            with self.subTest(name=name):
+                self.output = self.directory / ('drift-' + name)
+                path = self.plugin / name
+                original = path.read_bytes()
+                path.write_bytes(b'outdated companion')
+                try:
+                    with self.assertRaisesRegex(ValueError, 'Deploy matching'):
+                        self.execute()
+                finally:
+                    path.write_bytes(original)
+                self.client_factory.assert_not_called()
+                self.transport_factory.assert_not_called()
+                self.assertFalse((self.output / 'intent.json').exists())
 
 
 if __name__ == '__main__':

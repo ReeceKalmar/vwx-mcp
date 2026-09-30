@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import threading
 import time
+from types import SimpleNamespace
 
 
 # Also works when maintenance is loaded by an absolute path from a standalone
@@ -32,6 +33,19 @@ PUBLICATIONS_DIR = 'bridge.publications'
 NATIVE_ACTIONS = frozenset({'status', 'save', 'quit'})
 _THREAD_LOCKS = {}
 _LOCKS_LOCK = threading.Lock()
+_PROJECT_MODULE = None
+
+
+def project_module():
+    """Load the same contract when called by the server or a standalone tool."""
+    global _PROJECT_MODULE
+    if _PROJECT_MODULE is None:
+        spec = importlib.util.spec_from_file_location(
+            'maintenance_project_session', Path(__file__).with_name('project_session.py'))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _PROJECT_MODULE = module
+    return _PROJECT_MODULE
 
 
 class MaintenanceError(Exception):
@@ -184,6 +198,12 @@ def _readiness(base, *, now=None, max_age=8.0):
 def acquire(plugin_dir, token):
     digest = _token_hash(token)
     with publish_gate(plugin_dir) as base:
+        project = project_module()
+        try:
+            if project.guard.read_lease(base) is not None:
+                raise MaintenanceError('VWX_PROJECT_HELD', 'A project lease owns native access; maintenance cannot acquire it')
+        except project.ProjectError as error:
+            raise MaintenanceError(error.code, str(error)) from error
         if _read_lease(base) is not None:
             raise MaintenanceError('VWX_MAINTENANCE_HELD', 'A maintenance lease already exists; never replay or steal it')
         process_id = _readiness(base)
@@ -214,6 +234,8 @@ def reject_nested_maintenance(command, params, depth=0):
     """This invariant also applies in attended mode, before any batch member."""
     if command == 'bridge_maintenance' and depth:
         raise MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Maintenance actions must be separate top-level typed requests')
+    if command in {'project_session', 'project_execute'} and depth:
+        raise MaintenanceError('VWX_PROJECT_CONTEXT', 'Project coordination must be a separate top-level typed request')
     if command == '_batch':
         if depth > 20 or type(params) is not dict or type(params.get('calls')) is not list:
             raise MaintenanceError('VWX_MAINTENANCE_CONTEXT', 'Cannot validate nested maintenance in this batch')
@@ -234,6 +256,12 @@ def publication_guard(plugin_dir, command, params, cid):
     reject_nested_maintenance(command, params)
     _cid(cid)
     with publish_gate(plugin_dir) as base:
+        project = project_module()
+        try:
+            params = project.authorize_publication(base, command, params,
+                coordinator=SimpleNamespace(_readiness=_readiness, MaintenanceError=MaintenanceError))
+        except project.ProjectError as error:
+            raise MaintenanceError(error.code, str(error)) from error
         lease = _read_lease(base)
         maintenance = command == 'bridge_maintenance'
         if maintenance:
@@ -251,7 +279,7 @@ def publication_guard(plugin_dir, command, params, cid):
                              'command': command, 'created_epoch': time.time(), 'owner_server_pid': os.getpid()})
         # No marker is removed on an exception: the caller must prove that
         # publication failed before dispatch, or preserve the uncertain record.
-        yield
+        yield params
 
 
 def finish_publication(plugin_dir, cid):

@@ -111,10 +111,13 @@ def _bbox(h):
         return None
 
 OBJ_TYPES = {
-    2:'line',3:'rect',4:'oval',5:'polyline',6:'bezier',8:'arc',
-    9:'freehand',11:'text',12:'symbol',15:'group',21:'polygon',
-    25:'extrude',26:'sweep',28:'sphere',34:'wall',68:'plugin_obj',
-    86:'space',89:'viewport',91:'nurbs',94:'worksheet'
+    # SDK 3200 Kernel/API/Objs.TDType.h; names describe native node types.
+    2:'line', 3:'rect', 4:'oval', 5:'polygon', 6:'arc', 8:'freehand',
+    9:'locus3d', 10:'text', 11:'group', 13:'rounded_rect', 15:'symbol',
+    16:'symbol_definition', 17:'locus', 18:'worksheet', 21:'polyline',
+    24:'extrude', 25:'polygon3d', 31:'layer', 34:'sweep', 38:'multi_extrude',
+    40:'mesh', 68:'wall', 71:'slab', 83:'roof', 84:'solid_boolean',
+    86:'plugin_obj', 95:'solid', 111:'nurbs', 113:'nurbs_surface', 122:'viewport'
 }
 
 def _summary(h):
@@ -2697,32 +2700,115 @@ def detach_record(p):
     except Exception as e:
         return {'error': str(e)}
 
+def _record_format_schema(h, name):
+    if vs.GetTypeN(h) != 47 or vs.IsPluginFormat(h):
+        raise ValueError('Name must refer to an ordinary record format, not another resource or a PIO format')
+    count = vs.NumFields(h)
+    if type(count) is not int or not 0 <= count <= 2000:
+        raise ValueError('Invalid or excessive record field count')
+    fields = {}
+    for index in range(1, count + 1):
+        field = vs.GetFldName(h, index)
+        if type(field) is not str or not field or field in fields:
+            raise ValueError('Invalid or duplicate record field name')
+        fields[field] = {'type': vs.GetFldType(h, index),
+                         'default': vs.GetRField(h, name, field)}
+    return fields
+
+
+def _record_format_handle(name):
+    h = vs.GetObject(name)
+    return h if h and vs.GetTypeN(h) != 0 else None
+
+
+def _record_default_value(value, field_type):
+    """Normalize supported defaults for validation and independent readback."""
+    import math
+    if field_type == 4:
+        if type(value) is not str:
+            raise ValueError('Text defaults must be strings')
+        return value
+    if field_type == 2:
+        if type(value) is bool:
+            return value
+        if type(value) is str and value.lower() in ('true', 'false', '1', '0'):
+            return value.lower() in ('true', '1')
+        raise ValueError('Boolean defaults must be true/false')
+    if type(value) not in (str, int, float) or isinstance(value, bool):
+        raise ValueError('Numeric defaults must be finite numbers')
+    number = float(value)
+    if not math.isfinite(number) or field_type == 1 and not number.is_integer():
+        raise ValueError('Invalid numeric default')
+    return int(number) if field_type == 1 else number
+
+
 def create_record_format(p):
-    # vs.NewField on a NON-EXISTING format PARKS the script frame in a nested
-    # message loop on VW2026 (verified live 2026-07-06 — killed the sweep and,
-    # earlier, the Produktlink batch). Adding fields to an EXISTING format is
-    # fine. Create the format the safe way: attach it to a temp object via
-    # BeginRecord-less path is not scriptable, so use vs.NewField ONLY when
-    # the format already exists; otherwise create it via a temporary locus +
-    # record attach through the resource list.
-    name = p.get('name', '')
-    fields = p.get('fields', [])
-    type_map = {'string': 4, 'text': 4, 'integer': 1, 'number': 3,
-                'real': 3, 'boolean': 2}
-    if not name:
-        return {'error': 'name required'}
-    existed = bool(_safe(lambda: vs.GetObject(name)))
-    if not existed:
-        return {'error': "create_record_format is quarantined for NEW formats "
-                         "on VW2026 — vs.NewField parks the script frame when "
-                         "the format doesn't exist yet. Create the format once "
-                         "in the GUI (Werkzeuge > Datenbank) or attach fields "
-                         "to an existing format."}
-    for f in fields:
-        vs.NewField(name, f.get('name', ''), str(f.get('default', '')),
-                    type_map.get(f.get('type', 'string'), 4), 0)
-    return {'status': 'ok', 'name': name, 'existed': existed,
-            'fields_added': len(fields)}
+    """Create/add ordinary record fields using the SDK 3200 NewField contract.
+
+    Existing fields keep their defaults and must have matching types. Every
+    definition is preflighted before writing; failures retain partial records.
+    """
+    added = []
+    dispatched = False
+    try:
+        name = p.get('name')
+        if type(name) is not str or not name.strip():
+            raise ValueError('name is required')
+        fields = p.get('fields')
+        if not isinstance(fields, list) or not 1 <= len(fields) <= 100:
+            raise ValueError('fields must contain 1 to 100 definitions')
+        type_map = {'string': 4, 'text': 4, 'integer': 1, 'number': 3, 'real': 3, 'boolean': 2}
+        definitions = {}
+        for field in fields:
+            if not isinstance(field, dict) or set(field) - {'name', 'type', 'default'}:
+                raise ValueError('Each field accepts name, type and default only')
+            field_name = field.get('name')
+            if type(field_name) is not str or not field_name.strip() or field_name in definitions:
+                raise ValueError('Field names must be nonempty and unique')
+            kind = field.get('type', 'string')
+            if type(kind) is not str or kind not in type_map:
+                raise ValueError('Unsupported record field type: ' + str(kind))
+            code = type_map[kind]
+            default = field.get('default', '' if code == 4 else False if code == 2 else 0)
+            normalized = _record_default_value(default, code)
+            definitions[field_name] = {'type': code, 'default': normalized}
+        h = _record_format_handle(name)
+        existed = bool(h)
+        before = _record_format_schema(h, name) if h else {}
+        for field, definition in definitions.items():
+            if field in before and before[field]['type'] != definition['type']:
+                raise ValueError('Existing field has a different type: ' + field)
+        current = dict(before)
+        for field, definition in definitions.items():
+            if field in before:
+                continue
+            dispatched = True
+            vs.NewField(name, field, str(definition['default']), definition['type'], 0)
+            h = _record_format_handle(name)
+            if not h:
+                raise ValueError('NewField did not create a record format')
+            current = _record_format_schema(h, name)
+            actual = current.get(field)
+            if (not actual or actual['type'] != definition['type']
+                    or _record_default_value(actual['default'], definition['type']) != definition['default']):
+                raise ValueError('Record field readback differs: ' + field)
+            added.append(field)
+            if any(current.get(old) != value for old, value in before.items()):
+                raise ValueError('Existing field changed unexpectedly; inspect the record format')
+        return {'status': 'ok', 'name': name, 'object_id': _oid(h), 'existed': existed,
+                'fields_added': len(added), 'added_fields': added,
+                'preserved_existing': [field for field in definitions if field in before],
+                'fields': current, 'dispatched': dispatched}
+    except Exception as error:
+        result = {'error': str(error), 'status': 'partial' if dispatched else 'error',
+                  'fields_added': len(added), 'added_fields': added, 'dispatched': dispatched}
+        if dispatched:
+            result['name'] = name
+            try:
+                result['object_id'] = _oid(_record_format_handle(name))
+            except Exception:
+                result['object_id'] = None
+        return result
 
 
 # ── IFC / BIM ───────────────────────────────────────────────────────────────
@@ -2865,26 +2951,102 @@ def get_walls(p):
 
 # ── Landscape / Plants ──────────────────────────────────────────────────────
 
+def _landscape_number(value, name):
+    import math
+    if type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError(name + ' must be a finite number')
+    return float(value)
+
+
+def _landscape_limit(value, name='limit', maximum=5000):
+    if type(value) is not int or not 1 <= value <= maximum:
+        raise ValueError('%s must be an integer from 1 to %d' % (name, maximum))
+    return value
+
+
+def _landscape_pio(h, allowed=None):
+    """Inspect the real parametric record, never infer PIO identity from its name."""
+    if not h or vs.GetTypeN(h) != 86:
+        raise ValueError('Object must be a native plug-in object (type 86)')
+    record = vs.GetParametricRecord(h)
+    if not record:
+        raise ValueError('Native plug-in object has no parametric record')
+    name = vs.GetName(record)
+    if not isinstance(name, str) or not name:
+        raise ValueError('Parametric record name is unavailable')
+    if allowed is not None and name not in allowed:
+        raise ValueError('Unsupported plug-in record: ' + name)
+    count = vs.NumFields(record)
+    if type(count) is not int or not 0 <= count <= 2000:
+        raise ValueError('Invalid or excessive parametric field count')
+    fields = {}
+    for index in range(1, count + 1):
+        field = vs.GetFldName(record, index)
+        if not isinstance(field, str) or not field or field in fields:
+            raise ValueError('Invalid or duplicate parametric field name')
+        fields[field] = vs.GetRField(h, name, field)
+    return name, fields
+
+
+def _landscape_field_updates(fields, updates):
+    """Validate every requested record field before any write."""
+    if not isinstance(updates, dict) or len(updates) > 100:
+        raise ValueError('fields must be an object with at most 100 entries')
+    result = {}
+    for field, value in updates.items():
+        if field not in fields:
+            raise ValueError('Unknown parametric field: ' + str(field))
+        if type(value) not in (str, int, float, bool):
+            raise ValueError('Field values must be strings, numbers or booleans')
+        if type(value) in (int, float):
+            _landscape_number(value, field)
+        result[field] = str(value)
+    return result
+
+
+def _landscape_write_fields(h, record, fields):
+    """Read back each record write; report partial work without retry or rollback."""
+    results = []
+    for field, expected in fields.items():
+        row = {'field': field, 'requested': expected}
+        results.append(row)
+        try:
+            vs.SetRField(h, record, field, expected)
+            row['actual'] = vs.GetRField(h, record, field)
+            row['ok'] = row['actual'] == expected
+            if not row['ok']:
+                row['error'] = 'Field readback differs; formatting, style control or a rejected write may be responsible'
+                break
+        except Exception as error:
+            row.update(ok=False, error=str(error))
+            break
+    return results
+
+
 def get_plants(p):
-    """Get all plant objects with parametric record data (Botanischer Name, Höhe, etc.)."""
-    parts = ['T=PLUGINOBJ']
-    if p.get('layer'): parts.append(f"L='{p['layer']}'")
-    hs = _collect(' & '.join(parts), p.get('limit', 500))
-    plants = []
-    for h in hs:
-        prec = _safe(lambda: vs.GetParametricRecord(h))
-        rec_name = _safe(lambda: vs.GetName(prec), '') if prec else ''
-        rec_name = rec_name or ''
-        if 'plant' not in rec_name.lower() and 'pflanz' not in rec_name.lower():
-            continue
-        s = _summary(h)
-        s['record_name'] = rec_name
-        s['plant_fields'] = {}
-        for i in range(1, _safe(lambda: vs.NumFields(prec), 0) + 1):
-            fn = _safe(lambda: vs.GetFldName(prec, i), f'f{i}')
-            s['plant_fields'][fn] = _safe(lambda: vs.GetRField(h, rec_name, fn), '')
-        plants.append(s)
-    return {'plants': plants, 'count': len(plants)}
+    """List native Plant PIOs; apply the result limit after checking their identity."""
+    try:
+        limit = _landscape_limit(p.get('limit', 500))
+        parts = ["(T=PLUGINOBJ)", "(PON='Plant')"]
+        if p.get('layer'):
+            parts.append("(L='%s')" % str(p['layer']).replace("'", "''"))
+        handles = []
+        def collect(h):
+            if len(handles) > limit or vs.GetTypeN(h) != 86:
+                return
+            record = vs.GetParametricRecord(h)
+            if record and vs.GetName(record) == 'Plant':
+                handles.append(h)
+        vs.ForEachObject(collect, ' & '.join(parts))
+        plants = []
+        for h in handles[:limit]:
+            record, fields = _landscape_pio(h, {'Plant'})
+            row = _summary(h)
+            row.update(record_name=record, plant_fields=fields)
+            plants.append(row)
+        return {'plants': plants, 'count': len(plants), 'truncated': len(handles) > limit}
+    except Exception as error:
+        return {'error': str(error)}
 
 def create_plant(p):
     # This wrapper inserts an existing symbol. It does not create or size a
@@ -2902,7 +3064,7 @@ def create_plant(p):
             before = vs.LNewObj()
             vs.Symbol(name, (p.get('x', 0), p.get('y', 0)), 0)
             h = vs.LNewObj()
-            if not h or h == before or vs.GetTypeN(h) not in (15, 68):
+            if not h or h == before or vs.GetTypeN(h) not in (15, 86):
                 return {'error': f'Plant symbol insertion did not create an instance: {name}'}
             oid = _oid(h)
             if not oid:
@@ -2914,83 +3076,210 @@ def create_plant(p):
         _restore(prev)
 
 def update_plant(p):
-    h = _h(p.get('object_id'))
-    if not h: return {'error': 'Plant not found'}
-    prec = _safe(lambda: vs.GetParametricRecord(h))
-    if not prec: return {'error': 'No parametric record'}
-    rec = _safe(lambda: vs.GetName(prec), '')
-    mapping = {
-        'botanical_name': 'Botanischer Name',
-        'common_name':    'Deutscher Name',
-        'height':         'Höhe',
-        'spread':         'Kronendurchmesser',
-    }
-    updated = 0
-    for k, v in mapping.items():
-        if p.get(k) is not None:
-            _safe(lambda: vs.SetRField(h, rec, v, str(p[k])))
-            updated += 1
-    for fn, val in (p.get('extra_fields') or {}).items():
-        _safe(lambda: vs.SetRField(h, rec, fn, str(val)))
-        updated += 1
-    return {'status': 'ok', 'updated': updated}
+    """Update discovered Plant fields and confirm stored values, not regenerated geometry."""
+    try:
+        h = _h(p.get('object_id'))
+        record, available = _landscape_pio(h, {'Plant'})
+        aliases = {
+            'botanical_name': ('Botanical Name', 'Botanischer Name'),
+            'common_name': ('Common Name', 'Deutscher Name'),
+            'height': ('Height', 'Höhe'),
+            'spread': ('Spread', 'Kronendurchmesser'),
+        }
+        extra_fields = p.get('extra_fields', {})
+        if not isinstance(extra_fields, dict):
+            raise ValueError('extra_fields must be an object')
+        fields = dict(extra_fields)
+        for argument, names in aliases.items():
+            if p.get(argument) is None:
+                continue
+            matches = [field for field in available if field.casefold() in {name.casefold() for name in names}]
+            if len(matches) != 1:
+                raise ValueError('Cannot resolve %s unambiguously; inspect fields and use extra_fields' % argument)
+            if matches[0] in fields:
+                raise ValueError('Field supplied twice: ' + matches[0])
+            fields[matches[0]] = p[argument]
+        updates = _landscape_field_updates(available, fields)
+        if not updates:
+            raise ValueError('At least one field update is required')
+    except Exception as error:
+        return {'error': str(error), 'updated': 0, 'dispatched': False}
+    results = _landscape_write_fields(h, record, updates)
+    confirmed = sum(row['ok'] for row in results)
+    result = {'status': 'ok' if confirmed == len(updates) else 'partial',
+              'object_id': _oid(h), 'record': record, 'updated': confirmed,
+              'requested': len(updates), 'results': results, 'dispatched': True,
+              'regeneration_required': True, 'geometry_verified': False}
+    if confirmed != len(updates):
+        result['error'] = 'Plant field update stopped; inspect partial results before further edits'
+    return result
 
 def get_plant_database(p):
-    # Plant DB lives as symbols in the Resource Manager
+    """Legacy name: matching document symbols, not the external plant database."""
     plants = []
     for h in _collect('T=SYMDEF'):
         n = _safe(lambda: vs.GetName(h), '')
         if n and ('plant' in n.lower() or 'pflanz' in n.lower() or 'baum' in n.lower()):
             plants.append({'name': n})
-    return {'plants': plants, 'count': len(plants)}
+    return {'plants': plants, 'count': len(plants), 'source': 'document_symbol_name_search',
+            'native_plant_database': False,
+            'note': 'Name matches are symbol candidates, not verified Plant styles or species records.'}
 
 def batch_update_plants(p):
     """updates: [{object_id, field_name, value, record_name?}, ...]"""
-    updates = p.get('updates', [])
-    done = 0
-    for u in updates:
-        h = _h(u.get('object_id'))
-        if not h: continue
-        rec = u.get('record_name')
-        if not rec:
-            prec = _safe(lambda: vs.GetParametricRecord(h))
-            rec = _safe(lambda: vs.GetName(prec), '') if prec else 'Plant Record'
-        try:
-            vs.SetRField(h, rec, u.get('field_name', ''), str(u.get('value', '')))
-            done += 1
-        except Exception:
-            pass
-    return {'status': 'ok', 'updated': done}
+    try:
+        updates = p.get('updates')
+        if not isinstance(updates, list) or not 1 <= len(updates) <= 200:
+            raise ValueError('updates must contain 1 to 200 entries')
+        prepared = []
+        for row in updates:
+            if not isinstance(row, dict) or 'value' not in row:
+                raise ValueError('Each update requires object_id, field_name and value')
+            h = _h(row.get('object_id'))
+            record, available = _landscape_pio(h, {'Plant'})
+            if row.get('record_name') not in (None, record):
+                raise ValueError('record_name must match the Plant parametric record')
+            fields = _landscape_field_updates(available, {row.get('field_name'): row['value']})
+            prepared.append((h, record, fields))
+    except Exception as error:
+        return {'error': str(error), 'updated': 0, 'dispatched': False}
+    results = []
+    for h, record, fields in prepared:
+        row = _landscape_write_fields(h, record, fields)[0]
+        row['object_id'] = _oid(h)
+        results.append(row)
+        if not row['ok']:
+            break
+    done = sum(row['ok'] for row in results)
+    out = {'status': 'ok' if done == len(prepared) else 'partial', 'updated': done,
+           'requested': len(prepared), 'results': results, 'dispatched': True,
+           'regeneration_required': True, 'geometry_verified': False}
+    if done != len(prepared):
+        out['error'] = 'Plant batch stopped; earlier field writes remain applied'
+    return out
+
+
+def landscape_object_info(p):
+    """Read a native landscape PIO's identity, fields and geometry observations."""
+    try:
+        h = _h(p.get('object_id'))
+        record, fields = _landscape_pio(h, {'Plant', 'Existing Tree', 'Hardscape',
+                                          'Landscape Area', 'Site Modifier', 'Site Model'})
+        out = _summary(h)
+        out.update(status='ok', record_name=record, parameters=fields,
+                   geometry_verified=False, bounds_frame='screen_plane_projection',
+                   note='Read in a separate job after creation/reset; dimensions and record values do not prove regenerated geometry.')
+        errors = {}
+        for key, reader in (
+                ('units', lambda: get_document_units({})),
+                ('style', lambda: vs.GetPluginStyle(h)),
+                ('center_3d', lambda: vs.Get3DCntr(h)),
+                ('dimensions_3d', lambda: vs.Get3DInfo(h)),
+                ('path_id', lambda: _oid(vs.GetCustomObjectPath(h)))):
+            try:
+                out[key] = reader()
+            except Exception as error:
+                errors[key] = str(error)
+        out['dimensions_3d_order'] = ['height', 'width', 'depth']
+        out['center_3d_order'] = ['xy', 'z']
+        if errors:
+            out.update(status='partial', inspection_errors=errors)
+        return out
+    except Exception as error:
+        return {'error': str(error)}
+
+
+def landscape_duplicate_template(p):
+    """Duplicate an existing landscape PIO into an explicit design layer.
+
+    Copies the complete template rather than replacing its path or consuming
+    profile geometry. Initialization, holes, terrain links and final geometry
+    must be inspected in later jobs; no native lifecycle certification is implied.
+    """
+    try:
+        source = _h(p.get('source_id'))
+        record, original_fields = _landscape_pio(source, {'Plant', 'Hardscape',
+                                                         'Landscape Area', 'Site Modifier'})
+        source_id = _oid(source)
+        if not source_id:
+            raise ValueError('Template has no valid UUID')
+        name = p.get('target_layer')
+        if type(name) is not str or not name:
+            raise ValueError('target_layer is required')
+        layer = vs.GetLayerByName(name)
+        if not layer or vs.GetTypeN(layer) != 31 or vs.GetObjectVariableInt(layer, 154) != 1:
+            raise ValueError('target_layer must be an existing design layer')
+        dx = _landscape_number(p.get('dx', 0), 'dx')
+        dy = _landscape_number(p.get('dy', 0), 'dy')
+        fields = _landscape_field_updates(original_fields, p.get('fields', {}))
+    except Exception as error:
+        return {'error': str(error), 'created': False, 'dispatched': False}
+    result = {'source_id': source_id, 'target_layer': name, 'created': None,
+              'dispatched': True, 'geometry_verified': False, 'regeneration_pending': True}
+    try:
+        copied = vs.CreateDuplicateObject(source, layer)
+        copy_id = _oid(copied)
+        if not copied or not copy_id or copied == source or copy_id == source_id:
+            raise ValueError('Duplicate did not return a distinct valid UUID; inspect before retrying')
+        result.update(created=True, object_id=copy_id, record_name=record)
+        copy_record, copy_fields = _landscape_pio(copied, {record})
+        if vs.GetParent(copied) != layer:
+            raise ValueError('Duplicate has the wrong parent; no offset or field updates applied')
+        if copy_fields != original_fields:
+            raise ValueError('Duplicate record differs from template; inspect before editing')
+        if dx or dy:
+            vs.HMove(copied, dx, dy)
+        rows = _landscape_write_fields(copied, copy_record, fields)
+        result['field_results'] = rows
+        if any(not row['ok'] for row in rows):
+            raise ValueError('Duplicate field update stopped; partial copy retained')
+        vs.ResetObject(copied)
+        _, source_after = _landscape_pio(source, {record})
+        if source_after != original_fields:
+            raise ValueError('Source parameter values changed during duplication; inspect both objects')
+        result.update(status='ok', source_fields_preserved=True,
+                      note='Complete template copied; verify path holes, terrain links and regenerated geometry in a separate request.')
+    except Exception as error:
+        result.update(status='partial', error=str(error))
+    return result
 
 
 # ── Site Model ──────────────────────────────────────────────────────────────
 
 def get_site_model_info(p):
-    hs = _collect('T=DTM') or _collect('T=STAKE')
-    if not hs: return {'error': 'No site model in document'}
-    h = hs[0]
-    return {
-        'object_id': _oid(h),
-        'name':      _safe(lambda: vs.GetName(h)),
-        'bounds':    _bbox(h),
-    }
+    try:
+        hs = [_h(p['site_model_id'])] if p.get('site_model_id') else _collect('T=DTM')
+        hs = [h for h in hs if h and vs.DTM6_IsDTM6Object(h) is True]
+        if not hs:
+            return {'error': 'No valid site model in document'}
+        h = hs[0]
+        return {'object_id': _oid(h), 'name': vs.GetName(h), 'bounds': _bbox(h),
+                'bounds_frame': 'screen_plane_projection', 'is_site_model': True}
+    except Exception as error:
+        return {'error': str(error)}
 
 def update_site_model(p):
-    hs = _collect('T=DTM')
-    for h in hs:
-        _safe(lambda: vs.ResetObject(h))
-    return {'status': 'ok', 'updated': len(hs)}
+    done = 0
+    try:
+        hs = [_site_model_handle(p)] if p.get('site_model_id') else _collect('T=DTM', 501)
+        if len(hs) > 500:
+            raise ValueError('More than 500 models; pass site_model_id')
+        if any(not h or vs.DTM6_IsDTM6Object(h) is not True for h in hs):
+            raise ValueError('Invalid site model target; no resets dispatched')
+        for h in hs:
+            vs.ResetObject(h)
+            done += 1
+        return {'status': 'ok', 'updated': done, 'regeneration_pending': bool(done)}
+    except Exception as error:
+        return {'error': str(error), 'updated': done, 'regeneration_pending': bool(done)}
 
 def get_terrain_elevation(p):
     """Get terrain elevation at a point (x, y) in document units, from the
     site model on the active layer (same DTM6_GetZatXY call as get_z_at_xy)."""
-    dtm_h = _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer'}
-    x = float(p.get('x', 0)); y = float(p.get('y', 0))
-    tin_type = int(p.get('tin_type', 2))
     try:
-        ok, z = vs.DTM6_GetZatXY(dtm_h, x, y, tin_type)
+        x, y, tin_type = _terrain_query_arguments(p)
+        dtm_h = _site_model_handle(p)
+        ok, z = _terrain_elevation(dtm_h, tin_type, x, y)
         if not ok:
             return {'error': f'Point ({x}, {y}) is outside the site model'}
         return {'elevation': z}
@@ -3902,43 +4191,121 @@ def set_dim_note(p):
 
 def _active_dtm():
     try:
-        lay = vs.ActLayer()
-        return vs.DTM6_GetDTMObject(lay, True)
+        return _site_model_for_layer(vs.ActLayer())
     except Exception:
         return None
+
+def _site_model_for_layer(layer):
+    if not layer or vs.GetTypeN(layer) != 31 or vs.GetObjectVariableInt(layer, 154) != 1:
+        raise ValueError('An existing design layer is required')
+    # True may ask for a selection. False can still return the sole model from
+    # another layer, so verify actual membership before reporting a match.
+    h = vs.DTM6_GetDTMObject(layer, False)
+    return h if h and vs.DTM6_IsDTM6Object(h) is True and vs.GetLayer(h) == layer else None
+
+def _site_model_handle(p):
+    oid = p.get('site_model_id')
+    h = _h(oid) if oid is not None else _active_dtm()
+    if not h or vs.DTM6_IsDTM6Object(h) is not True:
+        raise ValueError('No valid site model; pass the UUID of a native Site Model')
+    return h
+
+
+def _terrain_tin(value):
+    if type(value) is not int or value not in (0, 1, 2):
+        raise ValueError('tin_type must be 0 (existing), 1 (proposed) or 2 (current)')
+    return value
+
+
+def _terrain_query_arguments(p):
+    return (_landscape_number(p.get('x', 0), 'x'),
+            _landscape_number(p.get('y', 0), 'y'), _terrain_tin(p.get('tin_type', 2)))
+
+
+def _terrain_elevation(h, tin_type, x, y):
+    result = vs.DTM6_GetZatXY(h, tin_type, x, y)
+    if not isinstance(result, (list, tuple)) or len(result) != 2 or type(result[0]) is not bool:
+        raise ValueError('Malformed terrain query result')
+    return result[0], _landscape_number(result[1], 'native elevation') if result[0] else None
+
+
+def terrain_sample_points(p):
+    """Sample 1–200 XY points against distinct existing/proposed/current TINs.
+
+    Coordinates and elevations use document units. Outside-model points retain
+    ok=false/z=null. Native errors stop with completed rows and no retries.
+    """
+    samples = []
+    completed = 0
+    try:
+        points = p.get('points')
+        if not isinstance(points, list) or not 1 <= len(points) <= 200:
+            raise ValueError('points must contain 1 to 200 {x,y} entries')
+        xy = []
+        for point in points:
+            if not isinstance(point, dict) or set(point) != {'x', 'y'}:
+                raise ValueError('Each point must contain exactly x and y')
+            xy.append((_landscape_number(point['x'], 'x'), _landscape_number(point['y'], 'y')))
+        types = p.get('tin_types', [2])
+        if not isinstance(types, list) or not 1 <= len(types) <= 3:
+            raise ValueError('tin_types must contain 1 to 3 distinct selectors')
+        types = [_terrain_tin(value) for value in types]
+        if len(set(types)) != len(types):
+            raise ValueError('tin_types must be distinct')
+        h = _site_model_handle(p)
+        units = get_document_units({})
+    except Exception as error:
+        return {'error': str(error), 'samples': [], 'queries_completed': 0, 'dispatched': False}
+    out = {'status': 'ok', 'site_model_id': _oid(h), 'units': units,
+           'tin_types': types, 'samples': samples, 'requested_points': len(xy),
+           'geometry_verified': False}
+    for index, (x, y) in enumerate(xy):
+        row = {'index': index, 'x': x, 'y': y, 'elevations': []}
+        samples.append(row)
+        for tin_type in types:
+            try:
+                ok, z = _terrain_elevation(h, tin_type, x, y)
+                row['elevations'].append({'tin_type': tin_type, 'ok': ok, 'z': z})
+                completed += 1
+            except Exception as error:
+                row['failed_tin_type'] = tin_type
+                out.update(status='partial', error=str(error), queries_completed=completed)
+                return out
+    out['queries_completed'] = completed
+    out['outside_count'] = sum(not value['ok'] for row in samples for value in row['elevations'])
+    return out
+
 
 def send_to_surface(p):
     """Drape a 2D object onto the site-model surface.
 
-    Gotcha: DTM6_SendToSurface converts the 2D input to a 3D polygon and
-    vs.LNewObj() does NOT point at the result. Use PrevObj(LNewObj()) when the
-    LNewObj handle still matches the input UUID.
-
+    SDK 3200 modifies the input object. If its UUID no longer resolves after
+    native conversion, report unresolved identity; never guess from LNewObj.
     tin_type: 0 existing / 1 proposed / 2 current (default)."""
     oid = p.get('object_id')
     h = _h(oid)
-    if not h: return {'error': 'Object not found'}
-    tin_type = int(p.get('tin_type', 2))
-    dtm_oid = p.get('site_model_id')
-    dtm_h = _h(dtm_oid) if dtm_oid else _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer (pass site_model_id)'}
+    if not h: return {'error': 'Object not found', 'dispatched': False}
+    try:
+        tin_type = _terrain_tin(p.get('tin_type', 2))
+        dtm_h = _site_model_handle(p)
+    except Exception as e:
+        return {'error': str(e), 'dispatched': False}
     try:
         ok = vs.DTM6_SendToSurface(dtm_h, h, tin_type)
-    except Exception as e:
-        return {'error': str(e)}
-    new_h = None
-    try:
-        ln = vs.LNewObj()
-        if ln:
-            try:
-                same = (vs.GetObjectUuid(ln) == oid)
-            except Exception:
-                same = False
-            new_h = vs.PrevObj(ln) if same else ln
-    except Exception: pass
-    return {'status': 'ok' if ok else 'failed',
-            'object_id': _oid(new_h) if new_h else None}
+        if type(ok) is not bool:
+            raise ValueError('Malformed native surface-operation result')
+    except Exception as error:
+        return {'status': 'partial', 'error': str(error), 'source_id': oid,
+                'object_id': None, 'dispatched': True, 'geometry_verified': False,
+                'note': 'Native mutation may have occurred; inspect the source and drawing before further edits.'}
+    current = _h(oid)
+    current_id = _oid(current) if current else None
+    if ok is True and not current_id:
+        return {'status': 'partial', 'error': 'Surface operation completed but result UUID is unresolved; inspect before further edits',
+                'object_id': None, 'source_id': oid, 'dispatched': True, 'geometry_verified': False}
+    return {'status': 'ok' if ok is True else 'failed', 'object_id': current_id,
+            'source_id': oid, 'dispatched': True,
+            'geometry_verified': False, 'regeneration_pending': ok is True}
 
 def rise_to_surface(p):
     """Raise an object to the site-model surface. Requires SDK send_type selector.
@@ -3952,12 +4319,11 @@ def rise_to_surface(p):
     oid = p.get('object_id')
     h = _h(oid)
     if not h: return {'error': 'Object not found'}
-    tin_type = int(p.get('tin_type', 2))
-    dtm_oid = p.get('site_model_id')
-    dtm_h = _h(dtm_oid) if dtm_oid else _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer (pass site_model_id)'}
     try:
+        tin_type = _terrain_tin(p.get('tin_type', 2))
+        dtm_h = _site_model_handle(p)
+        if type(p['send_type']) is not int:
+            raise ValueError('send_type must be an explicitly supplied SDK integer selector')
         ok = vs.DTM6_RiseToSurface(dtm_h, h, tin_type, int(p['send_type']))
     except Exception as e:
         return {'error': str(e)}
@@ -3967,14 +4333,10 @@ def rise_to_surface(p):
 def get_z_at_xy(p):
     """Z elevation at a planar (x, y) on the site model.
     tin_type: 0 existing / 1 proposed / 2 current (default)."""
-    dtm_oid = p.get('site_model_id')
-    dtm_h = _h(dtm_oid) if dtm_oid else _active_dtm()
-    if not dtm_h:
-        return {'error': 'No site model on active layer (pass site_model_id)'}
-    x = float(p.get('x', 0)); y = float(p.get('y', 0))
-    tin_type = int(p.get('tin_type', 2))
     try:
-        ok, z = vs.DTM6_GetZatXY(dtm_h, x, y, tin_type)
+        x, y, tin_type = _terrain_query_arguments(p)
+        dtm_h = _site_model_handle(p)
+        ok, z = _terrain_elevation(dtm_h, tin_type, x, y)
         return {'ok': bool(ok), 'z': z if ok else None}
     except Exception as e:
         return {'error': str(e)}
@@ -3983,7 +4345,7 @@ def site_model_on_layer(p):
     layer = p.get('layer')
     try:
         lay_h = vs.GetLayerByName(layer) if layer else vs.ActLayer()
-        dtm = vs.DTM6_GetDTMObject(lay_h, True)
+        dtm = _site_model_for_layer(lay_h)
         return {'object_id': _oid(dtm) if dtm else None}
     except Exception as e:
         return {'error': str(e)}
@@ -3995,10 +4357,8 @@ def is_site_model(p):
     except Exception as e: return {'error': str(e)}
 
 def clear_site_model_cache(p):
-    dtm_oid = p.get('site_model_id')
-    dtm_h = _h(dtm_oid) if dtm_oid else _active_dtm()
-    if not dtm_h: return {'error': 'site model not found'}
     try:
+        dtm_h = _site_model_handle(p)
         vs.DTM6_ClearModelCache(dtm_h)
         return {'status': 'ok'}
     except Exception as e: return {'error': str(e)}
@@ -7046,3 +7406,282 @@ def datatag_refresh_all(p):
     """Re-render every Data Tag in the document (needed after editing a Data Tag style)."""
     vs.DT_ResetAllDataTags()
     return {'status': 'ok'}
+
+
+# Landscape scope and quantities. Record writes and quantity inspection are
+# separate requests; metadata never claims a regenerated native object.
+def _landscape_quantity_engine():
+    import importlib, os, sys
+    name = 'landscape_takeoff'
+    expected = os.path.realpath(os.path.join(os.path.dirname(__file__), name + '.py'))
+    existing = sys.modules.get(name)
+    if existing is not None and os.path.normcase(os.path.realpath(getattr(existing, '__file__', ''))) != os.path.normcase(expected):
+        raise ValueError('Landscape quantity module belongs to another installation')
+    module = importlib.import_module(name)
+    if os.path.normcase(os.path.realpath(module.__file__)) != os.path.normcase(expected):
+        raise ValueError('Landscape quantity module resolved outside this installation')
+    return module
+
+
+def _landscape_quantity_schema(engine):
+    h = vs.GetObject(engine.RECORD_NAME)
+    if not h or vs.GetTypeN(h) == 0:
+        return None, {}
+    if vs.GetTypeN(h) != 47 or vs.IsPluginFormat(h):
+        raise ValueError('VWX_Landscape must be an ordinary record format')
+    count = vs.NumFields(h)
+    if type(count) is not int or not 0 <= count <= 100:
+        raise ValueError('Invalid landscape record field count')
+    fields = {vs.GetFldName(h, i): vs.GetFldType(h, i) for i in range(1, count + 1)}
+    if any(name in fields and fields[name] != 4 for name in engine.RECORD_FIELDS.values()):
+        raise ValueError('Landscape metadata fields must use native text type 4')
+    return h, fields
+
+
+def _landscape_read_metadata(h, engine):
+    count = vs.NumRecords(h)
+    if type(count) is not int or not 0 <= count <= 200:
+        raise ValueError('Invalid object record count')
+    attached = False
+    for i in range(1, count + 1):
+        record = vs.GetRecord(h, i)
+        if record and vs.GetName(record) == engine.RECORD_NAME:
+            attached = True
+            break
+    if not attached:
+        return None
+    return {key: vs.GetRField(h, engine.RECORD_NAME, field)
+            for key, field in engine.RECORD_FIELDS.items()}
+
+
+def _landscape_quantity_object(oid, engine):
+    """Resolve and independently read back identity before classifying/billing."""
+    h = _h(oid)
+    if not h:
+        raise ValueError('Object not found')
+    if engine._uuid(_oid(h)) != oid:
+        raise ValueError('Resolved native object UUID differs from the requested object')
+    return h
+
+
+def landscape_set_metadata(p):
+    """Persist explicit scope/quantity classification; never infer new work."""
+    started = False
+    oid = p.get('object_id')
+    try:
+        engine = _landscape_quantity_engine()
+        oid = engine._uuid(oid)
+        metadata = engine.validate_metadata(p.get('metadata'))
+        if metadata.get('assembly_id') == oid:
+            raise ValueError('An object cannot belong to its own assembly')
+        h = _landscape_quantity_object(oid, engine)
+        if vs.GetTypeN(h) in (0, 16, 18, 31, 47, 122):
+            raise ValueError('Landscape metadata requires a drawing object, not a resource/layer/viewport')
+        # Explicit assembly-part/reference classification is allowed, but native
+        # resource/PIO internals and sheet annotations must never be edited here.
+        _landscape_quantity_ancestor(h, engine, allow_classified_group=True)
+        record, fields = _landscape_quantity_schema(engine)
+        missing = [name for name in engine.RECORD_FIELDS.values() if name not in fields]
+        if missing:
+            started = True
+            created = create_record_format({'name': engine.RECORD_NAME,
+                'fields': [{'name': name, 'type': 'text', 'default': ''} for name in missing]})
+            if created.get('error'):
+                return dict(created, mutation_started=True, target_object_id=oid)
+            record, fields = _landscape_quantity_schema(engine)
+            if not record or any(name not in fields for name in engine.RECORD_FIELDS.values()):
+                raise ValueError('Landscape record schema did not persist')
+        started = True
+        vs.SetRecord(h, engine.RECORD_NAME)
+        for key, field in engine.RECORD_FIELDS.items():
+            vs.SetRField(h, engine.RECORD_NAME, field, metadata[key])
+        observed = _landscape_read_metadata(h, engine)
+        if observed != metadata:
+            raise ValueError('Landscape metadata readback differs; inspect partial writes before continuing')
+        return {'status': 'ok', 'object_id': oid, 'record': engine.RECORD_NAME,
+                'metadata': observed, 'metadata_verified': True,
+                'geometry_verified': False, 'next': 'Inspect geometry and takeoff in a later request'}
+    except Exception as error:
+        return {'status': 'error', 'error': str(error), 'object_id': oid,
+                'mutation_started': started, 'rollback': False}
+
+
+def _landscape_quantity_ancestor(h, engine, allow_classified_group=False, require_horizontal=False):
+    """Exclude native internals and classified assemblies without inferring scope."""
+    seen = set()
+    parent = vs.GetParent(h)
+    for _ in range(64):
+        if not parent:
+            raise ValueError('Object is not attached to a drawing layer')
+        kind = vs.GetTypeN(parent)
+        if kind == 31:
+            if vs.GetObjectVariableInt(parent, 154) != 1:
+                raise ValueError('Landscape quantities require design-layer objects, not sheet annotations')
+            return
+        # Ordinary drawing groups are the only supported intermediate owners.
+        # Symbol, viewport, PIO and solid internals can duplicate or scale a
+        # parent's measured representation and must not become billable items.
+        if kind != 11:
+            raise ValueError('Native object internals and resource geometry are excluded')
+        if require_horizontal:
+            _landscape_quantity_plane(parent)
+        identity = engine._uuid(_oid(parent))
+        if identity in seen:
+            raise ValueError('Invalid or cyclic object ancestry')
+        seen.add(identity)
+        metadata = _landscape_read_metadata(parent, engine)
+        if (not allow_classified_group and metadata
+                and metadata.get('role') in ('assembly', 'reference', 'markup')):
+            raise ValueError('Geometry belongs to a classified assembly/reference/markup group')
+        parent = vs.GetParent(parent)
+    raise ValueError('Object ancestry exceeds the bounded traversal')
+
+
+def _landscape_quantity_plane(h):
+    """Require a positively established horizontal plane, never a screen guess.
+
+    SDK 3200 documents GetEntityMatrix as (bool, offset3, rx, ry, rz).
+    A false result does not establish a usable planar object. Unsupported
+    container/PIO transforms therefore exclude the quantity, not relax its basis.
+    """
+    import math
+    try:
+        matrix = vs.GetEntityMatrix(h)
+    except Exception as error:
+        raise ValueError('Native planar transform is unavailable; horizontal surface quantity is unverified') from error
+    if (not isinstance(matrix, (tuple, list)) or len(matrix) != 5 or matrix[0] is not True
+            or not isinstance(matrix[1], (tuple, list)) or len(matrix[1]) != 3
+            or any(type(value) not in (int, float) or not math.isfinite(value)
+                   for value in (*matrix[1], *matrix[2:]))):
+        raise ValueError('Surface quantity requires a verified finite planar transform')
+    if any(not math.isclose(math.remainder(angle, 180.0), 0.0, rel_tol=0.0, abs_tol=1e-8)
+           for angle in matrix[2:4]):
+        raise ValueError('Surface quantity requires a horizontal plane; tilted geometry is excluded')
+
+
+def _landscape_measure_quantity(h, metadata, units_per_inch, engine):
+    import math
+    measurement = metadata['measurement']
+    kind = vs.GetTypeN(h)
+    if kind in (0, 16, 18, 31, 47, 122):
+        raise ValueError('Resource, layer and viewport quantities are excluded')
+    if measurement == 'count':
+        return 1, 'one resolved native drawing object'
+    if measurement == 'plant_count':
+        from decimal import Decimal
+        if kind != 86:
+            raise ValueError('plant_count requires a native Plant PIO')
+        record = vs.GetParametricRecord(h)
+        if not record or vs.GetName(record) != 'Plant':
+            raise ValueError('plant_count requires the actual Plant parametric record')
+        count = vs.NumFields(record)
+        if type(count) is not int or not 0 <= count <= 2000:
+            raise ValueError('Invalid Plant field count')
+        field = metadata['count_field']
+        if field not in {vs.GetFldName(record, i) for i in range(1, count + 1)}:
+            raise ValueError('The requested native Plant count field does not exist')
+        raw = vs.GetRField(h, 'Plant', field)
+        if type(raw) is not str or not raw.strip():
+            raise ValueError('Native Plant quantity must be numeric record text')
+        value = Decimal(raw.strip())
+        if (not value.is_finite() or value <= 0 or value != value.to_integral_value()
+                or value > 9007199254740991):
+            raise ValueError('Plant quantity must be a positive whole number within the exact JSON integer range')
+        return int(value), 'GetRField(Plant, ' + field + ')'
+    if measurement == 'linear_length':
+        if kind not in (2, 68):
+            raise ValueError('linear_length supports straight line/wall axes only')
+        first, last = vs.GetSegPt1(h), vs.GetSegPt2(h)
+        if (not isinstance(first, (list, tuple)) or not isinstance(last, (list, tuple))
+                or len(first) != 2 or len(last) != 2
+                or any(type(v) not in (int, float) or not math.isfinite(v) for v in (*first, *last))):
+            raise ValueError('Invalid line/wall endpoint geometry')
+        raw = math.dist(first, last)
+        source = 'distance(GetSegPt1, GetSegPt2), straight axis in coordinate units'
+    else:
+        target = h
+        if kind == 86:
+            record = vs.GetParametricRecord(h)
+            name = vs.GetName(record) if record else ''
+            if name not in ('Hardscape', 'Landscape Area'):
+                raise ValueError('Only Hardscape/Landscape Area native paths support surface takeoff')
+            _landscape_quantity_plane(h)
+            target = vs.GetCustomObjectPath(h)
+            if not target or vs.GetParent(target) != h:
+                raise ValueError('Native path ownership could not be verified')
+            kind = vs.GetTypeN(target)
+        if kind not in (3, 4, 5, 13, 21):
+            raise ValueError('Surface takeoff requires a planar shape or supported native surface path')
+        _landscape_quantity_plane(target)
+        if measurement == 'plan_area':
+            if kind in (5, 21) and vs.IsPolyClosed(target) is not True:
+                raise ValueError('Plan-area measurement requires a closed boundary')
+            raw = vs.HAreaN(target)
+            source = 'HAreaN(native planar shape/path), coordinate units squared; plan area'
+        elif measurement == 'perimeter':
+            raw = vs.HPerim(target)
+            source = 'HPerim(native planar shape/path), coordinate units; plan perimeter'
+        else:
+            raise ValueError('Unsupported quantity measurement')
+    return engine.convert_coordinate_quantity(raw, engine.MEASUREMENTS[measurement],
+                                               units_per_inch, metadata['unit']), source
+
+
+def landscape_takeoff(p):
+    """Read classified native objects afresh; exclude existing/ambiguous work."""
+    try:
+        from collections import Counter
+        import math
+        engine = _landscape_quantity_engine()
+        ids = p.get('object_ids')
+        if type(ids) is not list or not 1 <= len(ids) <= 500:
+            raise ValueError('object_ids must contain 1 to 500 native object UUIDs')
+        quotes = engine.validate_prices(p.get('prices'))
+        canonical = []
+        for oid in ids:
+            try:
+                canonical.append(engine._uuid(oid))
+            except ValueError:
+                canonical.append(None)
+        repeated = Counter(oid for oid in canonical if oid)
+        _, schema = _landscape_quantity_schema(engine)
+        units = vs.GetUnits()
+        if (not isinstance(units, (tuple, list)) or len(units) != 6
+                or type(units[3]) not in (int, float) or not math.isfinite(units[3]) or units[3] <= 0):
+            raise ValueError('Native document coordinate units could not be established')
+        snapshots = []
+        for original, oid in zip(ids, canonical):
+            row = {'object_id': oid or original, 'status': 'unknown'}
+            snapshots.append(row)
+            if oid is None or repeated[oid] > 1:
+                continue
+            try:
+                h = _landscape_quantity_object(oid, engine)
+                if any(field not in schema for field in engine.RECORD_FIELDS.values()):
+                    raise ValueError('Landscape record schema is incomplete or absent')
+                metadata = _landscape_read_metadata(h, engine)
+                if metadata is None:
+                    continue
+                row.update(metadata)
+                if metadata.get('status') != 'new_proposed' or metadata.get('role') not in ('item', 'assembly') or metadata.get('assembly_id'):
+                    continue
+                metadata = engine.validate_metadata(metadata)
+                row.update(metadata, quantity_kind=engine.MEASUREMENTS[metadata['measurement']])
+                _landscape_quantity_ancestor(h, engine,
+                    require_horizontal=metadata['measurement'] in ('plan_area', 'perimeter'))
+                row['quantity'], row['measurement_source'] = _landscape_measure_quantity(h, metadata, units[3], engine)
+            except Exception as error:
+                row['measurement_error'] = str(error)[:500]
+        result = engine.build_takeoff(snapshots, quotes)
+        result['scope'] = 'explicitly_selected_native_objects'
+        result['document_units'] = {'units_per_inch': units[3], 'name': units[4], 'square_name': units[5]}
+        result['limitations'].extend([
+            'Area/perimeter require verified horizontal object/container planes; unavailable, false, malformed or tilted transforms are excluded.',
+            'Horizontal outlines are not sloped finished surface areas or excavation volumes.',
+            'linear_length measures straight wall/line axes; curved walls and retaining-wall face areas need another measured workflow.',
+            'count is object count; use plant_count with a discovered native Plant quantity field for multi-plant objects.',
+            'Rerun after geometry edits. This read-only snapshot is not a live worksheet or a save/persistence check.',
+        ])
+        return result
+    except Exception as error:
+        return {'status': 'error', 'error': str(error), 'mutation_started': False}

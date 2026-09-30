@@ -8,8 +8,10 @@ documentation; subsystem `AGENTS.md` files identify the implementation boundarie
 
 ## Verified status
 
-The publication checkpoint ran **821 offline tests** successfully, with one
-Windows symlink test skipped; see [validation details](PUBLICATION_2027.md).
+The landscape checkpoint ran **948 offline tests: 947 passed and one Windows
+symlink test skipped**; see [validation details](PUBLICATION_2027.md).
+The new landscape/ownership workflows are offline-tested, not newly deployed
+or native-certified. The earlier 821-test checkpoint remains historical.
 The native baseline passed the complete default selection:
 **57 routine families / 2,303 unique fixture jobs**.
 [LIVE_DEFAULT_SUITE_2027.json](LIVE_DEFAULT_SUITE_2027.json) independently checks
@@ -19,8 +21,12 @@ repetitions are not extra unique coverage. Eight semantic diagnostic families an
 thirteen characterization families are outside the default selection.
 
 All **3,098 SDK Python names** have generated adapters. Handwritten workflows use
-463 SDK functions; the default MCP inventory is 287 handwritten plus 3,098 SDK
-tools. Current evidence confirms native results for **401 APIs**, with native
+469 SDK functions; the full MCP inventory is 294 handwritten plus 3,098 SDK
+tools. The default `landscape` profile exposes a subset of handwritten tools
+with generic SDK discovery/call/sequence access; named SDK registrations are
+opt-in. Landscape workflow reliability is the development priority; see
+[design workflow](DESIGN_WORKFLOW.md) and [roadmap](ROADMAP.md).
+Current evidence confirms native results for **401 APIs**, with native
 passes for 399; **2,697 remain unconfirmed**. The 5,756 native passing cases,
 26 preserved failures, one uncertain attempt, 70 compatibility passes across
 eight APIs and seven separate adapter checks are different evidence categories.
@@ -61,10 +67,11 @@ live work. [Maintenance](MAINTENANCE_2027.md) and
 - A claimed job is consumed before dispatch and never automatically replayed.
   Inspect uncertain results and the actual document before any new mutation.
   Never forge completion stamps, clear an unknown lease or auto-dismiss dialogs.
-- Clients share the active drawing. Guards and mutations are separate jobs, so
-  the queue is not per-agent isolation. Coordinate document ownership and
-  serialize workflows on different files; background mode blocks document
-  switching whose fallback can change application focus.
+- Clients share the active drawing. Use [project ownership](MULTI_AGENT_WORKFLOW.md)
+  for multiple agents: each owner operation verifies the exact saved path inside
+  its native job; other clients cannot publish native work until release.
+  This is serialized cooperation, not per-agent isolation or rollback.
+  Background mode blocks document switching whose fallback can change focus.
 
 ## SDK and object discipline
 

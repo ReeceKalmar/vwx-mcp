@@ -150,6 +150,115 @@ class SDKServerIntegrationTests(unittest.TestCase):
         finally:
             self.server.mcp.enable(tags=set(self.server.TOOL_TAGS.values()), only=True)
 
+    def test_landscape_switch_keeps_design_workflows_and_full_restores_registered_tools(self):
+        try:
+            result = json.loads(self.server.set_toolset(None, 'landscape'))
+            visible = {tool.name for tool in asyncio.run(self.server.mcp.list_tools())}
+            self.assertEqual(result['tools'], len(visible))
+            self.assertTrue({
+                'confirm_active_document', 'get_document_units', 'create_layer',
+                'create_class', 'draw_polyline', 'draw_extrude', 'create_wall',
+                'create_roof', 'create_slab', 'create_pio', 'get_pio_parameters',
+                'create_material', 'get_plants', 'get_z_at_xy', 'send_to_surface',
+                'get_georeferencing', 'create_record_format', 'set_record_field',
+                'create_report_worksheet', 'draw_dimension', 'draw_text',
+                'create_viewport', 'screenshot', 'vwx', 'vwx_batch',
+                'list_commands', 'sdk_list', 'sdk_call', 'sdk_sequence', 'set_toolset',
+            } <= visible)
+            self.assertFalse({'sdk_' + name for name in SDK_NAMES} & visible)
+            self.assertNotIn('ifc_dm_dump', visible)
+            self.assertNotIn('export_ifc', visible)
+            for tool in asyncio.run(self.server.mcp.list_tools()):
+                self.assertNotIn('outputSchema', tool.to_mcp_tool().model_dump(
+                    by_alias=True, exclude_none=True))
+            result = json.loads(self.server.set_toolset(None, 'full'))
+            restored = {tool.name for tool in asyncio.run(self.server.mcp.list_tools())}
+            self.assertEqual(restored, set(self.tools))
+            self.assertEqual(result['tools'], len(restored))
+        finally:
+            self.server.mcp.enable(tags=set(self.server.TOOL_TAGS.values()), only=True)
+
+    def test_modeling_preset_preserves_ifc_after_taxonomy_split(self):
+        try:
+            self.server.set_toolset(None, 'modeling')
+            visible = {tool.name for tool in asyncio.run(self.server.mcp.list_tools())}
+            self.assertTrue({'create_wall', 'create_material', 'get_ifc_entity',
+                             'ifc_dm_dump', 'export_ifc'} <= visible)
+        finally:
+            self.server.mcp.enable(tags=set(self.server.TOOL_TAGS.values()), only=True)
+
+    def test_default_startup_is_compact_and_switching_explains_omitted_sdk_tools(self):
+        with patch.dict(sys.modules), patch.dict(os.environ):
+            for name in ('VWX_TOOLSET', 'VWX_SDK_TOOLS'):
+                os.environ.pop(name, None)
+            sys.modules.pop('tool_tags', None)
+            alternate = load_module('landscape_default_test', SERVER / 'vwx_mcp_server.py')
+            # main applies startup visibility; replace all host/network startup.
+            with patch.object(alternate, 'vw_versions'), patch.object(alternate, '_init_otel'), \
+                    patch.object(alternate, '_install_middleware'), patch.object(alternate.mcp, 'run'):
+                alternate.main()
+            visible = {tool.name for tool in asyncio.run(alternate.mcp.list_tools())}
+            self.assertEqual(alternate.SDK_TOOL_COUNT, 0)
+            self.assertLess(len(visible), 300)
+            self.assertTrue({'project_session', 'project_execute'} <= visible)
+            self.assertTrue({'create_plant', 'draw_polyline', 'get_z_at_xy',
+                             'create_viewport', 'sdk_list', 'sdk_call', 'sdk_sequence'} <= visible)
+            self.assertNotIn('export_ifc', visible)
+            for preset in ('sdk', 'full', 'landscape'):
+                result = json.loads(alternate.set_toolset(None, preset))
+                visible = {tool.name for tool in asyncio.run(alternate.mcp.list_tools())}
+                self.assertEqual(result['tools'], len(visible))
+                self.assertEqual(result['named_sdk_tools'], 0)
+                self.assertTrue({'sdk_list', 'sdk_call', 'sdk_sequence', 'set_toolset'} <= visible)
+                if preset in ('sdk', 'full'):
+                    self.assertIn('VWX_SDK_TOOLS=1', result['note'])
+
+    def test_explicit_full_or_sdk_startup_opts_in_to_named_tools(self):
+        for preset in ('full', 'sdk'):
+            with self.subTest(preset=preset), patch.dict(sys.modules), patch.dict(os.environ):
+                os.environ.pop('VWX_SDK_TOOLS', None)
+                os.environ['VWX_TOOLSET'] = preset
+                sys.modules.pop('tool_tags', None)
+                alternate = load_module('explicit_surface_test', SERVER / 'vwx_mcp_server.py')
+                with patch.object(alternate, 'vw_versions'), patch.object(alternate, '_init_otel'), \
+                        patch.object(alternate, '_install_middleware'), patch.object(alternate.mcp, 'run'):
+                    alternate.main()
+                visible = {tool.name for tool in asyncio.run(alternate.mcp.list_tools())}
+                self.assertEqual(alternate.SDK_TOOL_COUNT, 3098)
+                self.assertTrue({'sdk_' + name for name in SDK_NAMES} <= visible)
+                self.assertTrue({'sdk_list', 'sdk_call', 'sdk_sequence', 'set_toolset'} <= visible)
+                self.assertEqual('export_ifc' in visible, preset == 'full')
+
+    def test_contract_discovery_never_connects_to_native_host(self):
+        with patch.object(self.server, 'get_vwx_connection', side_effect=AssertionError('No host access')):
+            contracts = json.loads(self.server.sdk_list(None, name='DTM6_GetZatXY'))
+            declaration = json.loads(self.server.vs_signature(None, name='Rect'))
+            commands = json.loads(self.server.list_commands(None, filter='plant'))
+        self.assertEqual([row['name'] for row in contracts['function']['parameters']],
+                         ['hDTMObject', 'TINType', 'x', 'y'])
+        self.assertEqual(declaration['name'], 'Rect')
+        self.assertIn('create_plant', {row['name'] for row in commands['commands']})
+        for result in (contracts, declaration, commands):
+            self.assertEqual(result['discovery_source'], 'local_repository')
+            self.assertFalse(result['host_presence_checked'])
+
+    def test_project_wrapper_preflights_nested_background_operations_before_connection(self):
+        denied = [
+            ('execute_script', {'code': 'mutation'}),
+            ('_batch', {'calls': [{'command': 'draw_rectangle', 'params': {}},
+                                 {'command': 'switch_document', 'params': {'name': 'other'}}]}),
+            ('sdk_sequence', {'calls': [{'name': 'Rect', 'arguments': {'p1': [0, 0], 'p2': [1, 1]}},
+                                       {'name': 'DoMenuTextByName', 'arguments': {}}]}),
+            ('sdk_call', {'name': 'PythonExecute', 'arguments': {}, 'options': {'force': True}}),
+        ]
+        with patch.object(self.server, 'VWX_BACKGROUND_MODE', True), \
+                patch.object(self.server, 'get_vwx_connection', side_effect=AssertionError('No queue access')):
+            for command, params in denied:
+                with self.subTest(command=command):
+                    result = json.loads(self.server.project_execute(None, 'a' * 64, command, params))
+                    self.assertEqual(result['code'], 'VWX_BACKGROUND_INTERACTION_REQUIRED')
+                    self.assertIs(result['dispatched'], False)
+
     def test_optout_keeps_generic_sdk_routes_but_omits_3098_explicit_tools(self):
         with patch.dict(sys.modules), patch.dict(os.environ, {'VWX_SDK_TOOLS': '0'}):
             sys.modules.pop('tool_tags', None)

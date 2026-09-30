@@ -48,6 +48,13 @@ _RESULTS = os.path.join(_IPC, 'results')
 _STAMP   = os.path.join(_IPC, 'pump.stamp')
 _LOG     = os.path.join(_DIR, 'bridge.log')
 
+# Shared pure validation, loaded from this installation without importing vs.
+import importlib.util
+_project_spec = importlib.util.spec_from_file_location(
+    'pump_project_guard', os.path.join(_DIR, 'project_guard.py'))
+_project_guard = importlib.util.module_from_spec(_project_spec)
+_project_spec.loader.exec_module(_project_guard)
+
 RESULT_TTL = 3600.0          # orphaned result files are removed after this
 
 # Marionette executions may tear down THIS Python context on frame return:
@@ -93,10 +100,15 @@ def _get_commands():
 def _dispatch(cmd, params):
     try:
         commands = _get_commands()
+        cmd, params = _project_guard.host_operation(
+            _DIR, cmd, params, process_id=os.getpid(),
+            get_active_path=lambda: commands.vs.GetFPathName())
         fn = getattr(commands, cmd, None)
         if fn is None:
             return {'error': 'Unknown command: %s' % cmd}
         return fn(params)
+    except _project_guard.ProjectError as e:
+        return e.response()
     except Exception as e:
         return {'error': str(e), 'traceback': traceback.format_exc()}
 
@@ -130,7 +142,14 @@ def _claim_and_run(fn):
     params = msg.get('params', {}) or {}
     rpath  = os.path.join(_RESULTS, cid + '.json')
     _log('START cid=%s cmd=%s' % (cid, cmd))
-    if cmd in _FIRE_AND_FORGET and not params.get('_sync'):
+    try:
+        early_ack = (cmd in _FIRE_AND_FORGET and not params.get('_sync')
+                     and _project_guard.read_lease(_DIR) is None)
+    except _project_guard.ProjectError as error:
+        # An unreadable lease must not become an early success acknowledgment.
+        _write_json(rpath, error.response())
+        return True
+    if early_ack:
         _write_json(rpath, {'status': 'triggered',
                             'note': 'Marionette execution — ack before dispatch.'})
         _log("fire-and-forget cid=%s cmd=%s" % (cid, cmd))

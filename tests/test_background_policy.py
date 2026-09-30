@@ -103,6 +103,25 @@ class BackgroundPolicyTests(unittest.TestCase):
         for unsafe in (True, 0, 'false', None):
             self.assertIsNotNone(POLICY.check('sdk_CreateCustomObjectN', {'arguments': {'showPref': unsafe}}))
 
+    def test_site_model_picker_requires_literal_false_even_in_owned_nested_jobs(self):
+        for selector in (True, 0, 'false', None, {'$ref': 0}):
+            with self.subTest(selector=selector):
+                call = {'name': 'DTM6_GetDTMObject',
+                        'arguments': {'hLayer': 'layer-uuid', 'bPickUpModel': selector}}
+                for command, params in (
+                        ('sdk_call', call),
+                        ('sdk_DTM6_GetDTMObject', {'arguments': call['arguments']}),
+                        ('project_execute', {'token': 'c' * 64, 'command': '_batch', 'params': {'calls': [
+                            {'command': 'draw_rectangle'},
+                            {'command': 'sdk_sequence', 'params': {'calls': [call]}}]}})):
+                    result = POLICY.check(command, params)
+                    self.assertEqual(result['code'], 'VWX_BACKGROUND_INTERACTION_REQUIRED')
+                    self.assertFalse(result['dispatched'])
+        allowed = {'name': 'DTM6_GetDTMObject',
+                   'arguments': {'hLayer': 'layer-uuid', 'bPickUpModel': False}}
+        self.assertIsNone(POLICY.check('project_execute', {
+            'token': 'c' * 64, 'command': 'sdk_sequence', 'params': {'calls': [allowed]}}))
+
     def test_document_switch_is_blocked_for_names_handles_and_force(self):
         for params in ({}, {'name': 'Other.vwx'}, {'hwnd': 123456},
                        {'name': 'Other.vwx', 'force': True},

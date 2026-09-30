@@ -28,7 +28,8 @@ _DIAGNOSTIC_IO = importlib.util.module_from_spec(_DIAGNOSTIC_SPEC)
 _DIAGNOSTIC_SPEC.loader.exec_module(_DIAGNOSTIC_IO)
 read_diagnostic_text = _DIAGNOSTIC_IO.read_diagnostic_text
 PYTHON_FILES = ('commands.py', 'vwx_pump.py', 'BridgeStart_MenuCommand.py', 'vs_index.json',
-                'vs_index_meta.json', 'sdk_catalog.json', 'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py')
+                'vs_index_meta.json', 'sdk_catalog.json', 'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py',
+                'project_guard.py', 'landscape_takeoff.py')
 NATIVE_FILES = ('VwxBridge.vlb', 'VwxBridge.vwr')
 FILES = PYTHON_FILES + NATIVE_FILES
 COUNTERS = ('posts', 'foreground_posts', 'background_posts', 'runner_completions_observed',
@@ -54,7 +55,7 @@ def deployment_hashes(plugin_dir):
 def validate_hashes(hashes):
     if (type(hashes) is not dict or set(hashes) != set(FILES)
             or any(type(value) is not str or not re.fullmatch('[0-9a-f]{64}', value) for value in hashes.values())):
-        raise ValueError('Complete SHA-256 provenance for all eleven deployment files is required')
+        raise ValueError('Complete SHA-256 provenance for all %d deployment files is required' % len(FILES))
 
 
 def _finite(value):

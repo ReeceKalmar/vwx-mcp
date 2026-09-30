@@ -319,6 +319,7 @@ class BackgroundDeliveryTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), before)
 
     def test_all_deployment_files_are_measured_from_correct_locations(self):
+        self.assertTrue({'project_guard.py', 'landscape_takeoff.py'} <= set(CHECK.PYTHON_FILES))
         with tempfile.TemporaryDirectory() as parent:
             root = Path(parent)
             plugin = root / 'installed' / 'VWX-MCP'

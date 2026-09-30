@@ -9,7 +9,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_FILES = ('commands.py', 'vwx_pump.py', 'BridgeStart_MenuCommand.py', 'vs_index.json',
-                'vs_index_meta.json', 'sdk_catalog.json', 'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py')
+                'vs_index_meta.json', 'sdk_catalog.json', 'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py',
+                'project_guard.py', 'landscape_takeoff.py')
 
 
 @unittest.skipUnless(os.name == 'nt', 'Windows deployment requires PowerShell')
@@ -65,10 +66,12 @@ function Get-Process {
             self.assertEqual(target.read_bytes(), ('old ' + name).encode('utf-8'))
 
     def test_complete_deployment_backs_up_all_files_and_quarantines_queue(self):
+        self.assertEqual(len(self.sources), 13)
         result = self.execute()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         backups = list(self.backups.iterdir())
         self.assertEqual(len(backups), 1)
+        self.assertEqual(sum(path.is_file() for path in backups[0].iterdir()), 13)
         self.assertEqual((backups[0] / 'ipc/jobs/previous-job.json').read_bytes(), b'preserve; never replay')
         self.assertEqual(list((self.python / 'ipc/jobs').iterdir()), [])
         self.assertTrue((self.python / 'ipc/results').is_dir())
@@ -83,6 +86,17 @@ function Get-Process {
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Deployment source missing', result.stderr)
         self.assert_unmodified()
+
+    def test_project_lease_blocks_deployment_and_preserves_files_queue_and_lease(self):
+        lease = self.python / 'bridge.project.json'
+        lease_data = json.dumps({'owner': 'offline-test-owner', 'token': 'fake-token-preserve',
+                                 'document_path': 'C:\\Projects\\Landscape.vwx'}).encode('utf-8')
+        lease.write_bytes(lease_data)
+        result = self.execute()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('project ownership lease exists', result.stderr)
+        self.assert_unmodified()
+        self.assertEqual(lease.read_bytes(), lease_data)
 
     def test_short_appdata_alias_preserves_backup_and_queue_confinement(self):
         import ctypes

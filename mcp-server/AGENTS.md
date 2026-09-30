@@ -13,6 +13,9 @@ in `vwx-plugin`, not in the server process.
   after all registrations. Do not restore `structured_output=False`.
 - `sdk_tools.py`: exact generated SDK schemas, shared `sdk` tag and the same
   output-schema suppression. Presets must retain discovery/escape tools.
+- `tool_tags.py`: landscape is the compact default; full SDK registrations are
+  opt-in. Preserve explicit client overrides and distinguish available tools
+  from visible defaults in coverage reports. A preset is not native validation.
 - `background_policy.py`: recursively preflight the entire request before
   connection/publication. Raw scripts and interactive routes stay blocked by
   default; `options.force` is not a policy override.
@@ -22,6 +25,14 @@ in `vwx-plugin`, not in the server process.
   hexadecimal CID characters before any result-path read or removal.
 - `diagnostic_io.py`: four reads/30 ms maximum delay only for `PermissionError`
   on diagnostic snapshots. Never apply it to jobs, results or lease records.
+- `project_session.py` plus host `project_guard.py`: persistent shared-project
+  ownership under the same publication gate. Hash private owner tokens; put
+  only lease identity/path in jobs. Recheck process/path inside every native
+  owner job. Ordinary publications are blocked while held; never expire or
+  force-release uncertain ownership. See [multi-agent contract](../docs/MULTI_AGENT_WORKFLOW.md).
+- `discovery.py`: local repository `sdk_list`, `vs_signature` and `list_commands`.
+  Disclose that host presence was not checked; explicit presence needs native
+  dispatch and therefore the project owner route while a lease is active.
 
 One process-wide queue serializes jobs, not whole workflows or documents. Keep
 claimed-timeout uncertainty distinct from proven unclaimed removal. Never replay
@@ -40,6 +51,7 @@ python -m unittest discover -s tests -p "test_server_2027.py" -v
 python -m unittest discover -s tests -p "test_background_policy.py" -v
 python -m unittest discover -s tests -p "test_bridge_maintenance.py" -v
 python -m unittest discover -s tests -p "test_diagnostic_io.py" -v
+python -m unittest discover -s tests -p "test_project_session.py" -v
 python tools/pruefe_konsistenz.py .
 ```
 

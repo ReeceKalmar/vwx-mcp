@@ -7,10 +7,13 @@ function, contract or failure being changed.
 
 ## Project identity
 
+- Primary use: landscape architecture. Prioritize verified project workflows
+  from [design workflow](docs/DESIGN_WORKFLOW.md) and [roadmap](docs/ROADMAP.md)
+  over expanding API counts. Keep generic SDK access for contract discovery.
 - Supported native host: Vectorworks 2027 on Windows; SDK 3200/build 882699.
 - The generated Python index has 3,098 functions. C++ SDK interfaces and
   `Handle` methods are outside that denominator.
-- 287 handwritten MCP tools, 3,098 generated tools, 362 public handwritten verbs.
+- 294 handwritten MCP tools, 3,098 generated tools, 367 public handwritten verbs.
 - Use [coverage](docs/TOOL_COVERAGE.md) for measured support. A wrapper, callable
   name or fake-host pass does not prove native operation.
 - Old 2026 implementations and superseded setup notes were removed. Git history
@@ -20,6 +23,7 @@ function, contract or failure being changed.
 
 | Task | Read next | Main implementation |
 |---|---|---|
+| Landscape project workflow and priorities | [design workflow](docs/DESIGN_WORKFLOW.md) and [roadmap](docs/ROADMAP.md) | Existing handwritten workflows, then discovered SDK contracts |
 | Client tools, timeout, queue, background policy | [mcp-server/AGENTS.md](mcp-server/AGENTS.md) | `vwx_mcp_server.py`, `background_policy.py`, `maintenance.py` |
 | Handwritten commands, generated SDK execution | [vwx-plugin/AGENTS.md](vwx-plugin/AGENTS.md) | `commands.py`, `sdk_runtime.py`, `sdk_sequences.py`, `vwx_pump.py` |
 | Native scheduling, palette, C++ helpers | [native/AGENTS.md](native/AGENTS.md) | `Source/Bridge/`, `VwxBridge2027.vcxproj` |
@@ -41,9 +45,10 @@ function, contract or failure being changed.
    jobs. `sdk_sequence`, `vwx_batch` and a script each remain one job. A sequence
    has no rollback. Returning to the event loop is necessary but is not itself
    proof that regeneration finished.
-4. All clients share the active drawing. Separate document guards and mutations
-   are not transactions. Coordinate ownership; agents may prepare independent
-   code/tests concurrently, but only one owner should perform native work.
+4. All clients share the active drawing. Use `project_session` and `project_execute`
+   for coordinated multi-agent native work; every owner job verifies the exact
+   saved drawing. This is not a transaction. Agents may prepare/review concurrently,
+   but only one owner performs native work. Never steal or force-clear a lease.
 5. Use UUID strings for document objects. Validate the object type and required
    context. Do not invent handles, resource indices, pointers or event contexts.
 6. Preserve the distinction between native results, compatibility replacements,

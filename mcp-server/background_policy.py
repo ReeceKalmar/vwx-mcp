@@ -68,6 +68,12 @@ def check(command, params=None, *, sdk_catalog=None, depth=0):
     if command == 'bridge_maintenance' and depth:
         return {'error': 'Maintenance actions must be separate top-level typed requests',
                 'code': 'VWX_MAINTENANCE_CONTEXT', 'command': command, 'dispatched': False}
+    if command == 'project_execute':
+        if depth or set(params) != {'token', 'command', 'params'}:
+            return {'error': 'Project jobs must be separate top-level typed requests',
+                    'code': 'VWX_PROJECT_CONTEXT', 'dispatched': False}
+        return check(params.get('command'), params.get('params'),
+                     sdk_catalog=sdk_catalog, depth=depth + 1)
     if command == 'create_pio' and params.get('show_pref', False) is False:
         # The documented flag suppresses the preferences dialog. Errors inside
         # a third-party object can still surface; this is not a sandbox.
@@ -115,6 +121,11 @@ def check(command, params=None, *, sdk_catalog=None, depth=0):
         if not isinstance(name, str) or name not in entries:
             return _error(command, 'Unknown SDK contract; background requirements cannot be checked.')
         entry = entries[name]
+        if name == 'DTM6_GetDTMObject':
+            arguments = params.get('arguments')
+            if isinstance(arguments, dict) and arguments.get('bPickUpModel') is False:
+                return None
+            return _error(command, 'DTM6_GetDTMObject requires bPickUpModel=false to avoid a site-model selection dialog.')
         if (name == 'CreateCustomObjectN' and isinstance(params.get('arguments'), dict)
                 and params['arguments'].get('showPref') is False):
             return None

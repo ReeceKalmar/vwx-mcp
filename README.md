@@ -1,7 +1,8 @@
 # Vectorworks 2027 MCP bridge
 
-Control Vectorworks through typed MCP tools for geometry, drawing data,
-resources, worksheets and SDK operations. This Windows fork of
+Use Vectorworks for landscape architecture through typed MCP tools for site
+geometry, planting, building context, drawing data, quantities and sheets.
+This Windows fork of
 [vicquick/vwx-mcp](https://github.com/vicquick/vwx-mcp) targets **Vectorworks 2027,
 SDK 3200**, with generated Python bindings from SDK build **882699**.
 
@@ -15,6 +16,9 @@ Known interactive operations and arbitrary scripts are blocked by default.
 
 - **Install or build:** [complete setup and build instructions](docs/BUILD_SETUP.md).
 - **Develop with an AI agent:** [AGENTS.md](AGENTS.md), then the relevant subsystem guide.
+- **Model a landscape project:** [design workflow](docs/DESIGN_WORKFLOW.md).
+- **Use landscape tools:** [terrain, templates, planting and takeoff recipes](docs/LANDSCAPE_TOOLS.md).
+- **Coordinate agents:** [project ownership and handoffs](docs/MULTI_AGENT_WORKFLOW.md).
 - **Find a topic:** [documentation index](docs/INDEX.md).
 - **Understand execution:** [architecture](docs/ARCHITECTURE.md) and
   [background operation](docs/BACKGROUND_WORK.md).
@@ -48,33 +52,49 @@ JSON example. `bridge/vwx-mcp.bat` is the optional localhost HTTP launcher.
 
 Start with a disposable drawing and call `ping`, `get_document_info`, and
 `vs_index_stats`. Verify a created object in a separate request before using
-the bridge on project drawings.
+the bridge on project drawings. Run
+`python tools/check_landscape_installation.py` with your configured Python to
+check deployed companions; use `--source-only` for an offline checkout check.
 
 ## API access
 
-The default inventory contains **287 handwritten tools** and **3,098 generated
-SDK tools**. Prefer a handwritten tool when it covers the intended operation.
-For SDK calls, inspect the contract first:
+The default `landscape` profile exposes the relevant handwritten workflows and
+omits individual generated SDK registrations. Prefer a handwritten tool when it
+covers the intended operation. The full inventory still contains **294
+handwritten tools** and **3,098 generated SDK tools**; complete API coverage is
+not the landscape development target. For SDK calls, inspect the contract first:
 
 ```python
 sdk_list(name="Abs")
 sdk_call(name="Abs", arguments={"v": -3})
 ```
 
-Set `VWX_SDK_TOOLS=0` to omit the 3,098 individual registrations while retaining
-`sdk_call`, `sdk_list`, and `sdk_sequence`. Object handles travel as UUIDs.
+`sdk_call`, `sdk_list`, and `sdk_sequence` remain available in the compact
+profile. Set `VWX_TOOLSET=full` to opt into the full inventory;
+`VWX_SDK_TOOLS=0` explicitly omits named SDK registrations even with that profile.
+Object handles travel as UUIDs.
 See [SDK adapter contracts](docs/SDK_ADAPTERS_2027.md) for JSON types, callbacks,
 construction scopes and disclosed compatibility replacements.
 
-Multiple clients share one active Vectorworks drawing. They do **not** get
-isolated document sessions; coordinate document ownership and serialize work
-on different files. A sequence has no rollback or regeneration break between
-its calls. An uncertain result must not trigger automatic mutation replay.
+The default exposes **257 tools**, including bulk existing/proposed terrain
+sampling, native template inspection/duplication, validated Plant edits and
+classified proposed-work takeoffs with optional sourced prices. A native copy
+or field write still needs separate geometry verification.
+
+Multiple agents can prepare and review the same project in parallel. Reserve
+native ownership with `project_session` and use `project_execute` for every
+owner read/write. Each job checks the exact saved drawing before dispatch;
+other clients are blocked until release. The application still has one active
+drawing, and sequences have no rollback or regeneration break. An uncertain
+result must not trigger automatic mutation replay.
 
 ## Verification and limitations
 
-The publication check ran **821 offline tests** successfully, with one Windows
-symlink test skipped. The recorded native baseline passed all **57 default
+The landscape update ran **948 offline tests: 947 passed and one Windows
+symlink test skipped**, including the compiled native harnesses. Contract,
+generated-report and repository checks passed. These new workflows have not
+yet been deployed or verified in a live drawing. The recorded earlier native
+baseline passed all **57 default
 live fixture families / 2,303 unique jobs** across resumed batches. The
 [default-suite audit](docs/LIVE_DEFAULT_SUITE_2027.json) retains interruptions
 and repeated attempts. Cleanup validation is recorded in

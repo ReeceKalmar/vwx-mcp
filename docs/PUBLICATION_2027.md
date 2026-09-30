@@ -5,6 +5,46 @@ test tooling and measured results as a documented Windows source project.
 It does not claim complete SDK functionality or add native passes merely by
 publishing source. See [coverage](TOOL_COVERAGE.md) for the verification limits.
 
+## Landscape workflow update, 2026-09-29
+
+The default now exposes 257 landscape-focused tools; the optional full inventory
+is 294 handwritten plus 3,098 named SDK tools. Added typed bulk terrain queries,
+native landscape template inspection/copying, verified classification and
+current proposed-work quantities with sourced-rate costing. Plant/record/site
+validation now rejects ambiguous targets and reports partial state explicitly.
+
+Persistent project ownership lets agents prepare and review in parallel while
+one owner performs native work. Each owner job verifies its process and exact
+saved drawing. Competing publications, unsafe nested operations, uncertain
+release and maintenance overlap are rejected. Installation checks and the
+[landscape](LANDSCAPE_TOOLS.md), [multi-agent](MULTI_AGENT_WORKFLOW.md) and
+[setup](BUILD_SETUP.md) guides describe the operational contract.
+
+Validation used Python 3.12.14, FastMCP 4.0.3 and Pillow 12.3.0 on Windows:
+
+- Full offline suite: **948 tests in 101.853 seconds; 947 passed, one skipped**.
+  The skip requires Windows symlink privileges. Compiled native harnesses and
+  independent reparse-path checks passed.
+- Handwritten wrappers/tags and exact SDK arity checks: no findings.
+- SDK test matrix and API coverage: regenerated/current. SDK generated
+  wrappers/catalog still match the pinned SDK 3200 build 882699 source.
+- Repository hygiene/documentation links, LF Python/JSON files and `git diff
+  --check`: passed. Source-only installation check: passed.
+
+The initial full run exposed four deployment-fixture failures because its
+mock checkout lacked the new host modules. The fixtures now cover all thirteen
+deployed artifacts and reject deployment while project ownership is held; the
+complete rerun above passed. Windows temporary-file ACL restrictions required
+normal temporary-file access for filesystem tests; assertions were not weakened.
+Logs remain local under `.audit/landscape-complete-unittest*.log`.
+
+No native host operation, deployment or installed-file replacement was performed
+for this update. The installed Python bridge was detected as older; install all
+eleven Python/data companions together. The native binary sources are unchanged.
+New composed workflows still require authorized disposable-drawing verification.
+Historical native outcomes and original source hashes below and in the evidence
+reports remain intact; this update adds no native pass credit.
+
 ## Cleanup
 
 - Removed the unused modal/TCP bridge scripts and unreachable server TCP and

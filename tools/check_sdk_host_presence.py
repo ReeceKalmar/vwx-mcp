@@ -13,6 +13,10 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+PYTHON_FILES = ('commands.py', 'vwx_pump.py', 'BridgeStart_MenuCommand.py',
+                'vs_index.json', 'vs_index_meta.json', 'sdk_catalog.json',
+                'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py',
+                'project_guard.py', 'landscape_takeoff.py')
 
 
 def validate_page(page, names, offset, limit):
@@ -58,9 +62,8 @@ async def execute(plugin_dir, output, *, page_size=200):
     plugin_dir = Path(plugin_dir).resolve(strict=True)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
-    filenames = ('commands.py', 'sdk_runtime.py', 'sdk_catalog.json')
     def hashes(directory):
-        return {name: hashlib.sha256((directory / name).read_bytes()).hexdigest() for name in filenames}
+        return {name: hashlib.sha256((directory / name).read_bytes()).hexdigest() for name in PYTHON_FILES}
     expected_hashes = hashes(ROOT / 'vwx-plugin')
     if hashes(plugin_dir) != expected_hashes:
         raise ValueError('Deploy matching discovery/runtime files before checking installed availability')

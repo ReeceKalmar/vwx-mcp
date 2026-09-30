@@ -180,6 +180,7 @@ class SDKCommandTests(unittest.TestCase):
         self.vs.GetMaterialArea.assert_called_once_with('object', 'Stone')
 
     def test_dtm_rise_requires_send_type_and_reports_modified_input(self):
+        self.bind('DTM6_IsDTM6Object', True)
         self.bind('DTM6_RiseToSurface', True)
         missing = self.run_command('rise_to_surface', object_id='object', site_model_id='dtm')
         self.assertIn('error', missing)

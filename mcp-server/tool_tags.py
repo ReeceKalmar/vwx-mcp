@@ -8,16 +8,21 @@ Wiring in vwx_mcp_server.py main():
 
     from tool_tags import preset_tags
     import os
-    sel = os.environ.get("VWX_TOOLSET", "full")
+    sel = os.environ.get("VWX_TOOLSET", DEFAULT_TOOLSET)
     if sel != "full":
         mcp.enable(tags=preset_tags(sel), only=True)
 """
+
+DEFAULT_TOOLSET = "landscape"
+DEFAULT_SDK_TOOLS = "0"
 
 # tool name -> primary tag (mirrors the section banners in vwx_mcp_server.py)
 TOOL_TAGS = {
     # document
     "ping": "document",
     "bridge_maintenance": "document",
+    "project_session": "document",
+    "project_execute": "escape",
     "get_document_info": "document",
     "save_document": "document",
     "save_document_as": "document",
@@ -120,12 +125,12 @@ TOOL_TAGS = {
     "attach_record": "records",
     "detach_record": "records",
     "create_record_format": "records",
-    # bim (architectural / ifc / materials / pio / components)
-    "get_ifc_entity": "bim",
-    "set_ifc_entity": "bim",
-    "get_ifc_properties": "bim",
-    "set_ifc_property": "bim",
-    "export_ifc": "bim",
+    # building context, materials and plug-in objects; IFC has its own tag
+    "get_ifc_entity": "ifc",
+    "set_ifc_entity": "ifc",
+    "get_ifc_properties": "ifc",
+    "set_ifc_property": "ifc",
+    "export_ifc": "ifc",
     "create_wall": "bim",
     "create_space": "bim",
     "get_spaces": "bim",
@@ -143,6 +148,11 @@ TOOL_TAGS = {
     "update_plant": "landscape",
     "get_plant_database": "landscape",
     "batch_update_plants": "landscape",
+    "landscape_object_info": "landscape",
+    "landscape_duplicate_template": "landscape",
+    "landscape_set_metadata": "landscape",
+    "landscape_takeoff": "landscape",
+    "terrain_sample_points": "site",
     "baumkataster_set_fields": "landscape",
     # site
     "get_site_model_info": "site",
@@ -254,14 +264,14 @@ TOOL_TAGS = {
     "set_worksheet_row_height": "worksheets",
     "merge_worksheet_cells": "worksheets",
     "place_worksheet_on_drawing": "worksheets",
-    "ifc_list_psets": "bim",
-    "ifc_get_pset_prop": "bim",
-    "ifc_attach_pset": "bim",
-    "ifc_remove_pset": "bim",
-    "ifc_define_pset": "bim",
-    "ifc_get_entity_prop": "bim",
-    "ifc_set_entity_prop": "bim",
-    "ifc_bulk_set_pset": "bim",
+    "ifc_list_psets": "ifc",
+    "ifc_get_pset_prop": "ifc",
+    "ifc_attach_pset": "ifc",
+    "ifc_remove_pset": "ifc",
+    "ifc_define_pset": "ifc",
+    "ifc_get_entity_prop": "ifc",
+    "ifc_set_entity_prop": "ifc",
+    "ifc_bulk_set_pset": "ifc",
     "create_texture": "appearance",
     "get_texture_info": "appearance",
     "set_texture_size": "appearance",
@@ -300,36 +310,43 @@ TOOL_TAGS = {
     "get_class_appearance": "classes",
     "get_symbol_options": "symbols",
     "get_symbol_type": "symbols",
-    "ifc_dm_add_entry": "bim",
-    "ifc_dm_add_field": "bim",
-    "ifc_dm_add_pset": "bim",
-    "ifc_dm_add_pset_field": "bim",
-    "ifc_dm_delete_entry": "bim",
-    "ifc_dm_delete_field": "bim",
-    "ifc_dm_delete_pset": "bim",
-    "ifc_dm_delete_pset_field": "bim",
-    "ifc_dm_dump": "bim",
-    "ifc_dm_enable_entry": "bim",
-    "ifc_dm_enable_object": "bim",
-    "ifc_dm_enable_pset": "bim",
-    "ifc_dm_list_objects": "bim",
-    "ifc_dm_load": "bim",
-    "ifc_dm_reset_to_cobie_default": "bim",
-    "ifc_dm_reset_to_default": "bim",
-    "ifc_dm_save": "bim",
-    "ifc_dm_set_entry_type": "bim",
-    "ifc_dm_set_field_flags": "bim",
-    "ifc_dm_set_field_map": "bim",
-    "ifc_dm_set_object_condition": "bim",
-    "ifc_dm_set_pset_field_flags": "bim",
-    "ifc_import_pset_defs": "bim",
-    "ifc_pset_defined": "bim",
+    "ifc_dm_add_entry": "ifc",
+    "ifc_dm_add_field": "ifc",
+    "ifc_dm_add_pset": "ifc",
+    "ifc_dm_add_pset_field": "ifc",
+    "ifc_dm_delete_entry": "ifc",
+    "ifc_dm_delete_field": "ifc",
+    "ifc_dm_delete_pset": "ifc",
+    "ifc_dm_delete_pset_field": "ifc",
+    "ifc_dm_dump": "ifc",
+    "ifc_dm_enable_entry": "ifc",
+    "ifc_dm_enable_object": "ifc",
+    "ifc_dm_enable_pset": "ifc",
+    "ifc_dm_list_objects": "ifc",
+    "ifc_dm_load": "ifc",
+    "ifc_dm_reset_to_cobie_default": "ifc",
+    "ifc_dm_reset_to_default": "ifc",
+    "ifc_dm_save": "ifc",
+    "ifc_dm_set_entry_type": "ifc",
+    "ifc_dm_set_field_flags": "ifc",
+    "ifc_dm_set_field_map": "ifc",
+    "ifc_dm_set_object_condition": "ifc",
+    "ifc_dm_set_pset_field_flags": "ifc",
+    "ifc_import_pset_defs": "ifc",
+    "ifc_pset_defined": "ifc",
     "set_symbol_options": "symbols",
 }
 
 # workflow presets -> set of tags to enable (only=True). "full" = no filtering.
 PRESETS = {
     "full": None,  # sentinel: enable everything
+    # Landscape design includes building context, site geometry, planting,
+    # quantities and presentation. IFC administration stays discoverable via
+    # vwx/list_commands or the full/modeling presets.
+    "landscape": {"document", "layers", "classes", "query", "manipulate",
+                  "draw2d", "draw3d", "symbols", "appearance", "records",
+                  "bim", "landscape", "site", "viewports", "worksheets",
+                  "io", "view", "geo", "escape"},
     "sdk": {"sdk", "escape", "document", "query"},
     "gis": {"query", "layers", "classes", "appearance", "io", "geo",
             "records", "document", "escape"},
@@ -338,7 +355,7 @@ PRESETS = {
     # drops it strands the agent with only the explicit verbs and no way back,
     # including no way to call set_toolset to undo the filter. It must be in
     # every preset.
-    "modeling": {"draw2d", "draw3d", "manipulate", "bim", "symbols",
+    "modeling": {"draw2d", "draw3d", "manipulate", "bim", "ifc", "symbols",
                  "appearance", "query", "document", "view", "escape"},
     "baumkataster": {"landscape", "records", "query", "layers", "document",
                      "io", "escape"},

@@ -6,7 +6,7 @@ Both reads and writes follow the same menu-command execution boundary.
 
 ```text
 MCP client -> vwx_mcp_server.py -> recursive background-policy preflight
-  -> maintenance/publication gate -> ipc/jobs/<timestamp>-<cid>.json
+  -> project/maintenance publication gate -> ipc/jobs/<timestamp>-<cid>.json
   -> native palette timer posts one private UI-thread broker event
   -> broker calls gSDK->DoMenuName("VWX Bridge Start", 0)
   -> Python menu launcher -> vwx_pump.pump_all() -> one command
@@ -33,10 +33,12 @@ There is no active watchdog, notification-context Python executor or TCP bridge.
 
 1. `cmd` validates the complete background request before opening a connection.
    An interactive member rejects the entire batch/sequence before any mutation.
-2. The cross-process publication gate checks the maintenance lease and durably
-   records ordinary publication ownership before atomic job publication. While
-   a lease is held, only its owner's top-level typed maintenance command can
-   publish native work. Nested maintenance is rejected even without a lease.
+2. The cross-process publication gate checks mutually exclusive maintenance and
+   project leases and durably records publication ownership before atomic job
+   publication. A maintenance lease permits only its owner's maintenance command.
+   A project lease permits only its owner's `project_execute` envelope; the
+   pump verifies lease identity, process and exact saved drawing before nested
+   dispatch. Neither token is published in jobs. Nested lease actions are rejected.
 3. The palette obtains the frame with `GS_GetMainHWND`, creates a message-only
    broker on that UI thread, and posts one-use private events. Its handler
    rechecks thread/frame/queue/stamps before calling the fixed SDK menu selector.
@@ -75,6 +77,7 @@ twelve lowercase hexadecimal characters; validation precedes result-path access.
 | `ipc/readonly.json` | Server | Compatibility metadata; never authorizes notification execution |
 | `bridge.publish.lock` | Cooperating servers | Shared OS advisory publication/acquisition gate |
 | `bridge.maintenance.json` | Maintenance owner | Persistent hashed-token lease, outside IPC deployment archival |
+| `bridge.project.json` | Project owner | Persistent hashed-token project lease; exact saved path, process and lease identity |
 | `bridge.publications/<cid>.json` | Server | Durable ordinary-job publication/uncertainty marker |
 | `bridge.log` | Native bridge/pump | Scheduling and command-start/result diagnostics |
 
@@ -98,12 +101,16 @@ already consumed it. Python exception handling cannot catch native crashes.
 its execution can destroy the Python context; that acknowledgment is not
 completion. Background policy blocks the workflow.
 
-All clients share the active document. Job serialization does not make a guard
-and its following mutation atomic or provide per-agent document isolation.
+All clients share the active document. [Project ownership](MULTI_AGENT_WORKFLOW.md)
+spans multiple jobs and checks the drawing inside each owner's operation, allowing
+parallel offline preparation with serialized native edits. It is not per-agent
+document isolation or a transaction. Ordinary unowned jobs cannot enter while
+the lease is held, including jobs sent by older clients to the updated pump.
 Maintenance additionally binds the original OS process, validates the sole
 saved drawing, confirms actual process exit before deployment, then verifies
 the new process/drawing and all installed hashes before releasing its lease.
-It is cooperative coordination, not protection from old clients or human edits.
+These protocols require current host files and cooperating clients; they do not
+prevent human edits or protect a host still running older bridge code.
 
 For operational requirements and telemetry interpretation see
 [BACKGROUND_WORK.md](BACKGROUND_WORK.md); for maintenance recovery see

@@ -178,14 +178,15 @@ remain errors.
 
 ## Registration and visibility
 
-Named SDK tools register by default with `VWX_SDK_TOOLS=1`. Set it to `0`,
-`false` or `off` before starting the MCP server to omit the 3,098 individual
-registrations. `sdk_call`, `sdk_list`, `sdk_sequence` and the dispatcher remain
-available. The `sdk` toolset preset exposes the SDK tag plus discovery/document
-tools; ordinary workflow presets can keep the visible list smaller.
+The default `landscape` profile exposes **257 handwritten tools** and omits
+individual SDK registrations. `sdk_call`, `sdk_list`, `sdk_sequence` and the
+dispatcher remain available. Set `VWX_TOOLSET=full` or `sdk` at startup to opt
+into named SDK registrations, or set `VWX_SDK_TOOLS=1` explicitly. `0`, `false`
+or `off` overrides registration for every preset. Visibility changes through
+`set_toolset` cannot register SDK wrappers omitted at startup.
 
-Default registration is **3,385 tools**: **287 handwritten tools** plus
-**3,098 named SDK tools**. The dispatcher offers **362 handwritten verbs** plus
+The full inventory is **3,392 tools**: **294 handwritten tools** plus
+**3,098 named SDK tools**. The dispatcher offers **367 handwritten verbs** plus
 **3,098 generated commands**. `list_commands(include_sdk=true)` includes the
 generated names. Source registration and live functionality are different
 measurements. See [TOOL_COVERAGE.md](TOOL_COVERAGE.md).

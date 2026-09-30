@@ -87,20 +87,22 @@ applies only to the child process; organizational policy still takes precedence.
 If a downloaded script is blocked, review its contents and your organization’s
 policy instead of disabling machine-wide protections.
 
-Deployment checks all eleven source files and the target paths before changing
+Deployment checks all thirteen source files and the target paths before changing
 the installation. It backs up existing files, quarantines old IPC work to avoid
 replay, copies the files and verifies their SHA-256 values. Destinations are:
 
 ```text
 %APPDATA%\Nemetschek\Vectorworks\2027\Plug-ins\VwxBridge.vlb
 %APPDATA%\Nemetschek\Vectorworks\2027\Plug-ins\VwxBridge.vwr
-%APPDATA%\Nemetschek\Vectorworks\2027\Plug-ins\VWX-MCP\<nine Python/data files>
+%APPDATA%\Nemetschek\Vectorworks\2027\Plug-ins\VWX-MCP\<eleven Python/data files>
 ```
 
 Backups are under the user version folder's `MCP-Backups`. This installer uses
 the user plug-in folder, not Program Files. It refuses a running host and
 unexpected reparse paths. If deployment fails, inspect the error and backup;
 do not restart into a partially installed version or restore old pending jobs.
+An existing project ownership lease also blocks deployment. Finish/reconcile
+and release it through MCP before closing the host; do not delete the lease.
 
 Launch Vectorworks and complete its normal startup. A locally built plug-in may
 need your approval in **Unknown Developer Plug-ins**. The credential example
@@ -142,7 +144,8 @@ replace the absolute paths and put it in your client's MCP server settings:
         "VWX_VW_VERSION": "2027",
         "VWX_BACKGROUND_MODE": "1",
         "VWX_CACHE_TTL": "0",
-        "VWX_SDK_TOOLS": "1"
+        "VWX_TOOLSET": "landscape",
+        "VWX_SDK_TOOLS": "0"
       }
     }
   }
@@ -155,9 +158,20 @@ folder in **both** the MCP server and the Vectorworks process environment before
 launching them. A bad explicit path fails rather than silently selecting another
 installation. The native binary/resources remain in a host plug-in search path.
 
-Set `VWX_SDK_TOOLS=0` for a compact tool list. `sdk_call`, `sdk_list` and
-`sdk_sequence` remain available. The `VWX_TOOLSET` presets are `full`, `sdk`,
-`gis`, `modeling`, `baumkataster`, and `minimal`.
+The default is `VWX_TOOLSET=landscape`, with no individual SDK registrations.
+`sdk_call`, `sdk_list` and `sdk_sequence` remain available. The `VWX_TOOLSET`
+presets are `landscape`, `full`, `sdk`, `gis`, `modeling`, `baumkataster`, and
+`minimal`. The landscape profile retains terrain, planting, building context,
+records, worksheets, annotations and sheets; it does not certify native behavior.
+See [design workflow](DESIGN_WORKFLOW.md) for verification boundaries.
+
+For the complete inventory, set `VWX_TOOLSET=full` and `VWX_SDK_TOOLS=1`.
+An explicit `VWX_SDK_TOOLS=0` overrides even the full or SDK startup profile.
+Changing visibility with `set_toolset` does not register omitted SDK tools;
+enabling named SDK wrappers after compact startup requires restarting the MCP
+server with `VWX_SDK_TOOLS=1`. Generic SDK calls remain usable without a restart.
+Existing client settings that explicitly request `full`/`1` keep that behavior;
+change those settings to the example above to use the compact profile.
 
 For HTTP clients, `bridge/vwx-mcp.bat` bootstraps the repository `.venv`, installs
 the pinned requirements and serves `http://127.0.0.1:8082/mcp`. Keep the terminal
@@ -166,6 +180,19 @@ between client and server; the server still uses the local Vectorworks file
 queue. No legacy TCP bridge or external watchdog is required.
 
 ## Verify the installation
+
+Run this read-only check with the same Python that starts your MCP server:
+
+```powershell
+& .\.venv\Scripts\python.exe tools/check_landscape_installation.py
+```
+
+It checks Python/dependencies, source SDK identity, all eleven deployed host
+companions and native artifacts. Add `--plugin-dir 'C:\path\to\VWX-MCP'` for
+a custom location or `--json` for structured diagnostics. `--source-only`
+checks the checkout without requiring Vectorworks or a deployment. This check
+does not open a document, edit an installation, acquire a lease or execute
+native code. A mismatch needs a reviewed deployment, not an ignored warning.
 
 Use a blank, saved disposable drawing. Through MCP:
 
@@ -180,6 +207,28 @@ Use [background diagnostics](BACKGROUND_WORK.md) if the heartbeat is absent or
 a job is not picked up. Do not manufacture completion stamps or blindly retry
 a mutation with an uncertain outcome. The [testing guide](TESTING_2027.md)
 explains the guarded live suite; do not execute it on a real project drawing.
+
+For landscape work, use the [tool recipes](LANDSCAPE_TOOLS.md). If several
+agents will use the bridge, configure every server against the same installation
+and use [project ownership](MULTI_AGENT_WORKFLOW.md). The owner calls
+`project_execute` for each native request until release; other agents can plan,
+discover contracts and review in parallel.
+
+## Update an existing installation
+
+Finish pending work and release project ownership while the host is still
+running. Save and close Vectorworks normally. Pull the source, install the
+pinned Python requirements, rebuild against SDK 3200, and run the deployment
+script above. Keep the complete checkout: server discovery and ownership read
+its companion modules. Copying only `vwx_mcp_server.py` is insufficient.
+
+This landscape update adds `project_guard.py` and `landscape_takeoff.py` to the
+host installation, plus server-side `project_session.py` and `discovery.py`.
+Deploy all companions together, restart every MCP server and verify installed
+hashes before resuming native work. Update the saved custom menu command if its
+source changed. Never update files underneath an active Vectorworks Python
+session. Authorized automatic save/restart updates use the separate
+[maintenance protocol](MAINTENANCE_2027.md).
 
 ## Development checks and SDK regeneration
 

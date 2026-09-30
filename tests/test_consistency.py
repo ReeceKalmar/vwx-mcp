@@ -127,6 +127,14 @@ class ConsistencyTests(unittest.TestCase):
             read("vwx-plugin/commands.py"),
             read("mcp-server/tool_tags.py")), [])
 
+    def test_project_envelope_is_checked_without_inventing_a_native_verb(self):
+        source = '@vtool\ndef tool():\n    return cmd("project_execute", {"token": token, "command": command, "params": {}})'
+        self.assertEqual(self.findings(source, ''), [])
+        invalid = '@vtool\ndef tool():\n    return cmd("project_execute", {"unexpected": 1})'
+        result = self.findings(invalid, '')
+        self.assertIn(('unused_keys', 'tool', ['unexpected']), result)
+        self.assertIn(('missing_required_keys', 'tool', ['command', 'token']), result)
+
 
 if __name__ == "__main__":
     unittest.main()

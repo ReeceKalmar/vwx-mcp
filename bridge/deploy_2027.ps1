@@ -14,7 +14,8 @@ $metadata = Get-Content -LiteralPath (Join-Path $repo 'vwx-plugin\vs_index_meta.
 if ($metadata.sdk_version -ne 3200) { throw 'SDK provenance must be 3200.' }
 $pairs = @()
 foreach ($name in @('commands.py','vwx_pump.py','BridgeStart_MenuCommand.py','vs_index.json','vs_index_meta.json',
-                   'sdk_catalog.json','sdk_generated.py','sdk_runtime.py','sdk_sequences.py')) {
+                   'sdk_catalog.json','sdk_generated.py','sdk_runtime.py','sdk_sequences.py',
+                   'project_guard.py','landscape_takeoff.py')) {
     $pairs += ,@((Join-Path $repo "vwx-plugin\$name"), (Join-Path $pythonDir $name))
 }
 foreach ($name in @('VwxBridge.vlb','VwxBridge.vwr')) {
@@ -55,6 +56,9 @@ foreach ($path in @($plugins, $pythonDir, $backupRoot, (Join-Path $pythonDir 'ip
     Assert-NoReparsePath $path
 }
 foreach ($pair in $pairs) { Assert-NoReparsePath $pair[1] }
+if (Test-Path -LiteralPath (Join-Path $pythonDir 'bridge.project.json')) {
+    throw 'A project ownership lease exists. Complete or reconcile the owning workflow before deployment; the lease was not changed.'
+}
 $backup = Join-Path $backupRoot ((Get-Date -Format 'yyyyMMdd-HHmmss-fff') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 if (Get-Process -Name 'Vectorworks2027' -ErrorAction SilentlyContinue) {
     throw 'Vectorworks started during deployment preflight. Close it before trying again.'

@@ -11,10 +11,12 @@ set VWX_BACKGROUND_MODE=1
 set MCP_TRANSPORT=streamable-http
 set FASTMCP_HOST=127.0.0.1
 set FASTMCP_PORT=8082
-REM Optional toolset filter: full | sdk | gis | modeling | baumkataster | minimal
-set VWX_TOOLSET=full
-REM Set to 0 to omit the 3098 named SDK tools; sdk_call/list/sequence still work.
-set VWX_SDK_TOOLS=1
+REM Landscape is compact by default; preserve an explicit caller override.
+REM Other presets: full | sdk | gis | modeling | baumkataster | minimal
+if not defined VWX_TOOLSET set VWX_TOOLSET=landscape
+REM VWX_SDK_TOOLS=1 opts into named SDK registration; 0 omits it for any preset.
+REM If unset, the server registers named SDK tools only for full/sdk startup.
+REM sdk_call/list/sequence remain available in every preset.
 
 for %%I in ("%~dp0..") do set "VWX_REPO=%%~fI"
 set "VWX_SERVER=%VWX_REPO%\mcp-server"
@@ -22,8 +24,8 @@ set "VWX_VENV=%VWX_REPO%\.venv"
 
 REM --- one-time venv bootstrap (auto, idempotent) ---
 if not exist "%VWX_VENV%\Scripts\python.exe" (
-    echo [vwx-mcp] First run: creating venv + installing fastmcp ...
-    python -m venv "%VWX_VENV%"
+    echo [vwx-mcp] First run: creating Python 3.12 venv + installing fastmcp ...
+    py -3.12 -m venv "%VWX_VENV%"
     if errorlevel 1 exit /b 1
 )
 REM Reconcile the pin on each launch so an existing venv does not stay stale.

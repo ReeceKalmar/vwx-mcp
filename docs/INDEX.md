@@ -23,6 +23,9 @@ repository into its context window.
 | [Testing](TESTING_2027.md) | Offline/live commands, fixture inventory, independent oracles and evidence import |
 | [Coverage](TOOL_COVERAGE.md) | Meaning of counts and current implementation/native-test limits |
 | [Roadmap](ROADMAP.md) | Outstanding work, including unsupported contexts and unconfirmed APIs |
+| [Landscape design workflow](DESIGN_WORKFLOW.md) | Existing-site modeling, native landscape objects, building context, proposed quantities and deliverables |
+| [Landscape tool recipes](LANDSCAPE_TOOLS.md) | Terrain sampling, native templates, planting, classification and measured takeoffs |
+| [Multiple agents](MULTI_AGENT_WORKFLOW.md) | Persistent project ownership, same-job drawing checks, serialized edits and handoffs |
 | [Developer credentials](PLUGIN_CREDENTIALS.md) | Request template, issuance and startup approval |
 | [Publication notes](PUBLICATION_2027.md) | Cleanup scope, removed legacy paths and validation checkpoint |
 

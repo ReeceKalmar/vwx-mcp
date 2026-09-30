@@ -16,6 +16,7 @@ root. Plan/report generation is offline; a plan is not authorization to execute.
 | `import_sdk_regression.py`, `sdk_regression_report.py` | Validate saved plans/results and summarize retained evidence |
 | `check_sdk_host_presence.py` | Inspect callable names without executing them |
 | `check_repository.py` | Read-only publication hygiene: links, empty content/directories and excluded artifacts |
+| `check_landscape_installation.py` | Read-only runtime/source/deployed companion checks; no host calls or lease reads |
 | `check_sdk_background_delivery.py` | Bounded read-only delivery checks with strict host/hash/telemetry identity |
 | `restart_vectorworks.py` | Cooperative maintenance lease, native save/quit, bound-process exit, deploy/reopen verification |
 

@@ -14,12 +14,14 @@ Read [VECTORWORKS_2027.md](VECTORWORKS_2027.md) and
 The plan generator prints its own current case, assertion, and API counts;
 these are fixture availability counts, not native passes.
 
-The final publication run passed **821 tests in 91.918 seconds** after the Windows
-short-path fixes, including the compiled native harnesses. One test requiring
-Windows symlink-creation privileges was skipped; separate reparse-path checks
-passed. The local log is `.audit/publication-shortpath-unittest.log` (not published).
-See [publication validation](PUBLICATION_2027.md) for the companion checks. The
-earlier 793-test run predates the cleanup tests and remains historical.
+The landscape run completed **948 tests in 101.853 seconds: 947 passed, one
+skipped**, including the compiled native harnesses. The skipped test requires
+Windows symlink-creation privileges; separate reparse-path checks passed. The
+local log is `.audit/landscape-complete-unittest-final.log` (not published).
+This includes project-ownership races, incorrect-document rejection, takeoff
+scope/units/pricing, native host fakes, installation and deployment fixtures.
+See [publication validation](PUBLICATION_2027.md) for companion checks and the
+earlier 821- and 793-test checkpoints. These tests do not connect to Vectorworks.
 
 The [default-suite audit](LIVE_DEFAULT_SUITE_2027.json) records **57 routine
 families and 2,303 unique fixture jobs**, all passed across batches A, B and C.

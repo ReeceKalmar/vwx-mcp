@@ -21,6 +21,9 @@ import sys
 
 _UNKNOWN = object()
 _FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
+# Transport envelopes handled by the pump before commands.py dispatch. Keep
+# their public input contracts explicit; they are not handwritten native verbs.
+PUMP_ENVELOPES = {'project_execute': ({'token', 'command', 'params'}, {'token', 'command'})}
 
 
 def _dict_keys(node):
@@ -351,7 +354,13 @@ def findings(server_source, command_source, tag_source):
     tool_tags = tags(tag_source)
     result = []
     for tool, (target, keys, line) in sorted(tools.items()):
-        if target is not None and target not in commands:
+        if target in PUMP_ENVELOPES:
+            allowed, mandatory = PUMP_ENVELOPES[target]
+            if keys - allowed:
+                result.append(('unused_keys', tool, sorted(keys - allowed)))
+            if mandatory - keys:
+                result.append(('missing_required_keys', tool, sorted(mandatory - keys)))
+        elif target is not None and target not in commands:
             result.append(("unknown_command", tool, target))
         elif target is not None:
             unused = keys - commands[target][0]

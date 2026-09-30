@@ -21,6 +21,8 @@ from typing import AsyncIterator, Dict, Any, List, Optional
 from fastmcp import FastMCP, Context
 from background_policy import check as check_background_operation
 import maintenance as bridge_lease
+import discovery as local_discovery
+project_lease = bridge_lease.project_module()
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -220,14 +222,13 @@ class VwxFileTransport:
                 return {'status': 'done', 'cid': pcid, 'result': result}
             return {'status': 'pending', 'cid': pcid,
                     'note': 'file transport: result not written yet'}
-        job = {'type': command_type, 'params': params or {}, '_cid': cid,
-               'ts': time.time()}
         jp = os.path.join(self.jobs, '%013d-%s.json' % (time.time() * 1000, cid))
         tmp = jp + '.tmp'
         replace_attempted = False
         try:
-            encoded = json.dumps(job, ensure_ascii=False, allow_nan=False)
-            with self._lock, bridge_lease.publication_guard(self.base, command_type, params or {}, cid):
+            with self._lock, bridge_lease.publication_guard(self.base, command_type, params or {}, cid) as published_params:
+                job = {'type': command_type, 'params': published_params, '_cid': cid, 'ts': time.time()}
+                encoded = json.dumps(job, ensure_ascii=False, allow_nan=False)
                 with open(tmp, 'w', encoding='utf-8') as f:
                     f.write(encoded)
                     f.flush()
@@ -368,20 +369,28 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
 mcp = FastMCP(
     "vwx-mcp",
     instructions=(
-        "Drives a LIVE Vectorworks 2027 desktop session — the user's open drawing, "
-        "edited in place. Search these tools for anything about: CAD or BIM "
-        "drawings, .vwx documents, layers/classes/sheet layers/viewports, "
-        "symbols and plug-in objects, walls slabs roofs and their components, "
-        "2D geometry and 3D solids/NURBS, hatches and materials and textures, "
-        "worksheets and reports, IFC export and property sets, DIN 276 cost "
-        "groups, site models and terrain, GIS georeferencing, and landscape "
-        "work — planting plans, plant records, Baumkataster tree inventories.\n"
-        "Three access layers, widest last: (1) explicit verbs for common "
-        "operations; (2) `vwx(command, params)` reaches every function in the "
-        "bridge — `list_commands(filter)` to discover; (3) `execute_script` "
-        "runs arbitrary vs.* Python inside VW. Generated `sdk_<Name>` tools and "
-        "`sdk_call` cover the SDK contract surface; `sdk_list` documents exact "
-        "arguments and context restrictions.\n"
+        "Supports landscape architecture in a LIVE Vectorworks 2027 desktop "
+        "session — the user's open drawing, edited in place. The default "
+        "landscape toolset includes base-plan geometry, building context, "
+        "layers/classes, site and terrain queries, GIS georeferencing, planting "
+        "symbols and records, materials, quantity/cost worksheets, dimensions, "
+        "sheet layers and viewports. Start by confirming the active document "
+        "and its units, then inspect existing geometry and resources before editing.\n"
+        "When multiple agents share a project, acquire project_session with an "
+        "exact saved drawing path and private owner token. The owner uses "
+        "project_execute for every native read/write; other agents prepare work "
+        "offline. Release only after completion is acknowledged. Each owner job "
+        "rechecks the active document; a lease is not a transaction.\n"
+        "Prefer explicit workflow tools. `vwx(command, params)` reaches other "
+        "handwritten commands discovered through `list_commands(filter)`. "
+        "For an exact SDK operation, use `sdk_list` to discover its arguments "
+        "and context restrictions, then `sdk_call` or `sdk_sequence`. Thousands "
+        "of named `sdk_<Name>` tools and IFC administration are optional broader "
+        "surfaces, selected at startup or through `set_toolset`.\n"
+        "Capability limits: create_plant inserts an existing symbol, not a "
+        "verified native Plant PIO. Native Hardscape, Landscape Area and "
+        "site-model workflows still need separate disposable-file verification. "
+        "A registered tool or successful setter is not proof of a finished design.\n"
         "Background mode is enabled by default: use typed workflows and SDK calls "
         "without computer-use tools. Known modal operations, arbitrary scripts and "
         "menu execution are rejected before queueing. Native error dialogs may still "
@@ -394,9 +403,8 @@ mcp = FastMCP(
         "Allow the command to return before inspecting regenerated native objects. "
         "Keep creation/reset and regeneration-dependent reads in SEPARATE requests; "
         "vwx_batch and execute_script each remain a single job.\n"
-        "Accuracy: call `vs_signature(name)` BEFORE writing an execute_script "
-        "body. The index carries exact signatures for all 3098 vs.* functions, "
-        "but indexing is not proof of live compatibility or an automatic validator. "
+        "Accuracy: `sdk_list` gives effective SDK contracts and `vs_signature` "
+        "gives the source SDK declaration. Indexing is not proof of live compatibility. "
         "After timeout or crash, inspect before retrying mutations.\n"
         "Bulk work goes through criteria strings — criteria_count / "
         "select_by_criteria / for_each_criteria with e.g. \"(T=RECT)\" or "
@@ -412,7 +420,7 @@ mcp = FastMCP(
 # vtool() forwards to mcp.tool() and injects the tool's primary tag declaratively
 # at registration (by function name), so the fastmcp Visibility API (mcp.enable/
 # disable(tags=...)) can filter the toolset by workflow preset — see main().
-from tool_tags import TOOL_TAGS
+from tool_tags import DEFAULT_SDK_TOOLS, DEFAULT_TOOLSET, TOOL_TAGS
 from mcp.types import ToolAnnotations
 
 # ── Tool classification ────────────────────────────────────────────
@@ -425,6 +433,7 @@ _RO_NAMES = frozenset({
     "get_document_info", "get_document_preferences", "get_georeferencing",
     "vs_signature", "vs_index_stats", "sdk_list", "list_commands", "criteria_count",
     "eval_expression", "three_point_center",
+    "terrain_sample_points", "landscape_object_info", "landscape_takeoff",
 })
 _RO_PREFIXES = ("get_", "list_", "count_", "find_")
 
@@ -558,6 +567,49 @@ def bridge_maintenance(ctx: Context, action: str, token: str = '', expected_path
     except (OSError, ValueError, TypeError) as error:
         result = {'error': str(error), 'code': 'VWX_MAINTENANCE_STATE', 'dispatched': False}
     return json.dumps(result, ensure_ascii=False, separators=(',', ':'))
+
+
+@vtool
+def project_session(ctx: Context, action: str, token: str = '',
+                    expected_path: str = '', owner: str = '') -> str:
+    """Cooperatively reserve one saved drawing across MCP clients/agents.
+
+    Local actions: acquire, status, release. Journal a caller-generated 64-character
+    lowercase hexadecimal token before acquire, with exact absolute .vwx path and
+    owner label. Acquisition reserves ownership; every project_execute verifies
+    the active drawing inside its native job. No expiry, stealing or forced release.
+    Acquire/release require a fresh idle bridge without pending/uncertain work.
+    """
+    try:
+        if action not in {'acquire', 'status', 'release'} or VWX_TRANSPORT != 'file':
+            raise project_lease.ProjectError('VWX_PROJECT_CONTEXT', 'Use acquire, status or release with the supported file transport')
+        base = _plugin_dir()
+        if base is None:
+            raise project_lease.ProjectError('VWX_PROJECT_STATE', 'Bridge installation not found')
+        if action == 'acquire':
+            result = project_lease.acquire(base, token, expected_path, owner, coordinator=bridge_lease)
+        else:
+            result = getattr(project_lease, action)(base, token, coordinator=bridge_lease)
+    except (project_lease.ProjectError, bridge_lease.MaintenanceError) as error:
+        result = error.response()
+    except (OSError, ValueError, TypeError):
+        result = {'error': 'Project session state could not be read or written; no lease was cleared',
+                  'code': 'VWX_PROJECT_STATE', 'dispatched': False}
+    return json.dumps(result, ensure_ascii=False, separators=(',', ':'))
+
+
+@vtool
+def project_execute(ctx: Context, token: str, command: str,
+                    params: Optional[Dict[str, Any]] = None) -> str:
+    """Run one typed native job as the current project owner.
+
+    Discover command names with list_commands or sdk_list. Each job verifies the
+    exact active saved drawing before dispatch. Keep creation/reset and dependent
+    readback in separate jobs. Batches/sequences remain one job without rollback.
+    Document switching, Save As, unchecked scripts and nested lease actions are
+    unavailable. After uncertainty, poll/inspect; never replay or clear the lease.
+    """
+    return cmd('project_execute', {'token': token, 'command': command, 'params': params or {}})
 
 
 @vtool
@@ -1196,7 +1248,8 @@ def get_walls(ctx: Context, layer: str = None) -> str:
 
 @vtool
 def get_plants(ctx: Context, layer: str = None, limit: int = 500) -> str:
-    """Get all plant objects with parametric record data (Botanischer Name, Höhe, etc.)"""
+    """List native Plant PIOs and their actual parametric fields. Filters before
+    applying limit; reports truncation. Symbol instances are not native Plants."""
     p = {"limit": limit}
     if layer: p["layer"] = layer
     return cmd("get_plants", p)
@@ -1220,7 +1273,10 @@ def create_plant(ctx: Context, x: float, y: float,
 def update_plant(ctx: Context, object_id: str, botanical_name: str = None,
                  common_name: str = None, height: float = None,
                  spread: float = None, extra_fields: dict = None) -> str:
-    """Update plant parametric record fields. extra_fields: {field_name: value}"""
+    """Update discovered native Plant fields and verify immediate data readback.
+    Ambiguous aliases/unknown fields fail before writes. extra_fields uses exact
+    discovered field names. Does not reset the object: call ResetObject through
+    the discovered SDK contract, then inspect geometry in a later job."""
     p = {"object_id": object_id}
     if botanical_name: p["botanical_name"] = botanical_name
     if common_name: p["common_name"] = common_name
@@ -1231,7 +1287,8 @@ def update_plant(ctx: Context, object_id: str, botanical_name: str = None,
 
 @vtool
 def get_plant_database(ctx: Context) -> str:
-    """List available plant species from the VW plant database"""
+    """List document symbol-name candidates for plants. This legacy tool name
+    does not query an external botanical database or certify Plant resources."""
     return cmd("get_plant_database")
 
 @vtool
@@ -1245,19 +1302,82 @@ def batch_update_plants(ctx: Context, updates: list) -> str:
 # ═══════════════════════════════════════════════════════════════════
 
 @vtool
-def get_site_model_info(ctx: Context) -> str:
-    """Get site model object info: extent, elevation range, resolution"""
-    return cmd("get_site_model_info")
+def get_site_model_info(ctx: Context, site_model_id: str = None) -> str:
+    """Inspect a validated native site model's identity and projected bounds.
+    Optional UUID selects one explicitly; bounds are not a terrain survey.
+    Use landscape_object_info for actual parametric fields."""
+    return cmd("get_site_model_info", {"site_model_id": site_model_id})
 
 @vtool
-def update_site_model(ctx: Context) -> str:
-    """Trigger site model update/recalculation"""
-    return cmd("update_site_model")
+def update_site_model(ctx: Context, site_model_id: str = None) -> str:
+    """Reset a validated site model. Regeneration remains pending; verify terrain
+    in later requests. Optional UUID selects the site model explicitly."""
+    return cmd("update_site_model", {"site_model_id": site_model_id})
 
 @vtool
-def get_terrain_elevation(ctx: Context, x: float, y: float) -> str:
-    """Get terrain elevation at a point (x, y) in document units"""
-    return cmd("get_terrain_elevation", {"x": x, "y": y})
+def get_terrain_elevation(ctx: Context, x: float, y: float, tin_type: int = 2,
+                          site_model_id: str = None) -> str:
+    """Sample native terrain at document XY. TIN 0=existing, 1=proposed,
+    2=current. Outside-terrain results are explicit; no elevation is invented."""
+    return cmd("get_terrain_elevation", {"x": x, "y": y, "tin_type": tin_type,
+                                          "site_model_id": site_model_id})
+
+
+@vtool
+def terrain_sample_points(ctx: Context, points: list, tin_types: list = None,
+                          site_model_id: str = None) -> str:
+    """Sample 1–200 {x,y} points in document units against validated terrain.
+    tin_types is a distinct subset of [0,1,2]: existing/proposed/current; default
+    [2]. Returns per-point results, explicit outside points, and partial failures.
+    Creation/reset and these measurements must be separate native jobs."""
+    return cmd("terrain_sample_points", {"points": points,
+        "tin_types": tin_types if tin_types is not None else [2],
+        "site_model_id": site_model_id})
+
+
+@vtool
+def landscape_object_info(ctx: Context, object_id: str) -> str:
+    """Inspect a native Plant, Existing Tree, Hardscape, Landscape Area, Site
+    Modifier or Site Model by UUID. Returns actual fields/style/path/context;
+    projected bounds and field readbacks do not certify regenerated geometry."""
+    return cmd("landscape_object_info", {"object_id": object_id})
+
+
+@vtool
+def landscape_duplicate_template(ctx: Context, source_id: str, target_layer: str,
+                                 dx: float = 0, dy: float = 0,
+                                 fields: Optional[Dict[str, Any]] = None) -> str:
+    """Copy a native Plant/Hardscape/Landscape Area/Site Modifier template to
+    an existing design layer; preserve its full native path, offset by document
+    dx/dy, optionally write exact discovered fields. Returns the new UUID and
+    partial state on failure. Separate geometry readback is required; no rollback
+    or automatic initialization certification. Never replay an uncertain copy."""
+    return cmd("landscape_duplicate_template", {"source_id": source_id,
+        "target_layer": target_layer, "dx": dx, "dy": dy, "fields": fields or {}})
+
+
+@vtool
+def landscape_set_metadata(ctx: Context, object_id: str,
+                           metadata: Dict[str, Any]) -> str:
+    """Attach verified VWX_Landscape classification to one drawing object.
+    Required: status (existing/new_proposed/remove/unknown), role
+    (item/assembly/assembly_part/reference/markup), category, material,
+    measurement (plan_area/perimeter/linear_length/count/plant_count), unit.
+    Optional: count_field (required for plant_count), assembly_id,
+    classification_source, description. Native geometry is not changed or certified."""
+    return cmd("landscape_set_metadata", {"object_id": object_id, "metadata": metadata})
+
+
+@vtool
+def landscape_takeoff(ctx: Context, object_ids: list, prices: list = None) -> str:
+    """Measure current geometry for 1–500 explicitly selected classified UUIDs.
+    Include only new_proposed item/assembly objects; exclude existing/unknown,
+    references, markup, assembly members and duplicate UUIDs. Supports plan area,
+    perimeter, straight line/wall length, object count and native Plant count.
+    Prices are optional exact category/material/quantity_kind/unit matches with
+    unit_price, currency and source. Missing prices stay unpriced. Returns an
+    object-linked schedule and exclusions; does not write a worksheet or save."""
+    return cmd("landscape_takeoff", {"object_ids": object_ids, "prices": prices})
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1475,10 +1595,10 @@ def vwx_batch(ctx: Context, calls: List[Dict[str, Any]]) -> str:
 
 @vtool
 def list_commands(ctx: Context, filter: Optional[str] = None) -> str:
-    """List all bridge commands callable via `vwx`. Optional substring filter."""
+    """List local bridge command contracts without native access. Optional substring filter."""
     p = {}
     if filter: p["filter"] = filter
-    return cmd("list_commands", p)
+    return json.dumps(local_discovery.discover('list_commands', p), ensure_ascii=False)
 
 @vtool
 def vs_signature(ctx: Context, name: Optional[str] = None,
@@ -1492,7 +1612,7 @@ def vs_signature(ctx: Context, name: Optional[str] = None,
     if name: p["name"] = name
     if search: p["search"] = search
     if category: p["category"] = category
-    return cmd("vs_signature", p)
+    return json.dumps(local_discovery.discover('vs_signature', p), ensure_ascii=False)
 
 @vtool
 def vs_index_stats(ctx: Context) -> str:
@@ -1513,11 +1633,14 @@ def sdk_list(ctx: Context, name: Optional[str] = None, search: str = '',
              category: Optional[str] = None, offset: int = 0, limit: int = 50,
              include_presence: bool = False) -> str:
     """Discover SDK adapters and their exact transport contracts, return types,
-    and context restrictions. Pass name for one complete contract. include_presence
+    and context restrictions locally without native access. Pass name for one complete contract. include_presence
     inspects installed callable availability without executing the SDK functions;
     presence does not establish native correctness or valid execution context."""
-    return cmd('sdk_list', {'name': name, 'search': search, 'category': category,
-                            'offset': offset, 'limit': limit, 'include_presence': include_presence})
+    params = {'name': name, 'search': search, 'category': category,
+              'offset': offset, 'limit': limit, 'include_presence': include_presence}
+    if include_presence is False:
+        return json.dumps(local_discovery.discover('sdk_list', params), ensure_ascii=False)
+    return cmd('sdk_list', params)
 
 @vtool
 def sdk_sequence(ctx: Context, calls: List[Dict[str, Any]],
@@ -2197,8 +2320,10 @@ def create_linear_dimension(ctx: Context, x1: float, y1: float, x2: float, y2: f
 @vtool
 def send_to_surface(ctx: Context, object_id: str, tin_type: int = 2,
                     site_model_id: str = None) -> str:
-    """Drape a 2D object onto the site model. tin_type: 0 existing / 1 proposed / 2 current.
-    Returns the new 3D poly UUID (uses PrevObj(LNewObj) trick internally)."""
+    """Send an object to terrain. tin_type: 0 existing / 1 proposed / 2 current.
+    Re-resolves the original UUID after dispatch; never guesses a replacement
+    from unrelated last-created objects. Inspect geometry in a later request;
+    unresolved identity or failure may follow a partial native mutation."""
     p = {"object_id": object_id, "tin_type": tin_type}
     if site_model_id: p["site_model_id"] = site_model_id
     return cmd("send_to_surface", p)
@@ -2835,11 +2960,12 @@ def export_document(fmt: str = "pdf") -> str:
 
 @vtool
 def set_toolset(ctx: Context, preset: str) -> str:
-    """Reshape the visible toolset: full | sdk | gis | modeling | baumkataster | minimal.
+    """Reshape the visible toolset: landscape | full | sdk | gis | modeling | baumkataster | minimal.
 
     Previously this needed the VWX_TOOLSET environment variable and a server
     restart. Switching emits tools/list_changed, so the client picks up the new
-    surface without reconnecting. 'full' restores everything."""
+    surface without reconnecting. 'full' restores all registered tools. Named
+    SDK tools need VWX_SDK_TOOLS=1 at startup; generic SDK routes always remain."""
     from tool_tags import preset_tags, PRESETS
     if preset not in PRESETS:
         return json.dumps({"error": f"unknown preset '{preset}'",
@@ -2850,8 +2976,13 @@ def set_toolset(ctx: Context, preset: str) -> str:
     tags = preset_tags(preset) or set(TOOL_TAGS.values())
     mcp.enable(tags=tags, only=True)
     count = len([n for n, t in TOOL_TAGS.items() if t in tags])
-    return json.dumps({"status": "ok", "preset": preset, "tools": count,
-                       "tags": sorted(tags)}, ensure_ascii=False)
+    result = {"status": "ok", "preset": preset, "tools": count,
+              "tags": sorted(tags), "named_sdk_tools": SDK_TOOL_COUNT}
+    if preset in {'full', 'sdk'} and not SDK_TOOL_COUNT:
+        result['note'] = ('Named SDK tools were omitted at startup. Restart with '
+                          'VWX_SDK_TOOLS=1 to register them; sdk_list, sdk_call '
+                          'and sdk_sequence are available now.')
+    return json.dumps(result, ensure_ascii=False)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -2962,9 +3093,9 @@ def main():
     _init_otel()
     _install_middleware()
     # Optional toolset filtering via the fastmcp Visibility API.
-    # VWX_TOOLSET=gis|modeling|baumkataster|minimal|full (default full = no filter).
+    # Landscape is the default; full/sdk remain explicit broad-surface opt-ins.
     from tool_tags import preset_tags
-    sel = os.environ.get("VWX_TOOLSET", "full")
+    sel = os.environ.get("VWX_TOOLSET", DEFAULT_TOOLSET)
     tags = preset_tags(sel)
     if tags:
         mcp.enable(tags=tags, only=True)
@@ -3254,7 +3385,9 @@ def confirm_active_document(ctx: Context, expected: str) -> str:
 # Register every tool before starting stdio/HTTP. Starting main() above the
 # later decorators left those tools invisible when launched as a script.
 SDK_TOOL_COUNT = 0
-if os.environ.get('VWX_SDK_TOOLS', '1').lower() not in ('0', 'false', 'off'):
+_sdk_default = ('1' if os.environ.get('VWX_TOOLSET', DEFAULT_TOOLSET) in {'full', 'sdk'}
+                else DEFAULT_SDK_TOOLS)
+if os.environ.get('VWX_SDK_TOOLS', _sdk_default).lower() not in ('0', 'false', 'off'):
     from sdk_tools import register_sdk_tools
     SDK_TOOL_COUNT = register_sdk_tools(mcp, cmd, VWX_CALL_TIMEOUT, TOOL_TAGS)
 

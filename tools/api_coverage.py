@@ -18,7 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 COMMANDS = 'vwx-plugin/commands.py'
 SERVER = 'mcp-server/vwx_mcp_server.py'
+TOOL_TAGS = 'mcp-server/tool_tags.py'
 FRAMEWORK = ('vwx-plugin/BridgeStart_MenuCommand.py', 'vwx-plugin/vwx_pump.py')
+# The pump unwraps this protocol envelope before dispatching its validated
+# nested command. It is not an additional public commands.py implementation.
+PUMP_ENVELOPES = frozenset({'project_execute'})
 INDEX = 'vwx-plugin/vs_index.json'
 META = 'vwx-plugin/vs_index_meta.json'
 REPORT = 'docs/API_COVERAGE_2027.json'
@@ -256,6 +260,31 @@ def mock_matrix(repo):
     return module.build_matrix(repo)
 
 
+def mcp_inventory(repo, tool_names, generated_count):
+    """Measure published presets from the pure taxonomy, never a live server.
+
+    Ambient client environment settings must not change this reproducible report.
+    All generated bindings remain available independently of their visibility.
+    """
+    spec = importlib.util.spec_from_file_location('coverage_tool_tags', repo / TOOL_TAGS)
+    taxonomy = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(taxonomy)
+    tags = taxonomy.preset_tags(taxonomy.DEFAULT_TOOLSET)
+    default_tools = [name for name in tool_names
+                     if tags is None or taxonomy.TOOL_TAGS[name] in tags]
+    generated_default = (generated_count
+                         if taxonomy.DEFAULT_SDK_TOOLS.lower() not in ('0', 'false', 'off')
+                         and (tags is None or 'sdk' in tags) else 0)
+    return {
+        'default_toolset': taxonomy.DEFAULT_TOOLSET,
+        'handwritten_mcp_tools_default': len(default_tools),
+        'generated_mcp_tools_default': generated_default,
+        'total_mcp_tools_default': len(default_tools) + generated_default,
+        'generated_mcp_tools_full': generated_count,
+        'total_mcp_tools_full': len(tool_names) + generated_count,
+    }
+
+
 def build_report(repo=ROOT):
     repo = Path(repo)
     read = lambda path: (repo / path).read_text(encoding='utf-8-sig')
@@ -276,13 +305,14 @@ def build_report(repo=ROOT):
                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith('_'))
     roots = set(verbs) | {target for values in tool_targets.values() for target in values}
     defined = {node.name for node in command_tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
-    missing_targets = sorted(roots - defined)
+    missing_targets = sorted(roots - defined - PUMP_ENVELOPES)
     commands = Analysis(read(COMMANDS), roots & defined)
     all_commands = Analysis(read(COMMANDS))
     framework = {path: Analysis(read(path)) for path in FRAMEWORK}
     built_in = commands.sdk_functions & set(index)
     extensions = declared_bridge_extensions((repo / PRIVATE_EXTENSIONS).read_text(encoding='utf-8'))
     generated, invalid_generated = generated_bindings(read(GENERATED), index)
+    inventory = mcp_inventory(repo, tools, len(generated))
     matrix = mock_matrix(repo)
     mock_dispatched = sorted(name for name, entry in matrix['functions'].items()
                              if entry['offline_baseline']['status'] == 'mock_dispatched')
@@ -291,8 +321,11 @@ def build_report(repo=ROOT):
     mock_compatibility = {name: entry['offline_baseline'] for name, entry in matrix['functions'].items()
                           if entry['offline_baseline']['status'] == 'compatibility_executed'}
     framework_api = set().union(*(a.sdk_functions for a in framework.values())) & set(index)
-    source_files = (COMMANDS, SERVER, *FRAMEWORK, INDEX, META, GENERATED, CATALOG, PRIVATE_EXTENSIONS,
+    source_files = (COMMANDS, SERVER, TOOL_TAGS, *FRAMEWORK, INDEX, META, GENERATED, CATALOG, PRIVATE_EXTENSIONS,
                     'vwx-plugin/sdk_runtime.py', 'vwx-plugin/sdk_sequences.py',
+                    'vwx-plugin/project_guard.py', 'vwx-plugin/landscape_takeoff.py',
+                    'mcp-server/project_session.py', 'mcp-server/discovery.py',
+                    'mcp-server/background_policy.py', 'mcp-server/maintenance.py',
                     'mcp-server/sdk_tools.py',
                     'tools/sdk_test_matrix.py', 'tools/api_coverage.py')
     if (repo / 'docs/LIVE_SDK_2027.json').is_file():
@@ -318,11 +351,12 @@ def build_report(repo=ROOT):
             'Generated adapters are counted only when a named sdk_Name function directly binds vs.Name; catalogs alone do not qualify.',
             'Mock-dispatched/rejected counts execute the actual runtime with injected version/UUID resolvers and signature-bound fake native calls.',
             'The mock baseline uses one menu job, no sequence context, no force override; rejection includes contextual prerequisites, not only missing implementation.',
-            'Default MCP totals include generated registrations; VWX_SDK_TOOLS=0 and visibility presets change the exposed list.',
+            'Default MCP totals use the published default preset and SDK registration setting from tool_tags.py, ignoring ambient environment overrides; full totals count every handwritten and generated tool.',
             'Native input/result cases are imported only from normalized LIVE_SDK_2027.json evidence; untested APIs stay pending and full semantic coverage is not claimed.',
             'Uncertain native attempts and compatibility replacement outputs remain separate from confirmed native results; neither earns native API pass coverage.',
         ],
         'source_sha256': sources,
+        'default_mcp_toolset': inventory['default_toolset'],
         'counts': {
             'sdk_indexed_functions': len(index),
             'handwritten_sdk_functions': len(built_in),
@@ -335,8 +369,11 @@ def build_report(repo=ROOT):
             'generated_mock_rejected': len(mock_rejected),
             'generated_mock_compatibility': len(mock_compatibility),
             'handwritten_mcp_tools': len(tools),
-            'generated_mcp_tools_default': len(generated),
-            'total_mcp_tools_default': len(tools) + len(generated),
+            'handwritten_mcp_tools_default': inventory['handwritten_mcp_tools_default'],
+            'generated_mcp_tools_default': inventory['generated_mcp_tools_default'],
+            'total_mcp_tools_default': inventory['total_mcp_tools_default'],
+            'generated_mcp_tools_full': inventory['generated_mcp_tools_full'],
+            'total_mcp_tools_full': inventory['total_mcp_tools_full'],
             'handwritten_public_dispatcher_verbs': len(verbs),
             'generated_public_dispatcher_commands': len(generated),
             'total_public_dispatcher_commands': len(verbs) + len(generated),
@@ -368,6 +405,7 @@ def build_report(repo=ROOT):
             'unreferenced_top_level_command_helpers': len(commands.top_functions - commands.reachable),
         },
         'handwritten_explicit_tools': tool_targets,
+        'pump_protocol_envelopes': sorted(PUMP_ENVELOPES),
         'handwritten_public_dispatcher_verbs': verbs,
         'missing_tool_targets': missing_targets,
         'handwritten_sdk_functions': sorted(built_in),

@@ -24,7 +24,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_FILES = ('commands.py', 'vwx_pump.py', 'BridgeStart_MenuCommand.py',
                 'vs_index.json', 'vs_index_meta.json', 'sdk_catalog.json',
-                'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py')
+                'sdk_generated.py', 'sdk_runtime.py', 'sdk_sequences.py',
+                'project_guard.py', 'landscape_takeoff.py')
 
 
 def normalized(path):
@@ -252,7 +253,7 @@ class WindowsHost:
 
     def verify_installed(self):
         if any(self.hash(dst) != self.expected[src.name] for src, dst in self.pairs):
-            raise ValueError('The installed files do not match all eleven planned hashes')
+            raise ValueError('The installed files do not match all %d planned hashes' % len(self.pairs))
 
     def deploy(self):
         if not self.all_exited():
